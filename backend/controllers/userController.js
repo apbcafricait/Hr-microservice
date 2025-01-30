@@ -1,7 +1,8 @@
 import prisma from "../../db/prisma.js";
 import { asyncHandler } from "../middleware/asynchandler.js";
 import { encryptPassword } from "../utils/encryptPassword.js";
-import { decryptPassword } from "../utils/decryptPassword.js";
+import bcrypt from "bcryptjs";
+
 
 //api/users - GET
 //Get all users
@@ -49,39 +50,37 @@ const RegisterUser = asyncHandler(async (req, res) => {
 //Login a user
 //POST /api/users/login
 //Access: Public
-
 const loginUser = asyncHandler(async (req, res) => {
-    const {email, password} = req.body;
-
-    //check if email and password are provided
+    const { email, password } = req.body;
+  
     if (!email || !password) {
-        return res.status(400).json({message: "Invalid user data"});
+      return res.status(400).json({ message: "Email and password required" });
     }
-
-    //check if user exists
+  
     const user = await prisma.users.findUnique({
-        where: {
-            email
-        }
+      where: { email: email.toLowerCase() } // Normalize email
     });
-
-    if (!user) {
-        return res.status(400).json({message: "Invalid user data"});
+    console.log("user:", user);
+  
+    if (!user || !user.password_hash) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-
-    //check if password is correct
-    const isMatch = await decryptPassword(password, user.password_hash);
-    if(isMatch){
+  
+    try {
+      const isMatch = await bcrypt.compare(password, user.password_hash);
+      console.log("isMatch:", isMatch);
+      if (isMatch) {
         res.json({
-            id: user.id,
-            email: user.email,
-            role: user.role
+          id: user.id,
+          email: user.email,
+          role: user.role
         });
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
+    } catch (error) {
+        console.error("Error logging in user:", error);
+      res.status(500).json({ message: "Server error during authentication" });
     }
-    else{
-        return res.status(400).json({message: "Invalid user data"});
-    }
-});
-
-
+  });
 export { getAllUsers, RegisterUser, loginUser };
