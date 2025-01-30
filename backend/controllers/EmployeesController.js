@@ -117,6 +117,7 @@ export class EmployeesController {
 
   // Create new employee
   async createEmployee (req, res) {
+    console.log(req.body)
     try {
       const employeeData = {
         userId: parseInt(req.body.userId),
@@ -129,6 +130,7 @@ export class EmployeesController {
         employmentDate: new Date(req.body.employmentDate),
         salary: parseFloat(req.body.salary)
       }
+      console.log(employeeData)
 
       // Validate employee data
       const validationError = validateEmployee(employeeData)
