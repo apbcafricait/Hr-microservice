@@ -3,7 +3,11 @@ import dotenv from "dotenv"
 import employeeRoutes from "./Routes/employeeRoutes.js"
 import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
+
 import cookieParser from "cookie-parser"
+
+
+import mpesaRoutes from "./Routes/mpesa_routes.js"
 
 
 const app = express()
@@ -22,6 +26,12 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoute)
 
 
+
+
+/* 
+@params Payment routes
+*/
+app.use("/api/mpesa", mpesaRoutes)
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
