@@ -1,8 +1,5 @@
 import prisma from "../../db/prisma.js";
-import { asyncHandler } from "../middleware/asynchandler.js";
-import { encryptPassword } from "../utils/encryptPassword.js";
-import bcrypt from "bcryptjs";
-
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 //api/users - GET
 //Get all users
