@@ -18,11 +18,9 @@ app.use(express.json())
 app.use(cookieParser())
 
 const PORT = process.env.PORT || 8100;
+
 app.use('/api/employees', employeeRoutes)
 app.use('/api/organisations', organisationRoutes)
-app.get("/", (req, res) => {
-  res.send("Hello World!")
-})
 app.use("/api/users", userRoute)
 
 
