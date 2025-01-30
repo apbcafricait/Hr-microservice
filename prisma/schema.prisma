@@ -17,6 +17,8 @@ model users {
   created_at    DateTime? @default(now()) @db.Timestamp(6)
 
   Employee Employee[]
+
+  Organisation Organisation[]
 }
 model Employee {
   id              Int         @id @default(autoincrement())
@@ -37,14 +39,20 @@ model Employee {
 
   @@map("employees")
 }
+// prisma/schema.prisma
+
 model Organisation {
-  id          Int         @id @default(autoincrement())
-  name        String      @db.VarChar(100)
-  description String?     @db.Text
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-  
-  employees   Employee[]
+  id                 Int       @id @default(autoincrement())
+  createdBy         Int       @map("created_by")
+  name              String    @db.VarChar(255)
+  subdomain         String    @unique @db.VarChar(50)
+  mpesaPhone        String?   @map("mpesa_phone") @db.VarChar(20)
+  subscriptionStatus String    @default("trial") @map("subscription_status") @db.VarChar(20)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  creator           users      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  employees         Employee[]
 
   @@map("organisations")
 }
