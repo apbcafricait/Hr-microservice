@@ -2,13 +2,14 @@
 
 import { Router } from 'express'
 import { EmployeesController } from '../controllers/EmployeesController.js'
-// import { authMiddleware } from '../middleware/authMiddleware.js'
+import { authenticated } from '../middleware/Authentication.js'
+
 
 const router = Router()
 const employeesController = new EmployeesController()
 
 // Protected routes
-// router.use(authMiddleware)
+router.use(authenticated)
 
 // Employee routes
 router.get('/', employeesController.getAllEmployees)

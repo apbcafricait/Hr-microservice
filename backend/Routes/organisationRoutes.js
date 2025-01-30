@@ -4,12 +4,13 @@ import { Router } from 'express'
 import { OrganisationsController } from '../controllers/OrganisationsController.js'
 // import { authMiddleware } from '../middleware/authMiddleware.js'
 // import { isAdminMiddleware } from '../middleware/isAdminMiddleware.js'
+import { authenticated } from '../middleware/Authentication.js'
 
 const router = Router()
 const organisationsController = new OrganisationsController()
 
 // Protect all routes
-// router.use(authMiddleware)
+ router.use(authenticated)
 
 // Public routes (for authenticated users)
 router.get('/', organisationsController.getAllOrganisations)

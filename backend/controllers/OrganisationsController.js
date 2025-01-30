@@ -142,8 +142,8 @@ export class OrganisationsController {
         include: {
           creator: {
             select: {
-              email: true,
-              name: true
+              email: true
+             
             }
           }
         }
@@ -180,8 +180,7 @@ export class OrganisationsController {
         include: {
           creator: {
             select: {
-              email: true,
-              name: true
+              email: true
             }
           }
         }
