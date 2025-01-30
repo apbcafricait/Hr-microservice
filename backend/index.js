@@ -3,13 +3,20 @@ import dotenv from "dotenv"
 import employeeRoutes from "./Routes/employeeRoutes.js"
 import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
+
+import cookieParser from "cookie-parser"
+
+
 import mpesaRoutes from "./Routes/mpesa_routes.js"
+
 
 const app = express()
 
 dotenv.config()
 
 app.use(express.json())
+app.use(cookieParser())
+
 const PORT = process.env.PORT || 8100;
 app.use('/api/employees', employeeRoutes)
 app.use('/api/organisations', organisationRoutes)

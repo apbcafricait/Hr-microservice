@@ -1,5 +1,13 @@
 import prisma from "../../db/prisma.js";
+
+import { asyncHandler } from "../middleware/asynchandler.js";
+import { encryptPassword } from "../utils/encryptPassword.js";
+import bcrypt from "bcryptjs";
+import { generateToken } from "../utils/generateToken.js";
+
+
 import { asyncHandler } from "../middleware/asyncHandler.js";
+
 
 //api/users - GET
 //Get all users
@@ -31,13 +39,17 @@ const RegisterUser = asyncHandler(async (req, res) => {
                 role: "admin"
             }
         });
-
+        console.log(user.id);
+        
+        if(user){
+          
         res.status(201).json({
             id: user.id,
             email: user.email,
             role: user.role,
             password: user.password_hash
         });
+    }
     } catch (error) {
         console.error("Error registering user:", error);
         res.status(500).json({ message: "Server error" });
@@ -55,18 +67,19 @@ const loginUser = asyncHandler(async (req, res) => {
     }
   
     const user = await prisma.users.findUnique({
-      where: { email: email.toLowerCase() } // Normalize email
+      where: { email: email.toLowerCase() } 
     });
-    console.log("user:", user);
   
     if (!user || !user.password_hash) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+    console.log(user.id);
   
     try {
       const isMatch = await bcrypt.compare(password, user.password_hash);
-      console.log("isMatch:", isMatch);
+      
       if (isMatch) {
+        await generateToken(res, user.id);
         res.json({
           id: user.id,
           email: user.email,
