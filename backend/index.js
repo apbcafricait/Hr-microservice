@@ -3,9 +3,9 @@ import dotenv from "dotenv"
 import employeeRoutes from "./Routes/employeeRoutes.js"
 import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
-
+import documentRoutes from './Routes/documentRoutes.js'
 import cookieParser from "cookie-parser"
-
+import timeAttendance from "./Routes/timeAttendance.js"
 
 import mpesaRoutes from "./Routes/mpesa_routes.js"
 
@@ -23,7 +23,11 @@ app.use('/api/employees', employeeRoutes)
 app.use('/api/organisations', organisationRoutes)
 app.use("/api/users", userRoute)
 
+app.use('/uploads', express.static('uploads'))
 
+app.use('/api/documents', documentRoutes)
+
+app.use('/api/time-attendance', timeAttendance)
 
 
 /* 

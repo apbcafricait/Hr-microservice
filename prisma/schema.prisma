@@ -38,8 +38,10 @@ model Employee {
   organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@map("employees")
+  Document Document[]
+  TimeAttendance TimeAttendance[]
 }
-// prisma/schema.prisma
+
 
 model Organisation {
   id                 Int       @id @default(autoincrement())
@@ -55,4 +57,29 @@ model Organisation {
   employees         Employee[]
 
   @@map("organisations")
+}
+
+
+
+model Document {
+    id          Int      @id @default(autoincrement())
+    employeeId  Int      @map("employee_id")
+    documentType String  @map("document_type")
+    filePath    String  @map("file_path")
+    uploadedAt  DateTime @default(now()) @map("uploaded_at")
+
+    employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+    @@map("documents")
+}
+model TimeAttendance {
+  id        Int      @id @default(autoincrement())
+  employee  Employee @relation(fields: [employeeId], references: [id])
+  employeeId Int
+  clockIn   DateTime
+  clockOut  DateTime?
+  location  String?
+  createdAt DateTime @default(now())
+
+  @@map("time_attendance")
 }
