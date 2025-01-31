@@ -2,9 +2,7 @@
 
 import { Router } from 'express'
 import { OrganisationsController } from '../controllers/OrganisationsController.js'
-// import { authMiddleware } from '../middleware/authMiddleware.js'
-// import { isAdminMiddleware } from '../middleware/isAdminMiddleware.js'
-import { authenticated } from '../middleware/Authentication.js'
+import { authenticated, admin } from '../middleware/Authentication.js'
 
 const router = Router()
 const organisationsController = new OrganisationsController()
@@ -18,7 +16,7 @@ router.get('/:id', organisationsController.getOrganisation)
 router.get('/:id/stats', organisationsController.getOrganisationStats)
 
 // Admin only routes
-// router.use(isAdminMiddleware)
+ router.use(admin)
 router.post('/', organisationsController.createOrganisation)
 router.put('/:id', organisationsController.updateOrganisation)
 router.delete('/:id', organisationsController.deleteOrganisation)
