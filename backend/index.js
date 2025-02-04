@@ -8,7 +8,8 @@ import cookieParser from "cookie-parser"
 import timeAttendance from "./Routes/timeAttendance.js"
 
 import mpesaRoutes from "./Routes/mpesa_routes.js"
-
+import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
+import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
 
 const app = express()
 
@@ -28,6 +29,9 @@ app.use('/uploads', express.static('uploads'))
 app.use('/api/documents', documentRoutes)
 
 app.use('/api/time-attendance', timeAttendance)
+
+app.use('/api/leave-balances', leaveBalanceRoutes)
+app.use('/api/leave-requests', leaveRequestRoutes)
 
 
 /* 

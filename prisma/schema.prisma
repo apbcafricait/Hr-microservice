@@ -19,6 +19,8 @@ model users {
   Employee Employee[]
 
   Organisation Organisation[]
+
+  LeaveRequest LeaveRequest[]
 }
 model Employee {
   id              Int         @id @default(autoincrement())
@@ -40,6 +42,8 @@ model Employee {
   @@map("employees")
   Document Document[]
   TimeAttendance TimeAttendance[]
+  LeaveBalance LeaveBalance[]
+  LeaveRequest LeaveRequest[]
 }
 
 
@@ -82,4 +86,36 @@ model TimeAttendance {
   createdAt DateTime @default(now())
 
   @@map("time_attendance")
+}
+
+// prisma/schema.prisma
+
+model LeaveBalance {
+    id                 Int      @id @default(autoincrement())
+    employeeId         Int      @unique @map("employee_id")
+    annualLeave        Int      @default(21) @map("annual_leave")
+    sickLeave         Int      @default(7) @map("sick_leave")
+    compassionateLeave Int      @default(3) @map("compassionate_leave")
+    updatedAt         DateTime @default(now()) @map("updated_at")
+
+    employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+    @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id           Int      @id @default(autoincrement())
+  employeeId   Int      @map("employee_id")
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  type         String   @map("type")
+  status       String   @default("pending") @map("status")
+  requestedAt  DateTime @default(now()) @map("requested_at")
+  approvedBy   Int?     @map("approved_by")
+
+  // Relations (assuming Employee and User models exist)
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approver     users?    @relation(fields: [approvedBy], references: [id])
+
+  @@map("leave_requests")
 }
