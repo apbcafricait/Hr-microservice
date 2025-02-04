@@ -6,10 +6,11 @@ import userRoute from "./Routes/userRoute.js"
 import documentRoutes from './Routes/documentRoutes.js'
 import cookieParser from "cookie-parser"
 import timeAttendance from "./Routes/timeAttendance.js"
-
 import mpesaRoutes from "./Routes/mpesa_routes.js"
 import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
 import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
+import employeeContactsRoutes from './Routes/employeeContactsRoutes.js'
+import suggestionsRoutes from './Routes/suggestionsRoutes.js'
 
 const app = express()
 
@@ -32,7 +33,9 @@ app.use('/api/time-attendance', timeAttendance)
 
 app.use('/api/leave-balances', leaveBalanceRoutes)
 app.use('/api/leave-requests', leaveRequestRoutes)
+app.use('/api/employee-contacts', employeeContactsRoutes)
 
+app.use('/api/suggestions', suggestionsRoutes)
 
 /* 
 @params Payment routes

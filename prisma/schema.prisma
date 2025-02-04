@@ -44,6 +44,7 @@ model Employee {
   TimeAttendance TimeAttendance[]
   LeaveBalance LeaveBalance[]
   LeaveRequest LeaveRequest[]
+  EmployeeContact EmployeeContact[]
 }
 
 
@@ -61,6 +62,7 @@ model Organisation {
   employees         Employee[]
 
   @@map("organisations")
+  Suggestion Suggestion[]
 }
 
 
@@ -118,4 +120,32 @@ model LeaveRequest {
   approver     users?    @relation(fields: [approvedBy], references: [id])
 
   @@map("leave_requests")
+}
+
+model EmployeeContact {
+  id                    Int       @id @default(autoincrement())
+  employeeId            Int       @map("employee_id")
+  phone                 String?   @map("phone")
+  email                 String?   @map("email")
+  emergencyContactName  String?   @map("emergency_contact_name")
+  emergencyContactPhone String?   @map("emergency_contact_phone")
+  updatedAt             DateTime  @default(now()) @map("updated_at")
+
+  // Relation: assuming the Employee model exists
+  employee              Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_contacts")
+}
+
+model Suggestion {
+  id             Int          @id @default(autoincrement())
+  organisationId Int          @map("organisation_id")
+  content        String
+  isAnonymous    Boolean      @default(true) @map("is_anonymous")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  
+  // Define relation: assumes Organisation model exists.
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@map("suggestions")
 }
