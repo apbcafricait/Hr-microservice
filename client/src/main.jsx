@@ -8,48 +8,27 @@ import store from './store.js';
 import { ToastContainer } from 'react-toastify';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-// Import all performance components
-import performanceEntry from './components/pages/Performance/performanceEntry';
+import PerformanceEntry from './components/pages/Performance/PerformanceEntry';
+import LeaveManagementEntry from './components/pages/LeaveManagement/LeaveManagementEntry';
 // Import all recruitment components
-import { 
-  JobPostings,
-  Applicants,
-  InterviewSchedule,
-  InterviewResults,
-  ApplicantDetails,
-  RecruitmentDashboard,
-  JobApplicationForm,
-  CandidateShortlist,
-  RecruitmentReports
-} from './components/pages/Recruitment';
+import RecruitmentEntry from './components/pages/Recruitment/RecruitmentEntry.jsx'
 
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<App />}>
-      <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-{/* Routing for Performance Pages */}
+        {/* Routing for Performance Pages */}
+        <Route path="/Performance" element={<PerformanceEntry />} />
+        {/* Routing for Recruitment Pages */}
+        <Route path="/recruitment" element={<RecruitmentEntry />} />
 
-<Route path="/perfomance" element={<performanceEntry />} />
-
-    {/* Routing for Recruitment Pages */}
-    
-          <Route path="/job-postings" element={<JobPostings />} />
-          <Route path="/applicants" element={<Applicants />} />
-          <Route path="/interview-schedule" element={<InterviewSchedule />} />
-          <Route path="/interview-results" element={<InterviewResults />} />
-          <Route path="/applicant-details/:id" element={<ApplicantDetails />} />
-          <Route path="/recruitment-dashboard" element={<RecruitmentDashboard />} />
-          <Route path="/job-application-form" element={<JobApplicationForm />} />
-          <Route path="/candidate-shortlist" element={<CandidateShortlist />} />
-          <Route path="/recruitment-reports" element={<RecruitmentReports />} />
-        
-
+        // Leave management routes
+      <Route path="/Leave-Management" element={<LeaveManagementEntry />} />
       </Route>
 
-      // Leave management routes
-     <Route path="/Leave-Management" element={<LeaveManagementEntry />} />
+      
     </>
   )
 );

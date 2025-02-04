@@ -9,20 +9,19 @@ import PerformanceMetrics from './PerformanceMetrics'
 import Feedback from './Feedback'
 import ManagerAssessment from './ManagerAssessment'
 
-
 const performanceEntry = () => {
   return (
     <>
-        <PerformanceReviews />
-        <GoalSetting />
-        <PerformanceMetrics />
-        <Feedback />
-        <EmployeeProgress />
-        <PerformanceDashboard />
-        <ReviewHistory />
-        <SelfAssessment />
-        <ManagerAssessment />
-    </>
+    <PerformanceReviews />
+    <GoalSetting />
+    <PerformanceMetrics />
+    <Feedback />
+    <EmployeeProgress />
+    <PerformanceDashboard />
+    <ReviewHistory />
+    <SelfAssessment />
+    <ManagerAssessment />
+</>
   )
 }
 
