@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,8 +21,31 @@ const Register = () => {
     setIsLoading(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
+    if (validateForm()) {
+      toast.success('Registration successful!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      console.log('Form submitted:', formData);
+    } else {
+      toast.error('Please correct the form errors.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
     setIsLoading(false);
-    console.log('Form submitted:', formData);
   };
 
   const validateForm = () => {
@@ -35,7 +60,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+      <ToastContainer />
       {/* Animated Background Circles */}
       {[...Array(20)].map((_, i) => (
         <motion.div
@@ -64,9 +90,9 @@ const Register = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md backdrop-blur-lg bg-white/10 p-8 rounded-2xl shadow-2xl relative z-10"
+        className="w-full max-w-md sm:max-w-lg backdrop-blur-lg bg-white/10 p-8 rounded-2xl shadow-2xl relative z-10"
       >
-        <h2 className="text-3xl font-bold text-white mb-8 text-center">Create Account</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">Create Account</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Input */}
@@ -158,10 +184,6 @@ const Register = () => {
             type="submit"
             disabled={isLoading}
             className="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-semibold shadow-lg hover:opacity-90 transition-all disabled:opacity-50"
-            onClick={(e) => {
-              e.preventDefault();
-              if (validateForm()) handleSubmit(e);
-            }}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
