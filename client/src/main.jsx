@@ -8,6 +8,7 @@ import store from './store.js';
 import { ToastContainer } from 'react-toastify';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import LeaveManagementEntry from './components/pages/LeaveManagement/LeaveManagementEntry';
 
 const routes = createBrowserRouter(
   createRoutesFromElements(
@@ -17,6 +18,9 @@ const routes = createBrowserRouter(
         <Route path="/register" element={<Register />} />
 
       </Route>
+
+      // Leave management routes
+     <Route path="/Leave-Management" element={<LeaveManagementEntry />} />
     </>
   )
 );

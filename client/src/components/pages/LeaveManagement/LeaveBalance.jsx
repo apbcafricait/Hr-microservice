@@ -1,8 +1,7 @@
 import React from 'react'
 
 const LeaveBalance = () => {
-//     LeaveBalance.jsx
-
+// LeaveBalance.jsx
 // Shows the remaining leave balance of an employee.
 // This can be an overview of the leave entitlement and the leaves taken.
 
