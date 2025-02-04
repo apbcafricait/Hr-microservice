@@ -9,7 +9,7 @@ import PerformanceMetrics from './PerformanceMetrics'
 import Feedback from './Feedback'
 import ManagerAssessment from './ManagerAssessment'
 
-const performanceEntry = () => {
+const PerformanceEntry = () => {
   return (
     <>
     <PerformanceReviews />
@@ -25,4 +25,4 @@ const performanceEntry = () => {
   )
 }
 
-export default performanceEntry
+export default PerformanceEntry
