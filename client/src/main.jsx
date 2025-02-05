@@ -12,7 +12,7 @@ import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import PerformanceEntry from './components/pages/Performance/performanceEntry';
-
+import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
 // Import all leave management components
 import LeaveManagementEntry from './components/pages/LeaveManagement/LeaveManagementEntry';
 import LeaveDashboard from './components/pages/LeaveManagement/LeaveDashboard';
@@ -38,7 +38,9 @@ const routes = createBrowserRouter(
         <Route path="login" element={<Login />} />
 
         <Route path="register" element={<Register />} />
-        
+
+        {/* AdminDashboard routes */}
+        <Route path="admin" element={<AdminDashboard/>} />
         {/* Performance Routes */}
         <Route path="performance" element={<PerformanceEntry />} />
         
