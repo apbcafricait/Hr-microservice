@@ -36,6 +36,7 @@ const routes = createBrowserRouter(
         
         {/* Auth routes */}
         <Route path="login" element={<Login />} />
+
         <Route path="register" element={<Register />} />
         
         {/* Performance Routes */}

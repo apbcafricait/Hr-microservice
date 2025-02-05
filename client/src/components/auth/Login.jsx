@@ -1,46 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, User, Lock } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useLoginUserMutation } from '../../slices/UserApiSlice';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCredentials } from '../../slices/AuthSlice'
+
 
 const Login = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [errors, setErrors] = useState({});
+
+  // Using the login mutation
+  const [loginUser, { isLoading }] = useLoginUserMutation();
+  const { userInfo } = useSelector((state) => state.auth);
+  console.log(userInfo)
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleRedirect = (role) => {
+    switch (role) {
+      case 'admin':
+        navigate('/admin/dashboard');
+        break;
+      case 'manager':
+        navigate('/manager/dashboard');
+        break;
+      case 'employee':
+        navigate('/employee/dashboard');
+        break;
+      default:
+        navigate('/admin/dashboard'); // Default to admin as specified
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    if (!validateForm()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email === 'admin@hr.com' && password === 'password123') {
-        // Handle successful login
-        toast.success('Login successful!', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        // Here you would normally redirect or update state
-      } else {
-        toast.error('Invalid credentials', {
+    try {
+      const response = await loginUser(formData).unwrap();
+      
+      // Store user data in Redux
+      dispatch(setCredentials( response));
+console.log(response)
+      toast.success('Login successful!', {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Redirect based on role after a short delay
+      setTimeout(() => {
+        handleRedirect(response.role);
+      }, 1000);
+
+    } catch (err) {
+      toast.error(
+        err.data?.message || 'Login failed. Please check your credentials.',
+        {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          progress: undefined,
-        });
-      }
-      setIsSubmitting(false);
-    }, 1000);
+        }
+      );
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   return (
@@ -94,12 +156,17 @@ const Login = () => {
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 text-white rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full bg-white/10 border ${
+                  errors.email ? 'border-red-400' : 'border-white/20'
+                } text-white rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all`}
                 placeholder="Enter your email"
-                required
               />
+              {errors.email && (
+                <p className="text-red-400 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -107,11 +174,13 @@ const Login = () => {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 text-white rounded-lg pl-12 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full bg-white/10 border ${
+                  errors.password ? 'border-red-400' : 'border-white/20'
+                } text-white rounded-lg pl-12 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all`}
                 placeholder="Enter your password"
-                required
               />
               <button
                 type="button"
@@ -120,6 +189,9 @@ const Login = () => {
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
+              {errors.password && (
+                <p className="text-red-400 text-sm mt-1">{errors.password}</p>
+              )}
             </div>
 
             {/* Forgot Password */}
@@ -134,10 +206,10 @@ const Login = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={isSubmitting}
+              disabled={isLoading}
               className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg py-3 font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {isSubmitting ? (
+              {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Logging in...
@@ -146,14 +218,6 @@ const Login = () => {
                 'Sign In'
               )}
             </motion.button>
-
-            {/* Register Link */}
-            <div className="text-center text-gray-300">
-              Don't have an account?{' '}
-              <a href="/register" className="text-purple-300 hover:text-white transition-colors">
-                Register here
-              </a>
-            </div>
           </form>
         </div>
       </motion.div>
