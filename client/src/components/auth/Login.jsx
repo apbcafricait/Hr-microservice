@@ -30,20 +30,20 @@ const Login = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+//const orgid = resizeBy.bogdy.orgId
   const handleRedirect = (role) => {
     switch (role) {
       case 'admin':
-        navigate('/admin/dashboard');
+        navigate('/admin');
         break;
       case 'manager':
         navigate('/manager/dashboard');
         break;
       case 'employee':
-        navigate('/employee/dashboard');
+        navigate('/employee/dashboard/orgid');
         break;
       default:
-        navigate('/admin/dashboard'); // Default to admin as specified
+       null // Default to admin as specified
     }
   };
 
