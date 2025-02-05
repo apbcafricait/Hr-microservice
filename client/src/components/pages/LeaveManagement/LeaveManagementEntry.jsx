@@ -38,7 +38,7 @@ const Index = () => {
           </Link>
 
           {/* Leave Type Management Section */}
-          <Link to="/leave-type-management" className="bg-white px-4 py-2 shadow rounded-md text-center hover:bg-gray-50">
+          <Link to="/leave-type" className="bg-white px-4 py-2 shadow rounded-md text-center hover:bg-gray-50">
             <h2 className="text-sm font-semibold text-gray-700">Leave Type Management</h2>
           </Link>
 
