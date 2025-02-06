@@ -14,36 +14,29 @@ import Register from './components/auth/Register';
 import PerformanceEntry from './components/pages/Performance/performanceEntry';
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
 
-
-
 // Import all Manager dashboard components
-
 import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
-import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
-import EmployeeList from './components/pages/ManagerDashboard/EmployeeList.jsx';
-
-
+// import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
+// import EmployeeList from './components/pages/ManagerDashboard/EmployeeList.jsx';
 
 
 // Import all  employee dashboard components
-
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
 import ApplyLeave from './components/pages/EmployeeDashboard/ApplyLeave.jsx';
-import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
+
+// import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import LeaveApproval from './components/pages/EmployeeDashboard/LeaveApproval.jsx';
 
-// Import all leave management components
+//Import all leave management components
 import LeaveManagementEntry from './components/pages/LeaveManagement/LeaveManagementEntry';
 import LeaveDashboard from './components/pages/LeaveManagement/LeaveDashboard';
-import ApplyLeave from './components/pages/LeaveManagement/ApplyLeave';
+// import ApplyLeave from './components/pages/LeaveManagement/ApplyLeave';
 import LeaveRequests from './components/pages/LeaveManagement/LeaveRequests';
 import LeaveHistory from './components/pages/LeaveManagement/LeaveHistory';
-import LeaveApproval from './components/pages/LeaveManagement/LeaveApproval';
+// import LeaveApproval from './components/pages/LeaveManagement/LeaveApproval';
 import LeaveBalance from './components/pages/LeaveManagement/LeaveBalance';
 import LeaveTypeManagement from './components/pages/LeaveManagement/LeaveTypeManagement';
 import LeaveSettings from './components/pages/LeaveManagement/LeaveSettings';
-
-
 import RecruitmentEntry from './components/pages/Recruitment/RecruitmentEntry.jsx';
 
 const routes = createBrowserRouter(
@@ -52,31 +45,29 @@ const routes = createBrowserRouter(
       {/* The root route is the Landing Page */}
       <Route path="/" element={<App />}>
         <Route index element={<LandingPage />} /> {/* Default landing page route */}
-        
+
         {/* Auth routes */}
         <Route path="login" element={<Login />} />
 
         <Route path="register" element={<Register />} />
 
         {/* AdminDashboard routes */}
-        <Route path="admin" element={<AdminDashboard/>} />
+        <Route path="admin" element={<AdminDashboard />} />
 
-              {/* ManagerDashboard Routes */}
+        {/* ManagerDashboard Routes */}
 
-          <Route path="manager" element={<ManagerDashboard/>} />
-        
+        <Route path="manager" element={<ManagerDashboard />} />
 
-         
-{/* EmployeeDashboard Routes */}
+        {/* EmployeeDashboard Routes */}
 
-          <Route path="employee" element={<EmployeeDashboard/>} /> 
-      
+        <Route path="employee" element={<EmployeeDashboard />} />
+
         {/* Performance Routes */}
         <Route path="performance" element={<PerformanceEntry />} />
-        
+
         {/* Recruitment Routes */}
         <Route path="recruitment" element={<RecruitmentEntry />} />
-        
+
         {/* Leave Management Routes */}
         <Route path="leave-management" element={<LeaveManagementEntry />} />
         <Route path="dashboard" element={<LeaveDashboard />} />
