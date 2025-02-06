@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import LeaveDashboard from './LeaveDashboard';
-import ApplyLeave from './ApplyLeave';
+//import ApplyLeave from './ApplyLeave';
 import LeaveRequests from './LeaveRequests';
 import LeaveHistory from './LeaveHistory';
-import LeaveApproval from './LeaveApproval';
+//import LeaveApproval from './LeaveApproval';
 import LeaveBalance from './LeaveBalance';
 import LeaveTypeManagement from './LeaveTypeManagement';
 import LeaveSettings from './LeaveSettings';
