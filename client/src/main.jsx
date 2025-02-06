@@ -23,6 +23,8 @@ import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboa
 // Import all  employee dashboard components
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
 import ApplyLeave from './components/pages/EmployeeDashboard/ApplyLeave.jsx';
+import  EmployeeProfile  from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
+import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
 
 // import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import LeaveApproval from './components/pages/EmployeeDashboard/LeaveApproval.jsx';
@@ -61,6 +63,9 @@ const routes = createBrowserRouter(
         {/* EmployeeDashboard Routes */}
 
         <Route path="employee" element={<EmployeeDashboard />} />
+        <Route path="employee-profile" element={<EmployeeProfile />} />
+       <Route pathe="personal-details" elements={<PersonalDetails />} />
+       
 
         {/* Performance Routes */}
         <Route path="performance" element={<PerformanceEntry />} />
