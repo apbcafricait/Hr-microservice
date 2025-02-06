@@ -37,10 +37,10 @@ const Login = () => {
         navigate('/admin');
         break;
       case 'manager':
-        navigate('/manager/dashboard');
+        navigate('/manager');
         break;
       case 'employee':
-        navigate('/employee/dashboard/orgid');
+        navigate('/employee');
         break;
       default:
        null // Default to admin as specified

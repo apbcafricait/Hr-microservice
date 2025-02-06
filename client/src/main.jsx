@@ -13,6 +13,25 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import PerformanceEntry from './components/pages/Performance/performanceEntry';
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
+
+
+
+// Import all Manager dashboard components
+
+import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
+import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
+import EmployeeList from './components/pages/ManagerDashboard/EmployeeList.jsx';
+
+
+
+
+// Import all  employee dashboard components
+
+import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
+import ApplyLeave from './components/pages/EmployeeDashboard/ApplyLeave.jsx';
+import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
+import LeaveApproval from './components/pages/EmployeeDashboard/LeaveApproval.jsx';
+
 // Import all leave management components
 import LeaveManagementEntry from './components/pages/LeaveManagement/LeaveManagementEntry';
 import LeaveDashboard from './components/pages/LeaveManagement/LeaveDashboard';
@@ -41,6 +60,17 @@ const routes = createBrowserRouter(
 
         {/* AdminDashboard routes */}
         <Route path="admin" element={<AdminDashboard/>} />
+
+              {/* ManagerDashboard Routes */}
+
+          <Route path="manager" element={<ManagerDashboard/>} />
+        
+
+         
+{/* EmployeeDashboard Routes */}
+
+          <Route path="employee" element={<EmployeeDashboard/>} /> 
+      
         {/* Performance Routes */}
         <Route path="performance" element={<PerformanceEntry />} />
         
