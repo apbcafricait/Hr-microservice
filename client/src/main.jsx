@@ -8,7 +8,8 @@ import store from './store.js';
 import { ToastContainer } from 'react-toastify';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import PerformanceEntry from './components/pages/Performance/PerformanceEntry';
+
+import PerformanceEntry from './components/pages/Performance/performanceEntry.jsx'
 import LeaveManagementEntry from './components/pages/LeaveManagement/LeaveManagementEntry';
 // Import all recruitment components
 import RecruitmentEntry from './components/pages/Recruitment/RecruitmentEntry.jsx'
