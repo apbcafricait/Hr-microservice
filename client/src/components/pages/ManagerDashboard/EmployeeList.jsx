@@ -6,3 +6,13 @@
 
 // Integrate the API to fetch the list of employees (GET /api/employees).
 // Add functionality to add new employees (POST /api/employees).
+
+import React from 'react'
+
+const EmployeeList = () => {
+  return (
+    <div>EmployeeList</div>
+  )
+}
+
+export default EmployeeList

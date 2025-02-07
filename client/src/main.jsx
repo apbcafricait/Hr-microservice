@@ -11,9 +11,15 @@ import App from './App.jsx';
 import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import PerformanceEntry from './components/pages/Performance/performanceEntry';
-import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
 
+import PerformanceEntry from './components/pages/Performance/performanceEntry.jsx'
+
+import PerformanceEntry from './components/pages/Performance/performanceEntry';
+
+//import admin dashboard components
+import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
+import CreateOrganization from './components/pages/AdminDashboard/CreateOrganization.jsx';
+import ViewOrganization from './components/pages/AdminDashboard/ViewOrganizations.jsx';
 // Import all Manager dashboard components
 import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
 // import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
@@ -23,6 +29,8 @@ import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboa
 // Import all  employee dashboard components
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
 import ApplyLeave from './components/pages/EmployeeDashboard/ApplyLeave.jsx';
+import  EmployeeProfile  from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
+import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
 
 // import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import LeaveApproval from './components/pages/EmployeeDashboard/LeaveApproval.jsx';
@@ -53,6 +61,9 @@ const routes = createBrowserRouter(
 
         {/* AdminDashboard routes */}
         <Route path="admin" element={<AdminDashboard />} />
+        <Route path="/admin/create-organization" element={<CreateOrganization />} />
+        <Route path="/admin/view-organization" element={<ViewOrganization />} />
+
 
         {/* ManagerDashboard Routes */}
 
@@ -61,6 +72,9 @@ const routes = createBrowserRouter(
         {/* EmployeeDashboard Routes */}
 
         <Route path="employee" element={<EmployeeDashboard />} />
+        <Route path="employee-profile" element={<EmployeeProfile />} />
+       <Route pathe="personal-details" elements={<PersonalDetails />} />
+       
 
         {/* Performance Routes */}
         <Route path="performance" element={<PerformanceEntry />} />
