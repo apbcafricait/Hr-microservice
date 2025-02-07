@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu } from '@headlessui/react';
 import { 
   Users, 
@@ -11,14 +11,24 @@ import {
   HelpCircle, 
   Lock,
   Sun,
-  Moon
+  Moon,
+  ChevronDown,
+  Plus,
+  Building,
+  Users2,
+  Network,
+  ListTodo,
+  FileText,
+  BarChart2,
+  UserPlus,
+  Shield
 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [theme, setTheme] = useState('light');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeCard, setActiveCard] = useState(null);
 
-  // Handle scroll effect for navbar
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -27,42 +37,83 @@ const AdminDashboard = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Theme toggle handler
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
-  // Card animation variants
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
 
+  const dropdownVariants = {
+    hidden: { opacity: 0, height: 0 },
+    visible: { opacity: 1, height: 'auto' }
+  };
+
+  const cards = [
+    { 
+      icon: Users, 
+      title: 'User Management',
+      description: 'Manage system users and their permissions',
+      color: 'indigo',
+      subItems: [
+        { icon: Users2, title: 'View Users', path: '/users' },
+        { icon: UserPlus, title: 'Add User', path: '/users/add' },
+        { icon: Shield, title: 'User Roles', path: '/users/roles' }
+      ]
+    },
+    {
+      icon: Briefcase,
+      title: 'Jobs',
+      description: 'Handle job postings and applications',
+      color: 'emerald',
+      subItems: [
+        { icon: ListTodo, title: 'Job Listings', path: '/jobs' },
+        { icon: FileText, title: 'Applications', path: '/applications' },
+        { icon: BarChart2, title: 'Statistics', path: '/job-stats' }
+      ]
+    },
+    {
+      icon: Building2,
+      title: 'Organization',
+      description: 'Manage organizational structure and details',
+      color: 'violet',
+      subItems: [
+        { icon: Plus, title: 'Create Organization', path: '/organization/create', highlight: true },
+        { icon: Building, title: 'View Organizations', path: '/organizations' },
+        { icon: Network, title: 'Departments', path: '/departments' },
+        { icon: Users, title: 'Employees', path: '/employees' }
+      ]
+    }
+  ];
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       theme === 'light' ? 'bg-gray-50' : 'bg-gray-900'
     }`}>
-      {/* Navbar */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg' 
-          : 'bg-transparent'
+          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-lg' 
+          : 'bg-white dark:bg-gray-900'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                <span className="text-white font-bold">A</span>
+              </div>
               <h1 className={`text-xl font-bold ${
                 theme === 'light' ? 'text-gray-800' : 'text-white'
               }`}>
-                Admin Dashboard
+                Admin Portal
               </h1>
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 {theme === 'light' ? (
                   <Moon className="w-5 h-5 text-gray-600" />
@@ -71,20 +122,23 @@ const AdminDashboard = () => {
                 )}
               </button>
 
-              {/* Profile Menu */}
               <Menu as="div" className="relative">
-                <Menu.Button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <Menu.Button className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                   <UserCircle className={`w-6 h-6 ${
                     theme === 'light' ? 'text-gray-600' : 'text-gray-300'
                   }`} />
+                  <span className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>
+                    Admin
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
                 </Menu.Button>
-                <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <Menu.Items className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <div className="py-1">
                     {[
-                      { icon: Settings, text: 'Settings' },
-                      { icon: HelpCircle, text: 'Support' },
-                      { icon: Lock, text: 'Change Password' },
-                      { icon: LogOut, text: 'Logout' }
+                      { icon: Settings, text: 'Settings', desc: 'Manage your preferences' },
+                      { icon: HelpCircle, text: 'Support', desc: 'Get help' },
+                      { icon: Lock, text: 'Security', desc: 'Update password' },
+                      { icon: LogOut, text: 'Logout', desc: 'Sign out of account' }
                     ].map((item, index) => (
                       <Menu.Item key={index}>
                         {({ active }) => (
@@ -92,14 +146,23 @@ const AdminDashboard = () => {
                             href="#"
                             className={`${
                               active 
-                                ? 'bg-gray-100 dark:bg-gray-700' 
+                                ? 'bg-gray-50 dark:bg-gray-700' 
                                 : ''
-                            } flex items-center px-4 py-2 text-sm ${
-                              theme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                            }`}
+                            } flex items-center px-4 py-3 transition-colors`}
                           >
-                            <item.icon className="w-4 h-4 mr-3" />
-                            {item.text}
+                            <item.icon className={`w-5 h-5 mr-3 ${
+                              theme === 'light' ? 'text-gray-600' : 'text-gray-400'
+                            }`} />
+                            <div>
+                              <div className={`text-sm font-medium ${
+                                theme === 'light' ? 'text-gray-700' : 'text-gray-200'
+                              }`}>
+                                {item.text}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {item.desc}
+                              </div>
+                            </div>
                           </a>
                         )}
                       </Menu.Item>
@@ -112,76 +175,74 @@ const AdminDashboard = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { 
-              icon: Users, 
-              title: 'User Management',
-              description: 'Manage system users and their permissions',
-              items: ['View Users', 'Add User', 'User Roles']
-            },
-            {
-              icon: Briefcase,
-              title: 'Jobs',
-              description: 'Handle job postings and applications',
-              items: ['Job Listings', 'Applications', 'Statistics']
-            },
-            {
-              icon: Building2,
-              title: 'Organization',
-              description: 'Manage organizational structure and details',
-              items: ['Company Info', 'Departments', 'Employees']
-            }
-          ].map((card, index) => (
+          {cards.map((card, index) => (
             <motion.div
               key={index}
               variants={cardVariants}
               initial="hidden"
               animate="visible"
               transition={{ delay: index * 0.1 }}
-              className={`rounded-xl p-6 ${
+              className={`rounded-xl ${
                 theme === 'light'
                   ? 'bg-white shadow-lg hover:shadow-xl'
                   : 'bg-gray-800 shadow-gray-700/30 hover:shadow-gray-700/40'
               } transition-all duration-300`}
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className={`p-3 rounded-lg ${
-                  theme === 'light'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'bg-blue-900/30 text-blue-400'
-                }`}>
-                  <card.icon className="w-6 h-6" />
+              <div 
+                className="p-6 cursor-pointer"
+                onClick={() => setActiveCard(activeCard === index ? null : index)}
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`p-3 rounded-lg bg-${card.color}-100 dark:bg-${card.color}-900/30 text-${card.color}-600 dark:text-${card.color}-400`}>
+                    <card.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className={`text-lg font-semibold ${
+                    theme === 'light' ? 'text-gray-800' : 'text-white'
+                  }`}>
+                    {card.title}
+                  </h3>
+                  <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${
+                    activeCard === index ? 'rotate-180' : ''
+                  }`} />
                 </div>
-                <h3 className={`text-lg font-semibold ${
-                  theme === 'light' ? 'text-gray-800' : 'text-white'
+                
+                <p className={`text-sm ${
+                  theme === 'light' ? 'text-gray-600' : 'text-gray-400'
                 }`}>
-                  {card.title}
-                </h3>
+                  {card.description}
+                </p>
               </div>
-              
-              <p className={`text-sm mb-4 ${
-                theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-              }`}>
-                {card.description}
-              </p>
 
-              <div className="space-y-2">
-                {card.items.map((item, itemIndex) => (
-                  <button
-                    key={itemIndex}
-                    className={`w-full text-left px-4 py-2 rounded-lg text-sm ${
-                      theme === 'light'
-                        ? 'hover:bg-gray-50 text-gray-700'
-                        : 'hover:bg-gray-700 text-gray-300'
-                    } transition-colors`}
+              <AnimatePresence>
+                {activeCard === index && (
+                  <motion.div
+                    variants={dropdownVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="px-6 pb-6 space-y-2"
                   >
-                    {item}
-                  </button>
-                ))}
-              </div>
+                    {card.subItems.map((item, itemIndex) => (
+                      <a
+                        key={itemIndex}
+                        href={item.path}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm ${
+                          item.highlight 
+                            ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                            : theme === 'light'
+                              ? 'hover:bg-gray-50 text-gray-700'
+                              : 'hover:bg-gray-700 text-gray-300'
+                        } transition-colors`}
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span className="font-medium">{item.title}</span>
+                      </a>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </div>
