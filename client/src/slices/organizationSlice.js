@@ -4,33 +4,47 @@ export const organizationSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createOrganization: builder.mutation({
       query: (data) => ({
-        url: '/api/organisations', // Make sure this matches your backend endpoint
+        url: '/api/organisations',
         method: 'POST',
-        body: {
-          name: data.name,
-          subdomain: data.subdomain,
-          mpesaPhone: data.mpesaPhone,
-          managerEmail: data.managerEmail
-        },
+        body: data,
         headers: {
           'Content-Type': 'application/json',
         },
       }),
-      transformResponse: (response) => {
-        return response.data;
-      },
-      transformErrorResponse: (response) => {
-        return response.data;
-      },
+      transformResponse: (response) => response.data,
+      transformErrorResponse: (response) => response.data,
     }),
     getOrganizations: builder.query({
       query: () => '/api/organisations',
+      // Corrected transformResponse: Access the 'organisations' array
+      transformResponse: (response) => response.data.organisations,
+    }),
+    updateOrganization: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/api/organisations/${id}`,
+        method: 'PUT',
+        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
       transformResponse: (response) => response.data,
+      transformErrorResponse: (response) => response.data,
+    }),
+    deleteOrganization: builder.mutation({
+      query: (id) => ({
+        url: `/api/organisations/${id}`,
+        method: 'DELETE',
+      }),
+      transformResponse: (response) => response.data,
+      transformErrorResponse: (response) => response.data,
     }),
   }),
 });
 
-export const { 
+export const {
   useCreateOrganizationMutation,
-  useGetOrganizationsQuery 
+  useGetOrganizationsQuery,
+  useUpdateOrganizationMutation,
+  useDeleteOrganizationMutation,
 } = organizationSlice;
