@@ -80,7 +80,7 @@ const AdminDashboard = () => {
       description: 'Manage organizational structure and details',
       color: 'violet',
       subItems: [
-        { icon: Plus, title: 'Create Organization', path: '/organization/create', highlight: true },
+        { icon: Plus, title: 'Create Organization', path: 'admin/create-organization', highlight: true },
         { icon: Building, title: 'View Organizations', path: '/organizations' },
         { icon: Network, title: 'Departments', path: '/departments' },
         { icon: Users, title: 'Employees', path: '/employees' }
