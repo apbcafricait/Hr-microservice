@@ -23,34 +23,41 @@ const authenticated = (req, res, next) => {
 
 };
 
-const admin = async (req, res, next) => {
- const decoded = jwt.verify(req.cookies.authToken, process.env.JWT_SECRET);
- const userId = decoded.id;
+const admin = async (req, res) => {
+  try {
+    const userId = req.user.id
 
     const user = await prisma.users.findUnique({
-        where: { id: userId }
-    });
-
-    const isAdmin = user.role === "admin";
-    if (!isAdmin) {
-        return res.status(401).json({ message: "Not authorized as Admin" });
-    }
-    next();
-};
-
-const manager = async (req, res, next) => {
-    const decoded = jwt.verify(req.cookies.authToken, process.env.JWT_SECRET);
-    const userId = decoded.id
-
-    const user = await prisma.users.findUnique({
-        where:{id: userId}
+      where: { id: userId }
     })
 
-    const isManager = user.role === "manager";
-
-    if(!isManager){
-        return res.status(401).json({message: "Not authorized as Manager"})
+    const isAdmin = user.role === 'admin'
+    if (!isAdmin) {
+      return res.status(401).json({ message: 'Not authorized as Admin' })
     }
-    next();
+    
+  } catch (error) {
+    console.error('Error verifying user role:', error)
+  }
 }
+
+const manager = async (req, res) => {
+  try {
+    const userId = req.user.id
+
+    const user = await prisma.users.findUnique({
+      where: { id: userId }
+    })
+
+    const isManager = user.role === 'manager'
+    if (!isManager) {
+      return res.status(401).json({ message: 'Not authorized as Manager' })
+    }
+    
+  } catch (error) {
+    console.error('Error verifying user role:', error)
+    
+  }
+}
+
 export { authenticated, admin, manager };
