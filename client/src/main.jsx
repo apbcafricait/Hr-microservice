@@ -12,7 +12,10 @@ import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import PerformanceEntry from './components/pages/Performance/performanceEntry';
+
+//import admin dashboard components
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
+import CreateOrganization from './components/pages/AdminDashboard/CreateOrganization.jsx';
 
 // Import all Manager dashboard components
 import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
@@ -55,6 +58,7 @@ const routes = createBrowserRouter(
 
         {/* AdminDashboard routes */}
         <Route path="admin" element={<AdminDashboard />} />
+        <Route path="/admin/create-organization" element={<CreateOrganization />} />
 
         {/* ManagerDashboard Routes */}
 
