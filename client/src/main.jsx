@@ -11,7 +11,10 @@ import App from './App.jsx';
 import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import PerformanceEntry from './components/pages/Performance/performanceEntry';
+
+import PerformanceEntry from './components/pages/Performance/performanceEntry.jsx'
+
+
 
 //import admin dashboard components
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
