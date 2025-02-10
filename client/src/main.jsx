@@ -14,7 +14,7 @@ import Register from './components/auth/Register';
 
 import PerformanceEntry from './components/pages/Performance/performanceEntry.jsx'
 
-import PerformanceEntry from './components/pages/Performance/performanceEntry';
+
 
 //import admin dashboard components
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
