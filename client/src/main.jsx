@@ -20,6 +20,7 @@ import PerformanceEntry from './components/pages/Performance/performanceEntry.js
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
 import CreateOrganization from './components/pages/AdminDashboard/CreateOrganization.jsx';
 import ViewOrganization from './components/pages/AdminDashboard/ViewOrganizations.jsx';
+// import User from './components/pages/AdminDashboard/User.jsx';
 // Import all Manager dashboard components
 import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
 // import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
@@ -63,6 +64,7 @@ const routes = createBrowserRouter(
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="/admin/create-organization" element={<CreateOrganization />} />
         <Route path="/admin/view-organization" element={<ViewOrganization />} />
+        {/* <Route path="/admin/users" element={<User />} /> */}
 
 
         {/* ManagerDashboard Routes */}
