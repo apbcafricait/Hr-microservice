@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 
 const Input = ({ label, type, name, value, onChange, required }) => (
   <div className="mb-4">
-    <label htmlFor={name} className="block mb-1 font-bold">{label}</label>
+    <label htmlFor={name} className="block mb-1 font-bold">
+      {label}
+    </label>
     <input
       id={name}
       type={type}
@@ -25,9 +27,11 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
     position: '',
     employmentDate: '',
     salary: '',
+    email: '', // Added email field
     username: '',
     password: '',
   });
+
   const [formErrors, setFormErrors] = useState({});
 
   const handleChange = (e) => {
@@ -37,18 +41,14 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
   const handleSubmit = (e) => {
     e.preventDefault();
     const errors = {};
-
     if (!/^\d+$/.test(employeeData.salary)) {
       errors.salary = 'Salary must be a number';
     }
-
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-
     addEmployee(employeeData);
-
     setEmployeeData({
       firstName: '',
       lastName: '',
@@ -57,6 +57,7 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
       position: '',
       employmentDate: '',
       salary: '',
+      email: '', // Reset email field
       username: '',
       password: '',
     });
@@ -91,7 +92,11 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
           >
             Add Employee
           </button>
-          <input type="text" placeholder="Search employees..." className="p-2 border rounded w-64" />
+          <input
+            type="text"
+            placeholder="Search employees..."
+            className="p-2 border rounded w-64"
+          />
         </header>
 
         {/* Form */}
@@ -106,16 +111,90 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
               </div>
             )}
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="First Name" type="text" name="firstName" value={employeeData.firstName} onChange={handleChange} required />
-              <Input label="Last Name" type="text" name="lastName" value={employeeData.lastName} onChange={handleChange} required />
-              <Input label="National ID" type="text" name="nationalId" value={employeeData.nationalId} onChange={handleChange} required />
-              <Input label="Date of Birth" type="date" name="dateOfBirth" value={employeeData.dateOfBirth} onChange={handleChange} required />
-              <Input label="Position" type="text" name="position" value={employeeData.position} onChange={handleChange} required />
-              <Input label="Employment Date" type="date" name="employmentDate" value={employeeData.employmentDate} onChange={handleChange} required />
-              <Input label="Salary" type="number" name="salary" value={employeeData.salary} onChange={handleChange} required />
-              <Input label="Username" type="text" name="username" value={employeeData.username} onChange={handleChange} required />
-              <Input label="Password" type="password" name="password" value={employeeData.password} onChange={handleChange} required />
-              <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded col-span-1 md:col-span-2">
+              <Input
+                label="First Name"
+                type="text"
+                name="firstName"
+                value={employeeData.firstName}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Last Name"
+                type="text"
+                name="lastName"
+                value={employeeData.lastName}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="National ID"
+                type="text"
+                name="nationalId"
+                value={employeeData.nationalId}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Date of Birth"
+                type="date"
+                name="dateOfBirth"
+                value={employeeData.dateOfBirth}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Position"
+                type="text"
+                name="position"
+                value={employeeData.position}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Employment Date"
+                type="date"
+                name="employmentDate"
+                value={employeeData.employmentDate}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Salary"
+                type="number"
+                name="salary"
+                value={employeeData.salary}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Email"
+                type="email"
+                name="email"
+                value={employeeData.email}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Username"
+                type="text"
+                name="username"
+                value={employeeData.username}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Password"
+                type="password"
+                name="password"
+                value={employeeData.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
+              >
                 Save Employee
               </button>
             </form>
@@ -129,7 +208,7 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
               <tr>
                 <th className="p-3">Name</th>
                 <th className="p-3">Position</th>
-                <th className="p-3">Contact</th>
+                <th className="p-3">Email</th>
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
@@ -145,9 +224,11 @@ const ManagerDashboard = ({ employees = [], addEmployee = () => {}, removeEmploy
                   <tr key={employee.id} className="border-b hover:bg-gray-100">
                     <td className="p-3">{`${employee.firstName} ${employee.lastName}`}</td>
                     <td className="p-3">{employee.position}</td>
-                    <td className="p-3">{employee.contact || 'N/A'}</td>
+                    <td className="p-3">{employee.email || 'N/A'}</td>
                     <td className="p-3">
-                      <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">View</button>
+                      <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+                        View
+                      </button>
                       <button
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-2"
                         onClick={() => handleRemove(employee.id)}
