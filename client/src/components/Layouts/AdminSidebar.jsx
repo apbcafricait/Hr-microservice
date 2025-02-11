@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaSearch, FaUserCog, FaUsers, FaCalendarAlt, FaClock, FaUserPlus, FaUser, FaStar, FaHome, FaBook, FaWrench, FaHandshake } from 'react-icons/fa';
-
+import LeaveDashboard from '../pages/AdminDashboard/LeaveDashboard';
 const Sidebar = () => {
   return (
     <div className="sidebar bg-white w-64 h-screen shadow-lg">
