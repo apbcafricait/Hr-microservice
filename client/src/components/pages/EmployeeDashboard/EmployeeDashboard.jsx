@@ -2,7 +2,12 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { ClockArrowUp, ClockArrowDown, RotateCwSquare } from 'lucide-react'; // Import the RotateCwSquare icon
+
 import  { useState } from 'react';
+=======
+import React, { useState } from 'react';
+import { HashLink as Link } from 'react-router-hash-link'; // Import HashLink for smooth scrolling
+
 
 const user = {
   name: 'Victor Nyandoro',
@@ -11,11 +16,11 @@ const user = {
 };
 
 const navigation = [
-  { name: 'Dashboard', href: '#', current: true },
-  { name: 'Time at work', href: '#', current: false },
-  { name: 'My Projects', href: '#', current: false },
-  { name: 'Apply leave', href: '#', current: false },
-  { name: 'Reports', href: '#', current: false },
+  { name: 'Dashboard', href: '#dashboard', current: true },
+  { name: 'Time at work', href: '#time-at-work', current: false },
+  { name: 'My Projects', href: '#my-projects', current: false },
+  { name: 'Apply leave', href: '#apply-leave', current: false },
+  { name: 'Reports', href: '#reports', current: false },
 ];
 
 const userNavigation = [
@@ -48,9 +53,9 @@ export default function Example() {
                 <div className="hidden md:block">
                   <div className="ml-10 flex items-baseline space-x-4">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.href}
+                        to={item.href}
                         aria-current={item.current ? 'page' : undefined}
                         className={classNames(
                           item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
@@ -58,7 +63,7 @@ export default function Example() {
                         )}
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -117,8 +122,8 @@ export default function Example() {
               {navigation.map((item) => (
                 <DisclosureButton
                   key={item.name}
-                  as="a"
-                  href={item.href}
+                  as={Link}
+                  to={item.href}
                   aria-current={item.current ? 'page' : undefined}
                   className={classNames(
                     item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
@@ -164,7 +169,7 @@ export default function Example() {
         </Disclosure>
 
         <header className="bg-white shadow-sm">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8" id="dashboard">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
           </div>
         </header>
@@ -173,60 +178,95 @@ export default function Example() {
             {/* Cards Section */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {/* Card 1: Time at Work */}
-              <motion.div
-                className="bg-white shadow-md rounded-lg p-4 transition-transform duration-300 hover:scale-105"
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">Time at Work</h2>
-                  <div className="flex space-x-2">
-                    <button className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600" title="Clock In">
-                      <ClockArrowUp className="h-5 w-5" />
-                    </button>
-                    <button className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600" title="Clock Out">
-                      <ClockArrowDown className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
+              <Disclosure>
+                {({ open }) => (
+                  <motion.div
+                    className={`bg-white shadow-md rounded-lg transition-transform duration-300 ${open ? 'p-6' : 'p-4'} hover:scale-105`}
+                    whileHover={{ scale: 1.05 }}
+                    id="time-at-work"
+                  >
+                    <DisclosureButton className="flex items-center justify-between w-full">
+                      <h2 className="text-lg font-semibold">Time at Work</h2>
+                      <div className="flex space-x-2">
+                        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600" title="Clock In">
+                          <ClockArrowUp className="h-5 w-5" />
+                        </button>
+                        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600" title="Clock Out">
+                          <ClockArrowDown className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </DisclosureButton>
+                    <DisclosurePanel className="mt-4">
+                      <p className="text-gray-600">Track your clock in and clock out times here.</p>
+                    </DisclosurePanel>
+                  </motion.div>
+                )}
+              </Disclosure>
 
               {/* Card 2: My Projects */}
-              <motion.div
-                className="bg-white shadow-md rounded-lg p-6 transition-transform duration-300 hover:scale-105"
-                whileHover={{ scale: 1.05 }}
-              >
-                <h2 className="text-lg font-semibold">My Projects</h2>
-                <textarea
-                  className="mt-2 w-full h-32 p-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter the projects you are working on today..."
-                  value={projects}
-                  onChange={(e) => setProjects(e.target.value)}
-                />
-              </motion.div>
+              <Disclosure>
+                {({ open }) => (
+                  <motion.div
+                    className={`bg-white shadow-md rounded-lg transition-transform duration-300 ${open ? 'p-6' : 'p-4'} hover:scale-105`}
+                    whileHover={{ scale: 1.05 }}
+                    id="my-projects"
+                  >
+                    <DisclosureButton className="flex items-center justify-between w-full">
+                      <h2 className="text-lg font-semibold">My Projects</h2>
+                    </DisclosureButton>
+                    <DisclosurePanel className="mt-4">
+                      <textarea
+                        className="w-full h-32 p-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter the projects you are working on today..."
+                        value={projects}
+                        onChange={(e) => setProjects(e.target.value)}
+                      />
+                    </DisclosurePanel>
+                  </motion.div>
+                )}
+              </Disclosure>
 
               {/* Card 3: Apply Leave */}
-              <motion.div
-                className="bg-white shadow-md rounded-lg p-6 transition-transform duration-300 hover:scale-105"
-                whileHover={{ scale: 1.05 }}
-              >
-                <h2 className="text-lg font-semibold">Apply Leave</h2>
-                <p className="mt-2 text-gray-600">Click the button below to apply for leave.</p>
-                <button
-                  className="mt-4 flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white hover:bg-blue-600 focus:outline-none"
-                  title="Apply Leave"
-                >
-                  <RotateCwSquare className="h-5 w-5" />
-                </button>
-              </motion.div>
+              <Disclosure>
+                {({ open }) => (
+                  <motion.div
+                    className={`bg-white shadow-md rounded-lg transition-transform duration-300 ${open ? 'p-6' : 'p-4'} hover:scale-105`}
+                    whileHover={{ scale: 1.05 }}
+                    id="apply-leave"
+                  >
+                    <DisclosureButton className="flex items-center justify-between w-full">
+                      <h2 className="text-lg font-semibold">Apply Leave</h2>
+                    </DisclosureButton>
+                    <DisclosurePanel className="mt-4">
+                      <p className="text-gray-600">Click the button below to apply for leave.</p>
+                      <button
+                        className="mt-2 flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white hover:bg-blue-600 focus:outline-none"
+                        title="Apply Leave"
+                      >
+                        <RotateCwSquare className="h-5 w-5" />
+                      </button>
+                    </DisclosurePanel>
+                  </motion.div>
+                )}
+              </Disclosure>
 
-              {/* Other Cards */}
-              <motion.div
-                className="bg-white shadow-md rounded-lg p-6 transition-transform duration-300 hover:scale-105"
-                whileHover={{ scale: 1.05 }}
-              >
-                <h2 className="text-lg font-semibold">Notifications</h2>
-                <p className="mt-2 text-gray-600">This card provides useful information.</p>
-              </motion.div>
+              {/* Card 4: Reports */}
+              <Disclosure>
+                {({ open }) => (
+                  <motion.div
+                    className={`bg-white shadow-md rounded-lg transition-transform duration-300 ${open ? 'p-6' : 'p-4'} hover:scale-105`}
+                    whileHover={{ scale: 1.05 }}
+                    id="reports"
+                  >
+                    <DisclosureButton className="flex items-center justify-between w-full">
+                      <h2 className="text-lg font-semibold">Reports</h2>
+                    </DisclosureButton>
+                    <DisclosurePanel className="mt-4">
+                      <p className="text-gray-600">This card provides useful information.</p>
+                    </DisclosurePanel>
+                  </motion.div>
+                )}
+              </Disclosure>
             </div>
           </div>
         </main>

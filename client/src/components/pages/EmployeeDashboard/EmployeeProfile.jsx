@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Footer from "../../Layouts/Footer";
 import Header from "../../Layouts/Header";
@@ -5,6 +6,14 @@ import ContactDetails from "./ContactDetails";
 import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
+
+import React, { useState } from 'react';
+import Footer from '../../Layouts/Footer';
+import Header from '../../Layouts/Header';
+import Sidebar from '../../Layouts/AdminSidebar';
+import ContactDetails from './ContactDetails';
+import PersonalDetails from './PersonalDetails';
+//import EmergencyContacts from './EmergencyContacts';
 
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
