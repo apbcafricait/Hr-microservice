@@ -5,7 +5,6 @@ import ContactDetails from "./ContactDetails";
 import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
-// import EmergencyContacts from "./EmergencyContacts";
 
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
@@ -30,17 +29,13 @@ const EmployeeProfile = () => {
               alt="User"
               className="rounded-full mx-auto"
             />
-            <h2 className="text-lg font-semibold mt-2">Rambhupal user</h2>
+            <h2 className="text-lg font-semibold mt-2">Vincensher</h2>
           </div>
           <ul className="space-y-2">
             {[
               "Personal Details",
               "Contact Details",
-              "Emergency Contacts",
               "Dependents",
-              "Immigration",
-              "Job",
-              "Salary",
               "Report-to",
               "Qualifications",
               "Memberships",
@@ -60,10 +55,12 @@ const EmployeeProfile = () => {
 
         {/* Main Content */}
         <div className="flex-1 bg-gray-50 p-6 rounded-md shadow-md">
+          {/* Conditional Rendering for Active Tab */}
           {activeTab === "Contact Details" && <ContactDetails />}
-          {activeTab === "Personal Details" && <PersonalDetails />} {/* This should render PersonalDetails */}
-           {activeTab === "Qualifications" && <Qualifications />} 
-          {activeTab === "ReportTo" && <ReportTo />} 
+          {activeTab === "Personal Details" && <PersonalDetails />}
+          {activeTab === "Qualifications" && <Qualifications />}
+          {activeTab === "Report-to" && <ReportTo />}
+          {/* Add more components for other tabs if needed */}
         </div>
       </div>
       <Footer />

@@ -1,30 +1,28 @@
-import  { useState } from "react";
+// src/components/pages/EmployeeDashboard/ReportTo.jsx
+import { useSelector, useDispatch } from "react-redux";
+import { addSupervisor, addSubordinate, addAttachment, removeAttachment } from "../../../slices/ReportSlice";
 
 const ReportTo = () => {
-  const [supervisors, setSupervisors] = useState([]);
-  const [subordinates, setSubordinates] = useState([]);
-  const [attachments, setAttachments] = useState([]);
+  const dispatch = useDispatch();
+  const { supervisors, subordinates, attachments } = useSelector((state) => state.reportTo);
 
-  // Simulate adding a supervisor
-  const addSupervisor = () => {
+  const handleAddSupervisor = () => {
     const newSupervisor = {
       name: "John Doe",
       reportingMethod: "Direct",
     };
-    setSupervisors([...supervisors, newSupervisor]);
+    dispatch(addSupervisor(newSupervisor));
   };
 
-  // Simulate adding a subordinate
-  const addSubordinate = () => {
+  const handleAddSubordinate = () => {
     const newSubordinate = {
       name: "Jane Smith",
       reportingMethod: "Indirect",
     };
-    setSubordinates([...subordinates, newSubordinate]);
+    dispatch(addSubordinate(newSubordinate));
   };
 
-  // Simulate adding an attachment
-  const addAttachment = () => {
+  const handleAddAttachment = () => {
     const newAttachment = {
       fileName: "example.pdf",
       description: "Example Attachment",
@@ -33,12 +31,15 @@ const ReportTo = () => {
       dateAdded: "2025-02-10",
       addedBy: "Admin",
     };
-    setAttachments([...attachments, newAttachment]);
+    dispatch(addAttachment(newAttachment));
+  };
+
+  const handleRemoveAttachment = (fileName) => {
+    dispatch(removeAttachment({ fileName }));
   };
 
   return (
     <div className="p-6">
-      {/* Report To Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4">Report To</h2>
         <div className="border border-gray-300 p-4 rounded">
@@ -66,7 +67,7 @@ const ReportTo = () => {
               </table>
             )}
             <button
-              onClick={addSupervisor}
+              onClick={handleAddSupervisor}
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Add Supervisor
@@ -97,7 +98,7 @@ const ReportTo = () => {
               </table>
             )}
             <button
-              onClick={addSubordinate}
+              onClick={handleAddSubordinate}
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Add Subordinate
@@ -130,13 +131,21 @@ const ReportTo = () => {
                       <td className="p-2">{attachment.type}</td>
                       <td className="p-2">{attachment.dateAdded}</td>
                       <td className="p-2">{attachment.addedBy}</td>
+                      <td>
+                        <button
+                          onClick={() => handleRemoveAttachment(attachment.fileName)}
+                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Remove
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
             <button
-              onClick={addAttachment}
+              onClick={handleAddAttachment}
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Add Attachment

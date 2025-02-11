@@ -2,7 +2,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { ClockArrowUp, ClockArrowDown, RotateCwSquare } from 'lucide-react'; // Import the RotateCwSquare icon
-import React, { useState } from 'react';
+import  { useState } from 'react';
 
 const user = {
   name: 'Victor Nyandoro',
