@@ -1,16 +1,16 @@
-// UserApiSlice.js
-
-import { apiSlice } from './apiSlice'; // Assuming you have a base apiSlice defined elsewhere
+import { apiSlice } from './apiSlice';
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Authentication endpoints
     registerUser: builder.mutation({
       query: (credentials) => ({
-        url: '/api/users',
+        url: '/api/users/register',
         method: 'POST',
         body: credentials,
       }),
     }),
+
     loginUser: builder.mutation({
       query: (credentials) => ({
         url: '/api/users/login',
@@ -18,15 +18,77 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: credentials,
       }),
     }),
-    // If you need other operations like fetching all users, add them here
-    getAllUsers: builder.query({
-      query: () => ({
+
+    // User management endpoints
+    getUsers: builder.query({
+      query: (params) => ({
         url: '/api/users',
         method: 'GET',
+        params: params, // Include search, filters, pagination params
       }),
+      providesTags: ['Users'],
+    }),
+
+    getUserById: builder.query({
+      query: (id) => ({
+        url: `/api/users/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Users', id }],
+    }),
+
+    createUser: builder.mutation({
+      query: (userData) => ({
+        url: '/api/users',
+        method: 'POST',
+        body: userData,
+      }),
+      invalidatesTags: ['Users'],
+    }),
+
+    updateUser: builder.mutation({
+      query: ({ id, ...userData }) => ({
+        url: `/api/users/${id}`,
+        method: 'PUT',
+        body: userData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Users', id },
+        'Users',
+      ],
+    }),
+
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `/api/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Users'],
+    }),
+
+    updateUserStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/api/users/${id}/status`,
+        method: 'PATCH',
+        body: { status },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Users', id },
+        'Users',
+      ],
     }),
   }),
 });
 
-// Export hooks for usage in functional components
-export const { useRegisterUserMutation, useLoginUserMutation, useGetAllUsersQuery } = userApiSlice;
+export const {
+  // Auth hooks
+  useRegisterUserMutation,
+  useLoginUserMutation,
+  // User management hooks
+  useGetUsersQuery,
+  useGetUserByIdQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useUpdateUserStatusMutation,
+} = userApiSlice;

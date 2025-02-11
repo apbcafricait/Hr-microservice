@@ -45,6 +45,9 @@ model Employee {
   LeaveBalance LeaveBalance[]
   LeaveRequest LeaveRequest[]
   EmployeeContact EmployeeContact[]
+  departmentId    Int?         @map("department_id")
+    department      Department?  @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+    managedDepartment Department? @relation("DepartmentManager")
 }
 
 
@@ -63,6 +66,7 @@ model Organisation {
 
   @@map("organisations")
   Suggestion Suggestion[]
+  Department Department[]
 }
 
 
@@ -148,4 +152,20 @@ model Suggestion {
   organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@map("suggestions")
+}
+model Department {
+    id              Int          @id @default(autoincrement())
+    organisationId  Int          @map("organisation_id")
+    name            String       @db.VarChar(100)
+    description     String?      @db.Text
+    managerId       Int?         @map("manager_id") @unique
+    createdAt       DateTime     @default(now()) @map("created_at")
+    updatedAt       DateTime     @updatedAt @map("updated_at")
+
+    organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+    manager         Employee?    @relation("DepartmentManager", fields: [managerId], references: [id])
+    employees       Employee[]   @relation("DepartmentEmployees")
+
+    @@unique([organisationId, name])
+    @@map("departments")
 }

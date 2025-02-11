@@ -1,204 +1,112 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 
 const ContactDetails = () => {
-  const [isEditing, setIsEditing] = useState(false);
   const [contact, setContact] = useState({
-    street1: "",
-    street2: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "",
-    homePhone: "",
-    mobilePhone: "",
-    workPhone: "",
-    workEmail: "",
-    otherEmail: "",
+    phone: "",
+    email: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState("Contact Details");
 
-  const [attachments, setAttachments] = useState([]);
+  // Fetch data when the component mounts
+  useEffect(() => {
+    // Fetch contact details from the backend API
+    const fetchContactDetails = async () => {
+      try {
+        const response = await fetch("/api/employee/contactDetails/3"); // Assuming employeeId is 3
+        const data = await response.json();
+        setContact(data);
+      } catch (err) {
+        console.error("Error fetching contact details:", err);
+      }
+    };
+
+    fetchContactDetails();
+  }, []);
 
   const handleChange = (e) => {
     setContact({ ...contact, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    console.log("Saved Contact Details:", contact);
-    setIsEditing(false);
-  };
-
-  const handleFileUpload = (event) => {
-    const files = Array.from(event.target.files);
-    setAttachments((prev) => [...prev, ...files]);
-  };
+  const toggleEdit = () => setIsEditing(!isEditing);
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-100 p-6 min-h-screen mt-20">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
-      <div className="w-full md:w-1/4 bg-white p-6 rounded-md shadow-md">
-        <div className="text-center mb-6">
-          <div className="h-24 w-24 mx-auto bg-gray-300 rounded-full" />
-          <p className="mt-4 font-semibold text-gray-700">Abi Habeeb</p>
-        </div>
-        <ul className="space-y-4 text-gray-600">
-          <li>Personal Details</li>
-          <li className="font-bold text-blue-600">Contact Details</li>
-          <li>Emergency Contacts</li>
-          <li>Dependents</li>
-          <li>Job</li>
-          <li>Salary</li>
-          <li>Qualifications</li>
-          <li>Memberships</li>
-        </ul>
-      </div>
-
       {/* Main Content */}
-      <div className="w-full md:w-3/4 bg-white p-6 rounded-md shadow-md ml-0 md:ml-6">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Contact Details</h2>
+      <div className="flex-1 bg-gray-100 p-6 flex justify-center items-center">
+        {activeTab === "Contact Details" && (
+          <div className="bg-white p-6 rounded-md shadow-md w-full max-w-3xl">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Contact Details</h2>
 
-        {/* Address Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {[
-            { label: "Street 1", name: "street1" },
-            { label: "Street 2", name: "street2" },
-            { label: "City", name: "city" },
-            { label: "State/Province", name: "state" },
-            { label: "Zip/Postal Code", name: "zip" },
-          ].map(({ label, name }) => (
-            <div key={name}>
+            {/* Emergency Contact Section */}
+            <div className="mb-4">
+              <div>
+                <input
+                  type="text"
+                  name="emergencyContactName"
+                  value={contact.emergencyContactName || ""}
+                  onChange={handleChange}
+                  placeholder="Emergency Contact Name"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  name="emergencyContactPhone"
+                  value={contact.emergencyContactPhone || ""}
+                  onChange={handleChange}
+                  placeholder="Emergency Contact Phone"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+
+            {/* Phone Numbers Section */}
+            <h3 className="text-lg font-semibold mb-2 text-gray-700">Phone Number</h3>
+            <div className="mb-4">
               <input
                 type="text"
-                name={name}
-                value={contact[name]}
+                name="phone"
+                value={contact.phone || ""}
                 onChange={handleChange}
-                placeholder={label}
-                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  isEditing ? "bg-white border-blue-400 focus:ring-blue-400" : "bg-gray-100 border-gray-300"
-                }`}
+                placeholder="Phone Number"
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                 disabled={!isEditing}
               />
             </div>
-          ))}
 
-          {/* Country Dropdown */}
-          <div>
-            <select
-              name="country"
-              value={contact.country}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
-                isEditing ? "bg-white border-blue-400 focus:ring-blue-400" : "bg-gray-100 border-gray-300"
-              }`}
-              disabled={!isEditing}
-            >
-              <option value="">-- Select Country --</option>
-              <option value="USA">USA</option>
-              <option value="Canada">Canada</option>
-              <option value="Kenya">Kenya</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Telephone Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {[
-            { label: "Home Phone", name: "homePhone" },
-            { label: "Mobile Phone", name: "mobilePhone" },
-            { label: "Work Phone", name: "workPhone" },
-          ].map(({ label, name }) => (
-            <div key={name}>
-              <input
-                type="text"
-                name={name}
-                value={contact[name]}
-                onChange={handleChange}
-                placeholder={label}
-                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  isEditing ? "bg-white border-blue-400 focus:ring-blue-400" : "bg-gray-100 border-gray-300"
-                }`}
-                disabled={!isEditing}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Email Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {[
-            { label: "Work Email", name: "workEmail" },
-            { label: "Other Email", name: "otherEmail" },
-          ].map(({ label, name }) => (
-            <div key={name}>
+            {/* Email Section */}
+            <h3 className="text-lg font-semibold mb-2 text-gray-700">Email</h3>
+            <div className="mb-4">
               <input
                 type="email"
-                name={name}
-                value={contact[name]}
+                name="email"
+                value={contact.email || ""}
                 onChange={handleChange}
-                placeholder={label}
-                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  isEditing ? "bg-white border-blue-400 focus:ring-blue-400" : "bg-gray-100 border-gray-300"
-                }`}
+                placeholder="Email Address"
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                 disabled={!isEditing}
+                required
               />
             </div>
-          ))}
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          {isEditing ? (
-            <button
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
-              onClick={handleSave}
-            >
-              Save
-            </button>
-          ) : (
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-              onClick={() => setIsEditing(true)}
-            >
-              Edit
-            </button>
-          )}
-        </div>
-
-        {/* Attachments Section */}
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Attachments</h3>
-          
-          {/* File Upload Input (Hidden) */}
-          <input
-            type="file"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-            id="file-upload"
-          />
-          
-          {/* Display Attachments */}
-          <div className="border border-gray-300 rounded-md p-4">
-            {attachments.length === 0 ? (
-              <p className="text-center text-gray-500">No Records Found</p>
-            ) : (
-              <ul className="list-disc pl-5">
-                {attachments.map((file, index) => (
-                  <li key={index} className="text-gray-700">
-                    {file.name}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {/* Buttons */}
+            <div className="flex justify-end space-x-4">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+                onClick={toggleEdit}
+              >
+                {isEditing ? "Save" : "Edit"}
+              </button>
+            </div>
           </div>
-
-          {/* Add Button */}
-          <label
-            htmlFor="file-upload"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition cursor-pointer inline-block"
-          >
-            + Add
-          </label>
-        </div>
+        )}
       </div>
     </div>
   );
