@@ -11,7 +11,7 @@ import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
 import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
 import employeeContactsRoutes from './Routes/employeeContactsRoutes.js'
 import suggestionsRoutes from './Routes/suggestionsRoutes.js'
-
+import departmentRoutes from './Routes/departmentRoutes.js'
 const app = express()
 
 dotenv.config()
@@ -36,6 +36,9 @@ app.use('/api/leave-requests', leaveRequestRoutes)
 app.use('/api/employee-contacts', employeeContactsRoutes)
 
 app.use('/api/suggestions', suggestionsRoutes)
+
+app.use('/api/departments', departmentRoutes)
+
 
 /* 
 @params Payment routes
