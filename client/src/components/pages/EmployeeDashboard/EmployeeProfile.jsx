@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Footer from '../../Layouts/Footer';
 import Header from '../../Layouts/Header';
-import Sidebar from '../../Layouts/Sidebar';
+import Sidebar from '../../Layouts/AdminSidebar';
 import ContactDetails from './ContactDetails';
 import PersonalDetails from './PersonalDetails';
 //import EmergencyContacts from './EmergencyContacts';
