@@ -4,6 +4,7 @@ import { apiSlice } from '../../client/src/slices/apiSlice';
 import authSliceReducer from '../src/slices/AuthSlice';
 import { organizationSlice } from '../src/slices/organizationSlice';
 import reportToReducer from '..//../client/src/slices/ReportSlice';
+import qualificationsReducer from '../../client/src/slices/qualificationSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     auth: authSliceReducer,
     [organizationSlice.reducerPath]: organizationSlice.reducer,
+    qualifications: qualificationsReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

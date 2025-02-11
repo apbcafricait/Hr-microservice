@@ -1,75 +1,42 @@
-import  { useState } from 'react';
+// Qualifications.js
+
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  addWorkExperience,
+  addEducation,
+  addSkill,
+  addLanguage,
+  updateWorkExperience,
+  updateEducation,
+  updateSkill,
+  updateLanguage,
+  deleteWorkExperience,
+  deleteEducation,
+  deleteSkill,
+  deleteLanguage
+} from '../../../slices/qualificationSlice'
 
 const Qualifications = () => {
-  const [workExperiences, setWorkExperiences] = useState([
-    { company: 'TCS', title: 'TESTER', from: '2020-09-02', to: '2023-07-16', comment: 'HII HELLO' }
-  ]);
-
-  const [educations, setEducations] = useState([
-    { level: "Bachelor's Degree", year: '', gpa: '' }
-  ]);
-
-  const [skills, setSkills] = useState([]);
-  const [languages, setLanguages] = useState([]);
-
-  const addWorkExperience = () => {
-    setWorkExperiences([...workExperiences, { company: '', title: '', from: '', to: '', comment: '' }]);
-  };
-
-  const addEducation = () => {
-    setEducations([...educations, { level: '', year: '', gpa: '' }]);
-  };
-
-  const addSkill = () => {
-    setSkills([...skills, '']);
-  };
-
-  const addLanguage = () => {
-    setLanguages([...languages, '']);
-  };
+  const dispatch = useDispatch();
+  const workExperiences = useSelector(state => state.qualifications.workExperiences);
+  const educations = useSelector(state => state.qualifications.educations);
+  const skills = useSelector(state => state.qualifications.skills);
+  const languages = useSelector(state => state.qualifications.languages);
 
   const handleWorkExperienceChange = (index, field, value) => {
-    const updatedExperiences = [...workExperiences];
-    updatedExperiences[index][field] = value;
-    setWorkExperiences(updatedExperiences);
+    dispatch(updateWorkExperience({ index, field, value }));
   };
 
   const handleEducationChange = (index, field, value) => {
-    const updatedEducations = [...educations];
-    updatedEducations[index][field] = value;
-    setEducations(updatedEducations);
+    dispatch(updateEducation({ index, field, value }));
   };
 
   const handleSkillChange = (index, value) => {
-    const updatedSkills = [...skills];
-    updatedSkills[index] = value;
-    setSkills(updatedSkills);
+    dispatch(updateSkill({ index, value }));
   };
 
   const handleLanguageChange = (index, value) => {
-    const updatedLanguages = [...languages];
-    updatedLanguages[index] = value;
-    setLanguages(updatedLanguages);
-  };
-
-  const deleteWorkExperience = (index) => {
-    const updatedExperiences = workExperiences.filter((_, i) => i !== index);
-    setWorkExperiences(updatedExperiences);
-  };
-
-  const deleteEducation = (index) => {
-    const updatedEducations = educations.filter((_, i) => i !== index);
-    setEducations(updatedEducations);
-  };
-
-  const deleteSkill = (index) => {
-    const updatedSkills = skills.filter((_, i) => i !== index);
-    setSkills(updatedSkills);
-  };
-
-  const deleteLanguage = (index) => {
-    const updatedLanguages = languages.filter((_, i) => i !== index);
-    setLanguages(updatedLanguages);
+    dispatch(updateLanguage({ index, value }));
   };
 
   return (
@@ -78,7 +45,7 @@ const Qualifications = () => {
       
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-2">Work Experience</h3>
-        <button onClick={addWorkExperience} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
+        <button onClick={() => dispatch(addWorkExperience())} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead>
@@ -135,7 +102,7 @@ const Qualifications = () => {
                     />
                   </td>
                   <td className="py-2 px-4 border-b">
-                    <button onClick={() => deleteWorkExperience(index)} className="text-red-500">Delete</button>
+                    <button onClick={() => dispatch(deleteWorkExperience(index))} className="text-red-500">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -146,7 +113,7 @@ const Qualifications = () => {
 
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-2">Education</h3>
-        <button onClick={addEducation} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
+        <button onClick={() => dispatch(addEducation())} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead>
@@ -185,7 +152,7 @@ const Qualifications = () => {
                     />
                   </td>
                   <td className="py-2 px-4 border-b">
-                    <button onClick={() => deleteEducation(index)} className="text-red-500">Delete</button>
+                    <button onClick={() => dispatch(deleteEducation(index))} className="text-red-500">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -196,7 +163,7 @@ const Qualifications = () => {
 
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-2">Skills</h3>
-        <button onClick={addSkill} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
+        <button onClick={() => dispatch(addSkill())} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
         {skills.length === 0 ? (
           <p>No Records Found</p>
         ) : (
@@ -208,7 +175,7 @@ const Qualifications = () => {
                 onChange={(e) => handleSkillChange(index, e.target.value)}
                 className="w-full p-2 border rounded"
               />
-              <button onClick={() => deleteSkill(index)} className="text-red-500 ml-2">Delete</button>
+              <button onClick={() => dispatch(deleteSkill(index))} className="text-red-500 ml-2">Delete</button>
             </div>
           ))
         )}
@@ -216,7 +183,7 @@ const Qualifications = () => {
 
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-2">Languages</h3>
-        <button onClick={addLanguage} className="bg-blue-500 text-white px-4 py-2 rounded">+ Add</button>
+        <button onClick={() => dispatch(addLanguage())} className="bg-blue-500 text-white px-4 py-2 rounded">+ Add</button>
         {languages.length === 0 ? (
           <p>No Records Found</p>
         ) : (
@@ -228,7 +195,7 @@ const Qualifications = () => {
                 onChange={(e) => handleLanguageChange(index, e.target.value)}
                 className="w-full p-2 border rounded"
               />
-              <button onClick={() => deleteLanguage(index)} className="text-red-500 ml-2">Delete</button>
+              <button onClick={() => dispatch(deleteLanguage(index))} className="text-red-500 ml-2">Delete</button>
             </div>
           ))
         )}
