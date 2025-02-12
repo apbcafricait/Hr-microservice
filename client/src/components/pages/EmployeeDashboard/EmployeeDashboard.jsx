@@ -35,10 +35,21 @@ function classNames(...classes) {
 
 export default function Example() {
   const [projects, setProjects] = useState('');
-  const Clockin = useClockInMutation()
+  const [location, setLocation] = useState('')
+  const [Clockin, isLoading] = useClockInMutation()
 const { userInfo } = useSelector((state) => state.auth);
 console.log(userInfo)
 const employeeId = userInfo?.id
+const formData ={
+  employeeId,
+  location
+}
+
+const handleClockIn = async()=>{
+  const res = await Clockin(formData).unwrap()
+  console.log(res)
+
+}
 
   return (
     <>
@@ -191,8 +202,14 @@ const employeeId = userInfo?.id
                   >
                     <DisclosureButton className="flex items-center justify-between w-full">
                       <h2 className="text-lg font-semibold">Time at Work</h2>
+                      <input 
+  type="text" 
+  placeholder="Location" 
+  onChange={(e) => setLocation(e.target.value)}
+/>
+
                       <div className="flex space-x-2">
-                        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600" title="Clock In">
+                        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600" title="Clock In" onClick={handleClockIn}>
                           <ClockArrowUp className="h-5 w-5" />
                         </button>
                         <button className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600" title="Clock Out">

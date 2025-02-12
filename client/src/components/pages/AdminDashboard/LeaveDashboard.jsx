@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ApplyLeave from '../pages/AdminDashboard/ApplyLeave';
+import ApplyLeave from '../AdminDashboard/ApplyLeave';
 
 const LeaveDashboard = () => {
   const [activeTab, setActiveTab] = useState('Apply');

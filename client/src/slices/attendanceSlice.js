@@ -4,7 +4,7 @@ export const attendanceApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) =>({
         clockIn: builder.mutation({
             query: (data)=>({
-                url: '/api//time-attendance/create',
+                url: '/api/time-attendance/create',
                 method: 'POST',
                 body: data
             }),
