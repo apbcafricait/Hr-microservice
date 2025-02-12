@@ -1,4 +1,25 @@
+
+import  { useState } from 'react';
+
+const Input = ({ label, type, name, value, onChange, required }) => (
+  <div className="mb-4">
+    <label htmlFor={name} className="block mb-1 font-bold">
+      {label}
+    </label>
+    <input
+      id={name}
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="p-2 border rounded w-full"
+      required={required}
+    />
+  </div>
+);
+
 import React, { useState } from "react";
+
 import ManagerSidebar from "../../Layouts/ManagerSidebar";
 import AddEmployee from "./AddEmployee";
 import EmployeeList from "./EmployeeList";
