@@ -12,6 +12,8 @@ import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
 import employeeContactsRoutes from './Routes/employeeContactsRoutes.js'
 import suggestionsRoutes from './Routes/suggestionsRoutes.js'
 import departmentRoutes from './Routes/departmentRoutes.js'
+import payrollRoutes from './Routes/payrollRoutes.js'
+
 const app = express()
 
 dotenv.config()
@@ -38,12 +40,15 @@ app.use('/api/employee-contacts', employeeContactsRoutes)
 app.use('/api/suggestions', suggestionsRoutes)
 
 app.use('/api/departments', departmentRoutes)
+app.use('/api/payroll', payrollRoutes)
 
 
 /* 
 @params Payment routes
 */
 app.use("/api/mpesa", mpesaRoutes)
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
