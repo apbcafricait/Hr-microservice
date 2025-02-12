@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
+
 // import ApplyLeave from '../pages/AdminDashboard/ApplyLeave';
+
+import ApplyLeave from '../AdminDashboard/ApplyLeave';
+
 
 import ApplyLeave from '../../pages/AdminDashboard/ApplyLeave'
 const LeaveDashboard = () => {

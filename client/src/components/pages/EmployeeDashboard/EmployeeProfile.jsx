@@ -3,7 +3,6 @@ import ContactDetails from "./ContactDetails";
 import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
-
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
