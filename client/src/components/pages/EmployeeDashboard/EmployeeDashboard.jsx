@@ -2,15 +2,22 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { ClockArrowUp, ClockArrowDown, RotateCwSquare } from 'lucide-react'; // Import the RotateCwSquare icon
+<<<<<<< HEAD
+import React, { useState } from 'react';
+=======
 import  { useState } from 'react';
+>>>>>>> ef3225f79777507f32da2d00793167843ddb22d0
 import { HashLink as Link } from 'react-router-hash-link'; // Import HashLink for smooth scrolling
+import { useClockInMutation } from '../../../slices/attendanceSlice';
 
-
+import { useSelector } from 'react-redux';
 const user = {
   name: 'Victor Nyandoro',
   email: 'nyandorovictor3900@gmail.com',
   imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
 };
+
+
 
 const navigation = [
   { name: 'Dashboard', href: '#dashboard', current: true },
@@ -32,6 +39,21 @@ function classNames(...classes) {
 
 export default function Example() {
   const [projects, setProjects] = useState('');
+  const [location, setLocation] = useState('')
+  const [Clockin, isLoading] = useClockInMutation()
+const { userInfo } = useSelector((state) => state.auth);
+console.log(userInfo)
+const employeeId = userInfo?.id
+const formData ={
+  employeeId,
+  location
+}
+
+const handleClockIn = async()=>{
+  const res = await Clockin(formData).unwrap()
+  console.log(res)
+
+}
 
   return (
     <>
@@ -184,8 +206,14 @@ export default function Example() {
                   >
                     <DisclosureButton className="flex items-center justify-between w-full">
                       <h2 className="text-lg font-semibold">Time at Work</h2>
+                      <input 
+  type="text" 
+  placeholder="Location" 
+  onChange={(e) => setLocation(e.target.value)}
+/>
+
                       <div className="flex space-x-2">
-                        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600" title="Clock In">
+                        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600" title="Clock In" onClick={handleClockIn}>
                           <ClockArrowUp className="h-5 w-5" />
                         </button>
                         <button className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600" title="Clock Out">

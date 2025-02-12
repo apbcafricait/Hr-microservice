@@ -4,6 +4,11 @@ import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
 
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> ef3225f79777507f32da2d00793167843ddb22d0
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
