@@ -3,65 +3,82 @@ import { apiSlice } from "./apiSlice";
 
 export const employeeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    
     // Fetch all employees
     getAllEmployees: builder.query({
-      query: ({ page = 1, limit = 10, organisationId, search = '' }) => ({
-        url: `${EMPLOYEE_URL}`,
-        method: "GET",
-        params: { page, limit, organisationId, search },
-      }),
-    }),
+      query: ({ page = 1, limit = 10, search = '', role = '' }) => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo?.token;
 
-    // Fetch a single employee by ID
-    getEmployee: builder.query({
-      query: (id) => `${EMPLOYEE_URL}/${id}`,
+        return {
+          url: `${EMPLOYEE_URL}`,
+          method: "GET",
+          params: { page, limit, search, role },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      providesTags: ['Employee'],
     }),
 
     // Create a new employee
     createEmployee: builder.mutation({
-      query: (body) => ({
-        url: `${EMPLOYEE_URL}`,
-        method: "POST",
-        body,
-      }),
+      query: (body) => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo?.token;
+
+        return {
+          url: `${EMPLOYEE_URL}`,
+          method: "POST",
+          body,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      invalidatesTags: ['Employee'],
     }),
 
     // Update an existing employee
     updateEmployee: builder.mutation({
-      query: ({ id, body }) => ({
-        url: `${EMPLOYEE_URL}/${id}`,
-        method: "PUT",
-        body,
-      }),
+      query: ({ id, body }) => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo?.token;
+
+        return {
+          url: `${EMPLOYEE_URL}/${id}`,
+          method: "PUT",
+          body,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      invalidatesTags: ['Employee'],
     }),
 
     // Delete an employee
     deleteEmployee: builder.mutation({
-      query: (id) => ({
-        url: `${EMPLOYEE_URL}/${id}`,
-        method: "DELETE",
-      }),
-    }),
+      query: (id) => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo?.token;
 
-    // Get employees by organisation
-    getEmployeesByOrganisation: builder.query({
-      query: (organisationId) => `${EMPLOYEE_URL}/organisation/${organisationId}`,
-    }),
-
-    // Get employee statistics
-    getEmployeeStats: builder.query({
-      query: (organisationId) => `${EMPLOYEE_URL}/stats/${organisationId}`,
+        return {
+          url: `${EMPLOYEE_URL}/${id}`,
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      invalidatesTags: ['Employee'],
     }),
   }),
 });
 
 export const {
   useGetAllEmployeesQuery,
-  useGetEmployeeQuery,
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
-  useGetEmployeesByOrganisationQuery,
-  useGetEmployeeStatsQuery,
 } = employeeApiSlice;
