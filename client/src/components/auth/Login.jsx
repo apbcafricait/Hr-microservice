@@ -32,18 +32,23 @@ const Login = () => {
   };
 //const orgid = resizeBy.bogdy.orgId
   const handleRedirect = (role) => {
-    switch (role) {
-      case 'admin':
-        navigate('/admin');
+    if (!role) {
+      console.error("Role is undefined or null");
+      return;
+    }
+  
+    switch (role.toLowerCase()) {
+      case "admin":
+        navigate("/admin");
         break;
-      case 'manager':
-        navigate('/manager');
+      case "manager":
+        navigate("/manager");
         break;
-      case 'employee':
-        navigate('/employee');
+      case "employee":
+        navigate("/employee");
         break;
       default:
-       null // Default to admin as specified
+        console.error("Invalid role:", role);
     }
   };
 
