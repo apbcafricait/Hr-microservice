@@ -130,7 +130,8 @@ export class EmployeesController {
                 dateOfBirth,
                 position,
                 employmentDate,
-                salary
+                salary,
+                role
             } = req.body;
 
             // First, check if email already exists
@@ -153,7 +154,7 @@ export class EmployeesController {
                     data: {
                         email: email.toLowerCase(),
                         password_hash: encrypted_password,
-                        role: 'employee' // Set appropriate role
+                        role
                     }
                 });
 

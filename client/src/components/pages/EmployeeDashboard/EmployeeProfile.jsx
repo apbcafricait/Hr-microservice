@@ -1,31 +1,36 @@
-
 import { useState } from "react";
-import Footer from "../../Layouts/Footer";
-import Header from "../../Layouts/Header";
 import ContactDetails from "./ContactDetails";
 import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> ef3225f79777507f32da2d00793167843ddb22d0
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  
+  // const toggleSidebar = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
 
   // Log activeTab state to verify it's updating correctly
   console.log("Active Tab:", activeTab);
 
   return (
-    <div className="h-screen flex flex-col">
-      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-      <div className="flex">
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* Main Container */}
+      <div className="flex flex-1">
         {/* Sidebar */}
-        <div className="w-1/4 bg-white shadow-md p-4">
+        <div
+          className={`w-64 bg-white shadow-md p-4 transition-all duration-300 ${
+            "block"
+          }`}
+        >
           <div className="text-center mb-4">
             <img
               src="https://via.placeholder.com/100"
@@ -57,16 +62,25 @@ const EmployeeProfile = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-gray-50 p-6 rounded-md shadow-md">
+        <div className="flex-1 p-6 overflow-y-auto">
           {/* Conditional Rendering for Active Tab */}
-          {activeTab === "Contact Details" && <ContactDetails />}
-          {activeTab === "Personal Details" && <PersonalDetails />}
-          {activeTab === "Qualifications" && <Qualifications />}
-          {activeTab === "Report-to" && <ReportTo />}
-          {/* Add more components for other tabs if needed */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            {activeTab === "Contact Details" && <ContactDetails />}
+            {activeTab === "Personal Details" && <PersonalDetails />}
+            {activeTab === "Qualifications" && <Qualifications />}
+            {activeTab === "Report-to" && <ReportTo />}
+            {/* Add more components for other tabs if needed */}
+          </div>
+
+          {/* Space for Form at the Bottom */}
+          <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Form Section</h2>
+            <p className="text-gray-600">
+              This space can be used for additional forms or content.
+            </p>
+          </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
