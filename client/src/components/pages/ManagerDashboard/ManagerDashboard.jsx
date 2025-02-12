@@ -11,7 +11,9 @@ const ManagerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
+
       {/* Sidebar */}
+      
       <ManagerSidebar
         currentSection={currentSection}
         setCurrentSection={setCurrentSection}

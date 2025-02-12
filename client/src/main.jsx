@@ -12,20 +12,16 @@ import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 
-
-
-
-
 //import admin dashboard components
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
 import CreateOrganization from './components/pages/AdminDashboard/CreateOrganization.jsx';
 import ViewOrganization from './components/pages/AdminDashboard/ViewOrganizations.jsx';
 // import User from './components/pages/AdminDashboard/User.jsx';
-// Import all Manager dashboard components
+
+// Import all manager dashboard components
 import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
 // import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
 // import EmployeeList from './components/pages/ManagerDashboard/EmployeeList.jsx';
-
 
 // Import all  employee dashboard components
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
@@ -34,8 +30,6 @@ import  EmployeeProfile  from './components/pages/EmployeeDashboard/EmployeeProf
 import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
 
 // import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
-
-
 
 const routes = createBrowserRouter(
   createRoutesFromElements(
@@ -55,7 +49,6 @@ const routes = createBrowserRouter(
         <Route path="/admin/view-organization" element={<ViewOrganization />} />
         {/* <Route path="/admin/users" element={<User />} /> */}
 
-
         {/* ManagerDashboard Routes */}
 
         <Route path="manager" element={<ManagerDashboard />} />
@@ -65,11 +58,6 @@ const routes = createBrowserRouter(
         <Route path="employee" element={<EmployeeDashboard />} />
         <Route path="employee-profile" element={<EmployeeProfile />} />
        <Route pathe="personal-details" elements={<PersonalDetails />} />
-       
-
-       
-
-
       </Route>
     </>
   )
