@@ -108,7 +108,7 @@ export class OrganisationsController {
   async createOrganisation (req, res) {
     try {
       const organisationData = {
-        createdBy: req.user.id, // Assuming you have user data in request from auth middleware
+        createdBy: req.body.createdBy, 
         name: req.body.name,
         subdomain: req.body.subdomain.toLowerCase(),
         mpesaPhone: req.body.mpesaPhone,
