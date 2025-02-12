@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, ChevronDown, Edit, Trash } from 'lucide-react';
+import { Search, Plus, Filter, ChevronDown, Edit, Trash, X } from 'lucide-react';
 import {
   useGetAllEmployeesQuery,
   useDeleteEmployeeMutation,
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
-} from '../../../slices/employeeSlice'
+} from '../../../slices/employeeSlice';
+import { useGetOrganizationsQuery } from '../../../slices/organizationSlice';
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,6 +16,20 @@ const UserManagement = () => {
   });
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
+  const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
+  const [newEmployee, setNewEmployee] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    nationalId: '',
+    dateOfBirth: '',
+    position: '',
+    employmentDate: '',
+    salary: '',
+    role: '',
+    organisationId: '',
+  });
 
   // API hooks
   const { 
@@ -22,7 +37,8 @@ const UserManagement = () => {
     isLoading, 
     isFetching,
     isError,
-    error 
+    error,
+    refetch,
   } = useGetAllEmployeesQuery({
     page,
     limit: pageSize,
@@ -30,7 +46,14 @@ const UserManagement = () => {
     role: filters.role,
   });
 
-  console.log(employeesData?.data?.employees, "employee data")
+  // Fetch organizations
+  const { 
+    data: organizationsData, 
+    isLoading: isLoadingOrganizations,
+    isError: isOrganizationsError,
+    error: organizationsError 
+  } = useGetOrganizationsQuery();
+
   const [deleteEmployee] = useDeleteEmployeeMutation();
   const [createEmployee] = useCreateEmployeeMutation();
   const [updateEmployee] = useUpdateEmployeeMutation();
@@ -39,16 +62,35 @@ const UserManagement = () => {
   const handleDelete = async (employeeId) => {
     try {
       await deleteEmployee(employeeId).unwrap();
-      // Toast notification can be added here
+      refetch(); // Refresh the table after deletion
     } catch (error) {
       console.error('Failed to delete employee:', error);
     }
   };
 
-  const handleCreateEmployee = async (employeeData) => {
+  const handleCreateEmployee = async () => {
     try {
+      // Parse salary to a number
+      const employeeData = {
+        ...newEmployee,
+        salary: parseFloat(newEmployee.salary),
+      };
       await createEmployee(employeeData).unwrap();
-      // Toast notification can be added here
+      setIsAddEmployeeModalOpen(false); // Close the modal
+      refetch(); // Refresh the table after adding a new employee
+      setNewEmployee({ // Reset the form
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        nationalId: '',
+        dateOfBirth: '',
+        position: '',
+        employmentDate: '',
+        salary: '',
+        role: '',
+        organisationId: '',
+      });
     } catch (error) {
       console.error('Failed to create employee:', error);
     }
@@ -57,7 +99,7 @@ const UserManagement = () => {
   const handleUpdateEmployee = async (employeeId, employeeData) => {
     try {
       await updateEmployee({ id: employeeId, body: employeeData }).unwrap();
-      // Toast notification can be added here
+      refetch(); // Refresh the table after updating
     } catch (error) {
       console.error('Failed to update employee:', error);
     }
@@ -76,13 +118,7 @@ const UserManagement = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Employee Management</h1>
           <button
-            onClick={() => handleCreateEmployee({
-              firstName: '',
-              lastName: '',
-              role: '',
-              organisationId: '',
-              status: 'active'
-            })}
+            onClick={() => setIsAddEmployeeModalOpen(true)}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
@@ -90,6 +126,185 @@ const UserManagement = () => {
           </button>
         </div>
 
+       {/* Add Employee Modal */}
+{isAddEmployeeModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">Add Employee</h2>
+        <button
+          onClick={() => setIsAddEmployeeModalOpen(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleCreateEmployee();
+        }}
+        className="overflow-y-auto max-h-[80vh]"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">First Name</label>
+            <input
+              type="text"
+              value={newEmployee.firstName}
+              onChange={(e) => setNewEmployee({ ...newEmployee, firstName: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Last Name</label>
+            <input
+              type="text"
+              value={newEmployee.lastName}
+              onChange={(e) => setNewEmployee({ ...newEmployee, lastName: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              value={newEmployee.email}
+              onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              value={newEmployee.password}
+              onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">National ID</label>
+            <input
+              type="text"
+              value={newEmployee.nationalId}
+              onChange={(e) => setNewEmployee({ ...newEmployee, nationalId: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+            <input
+              type="date"
+              value={newEmployee.dateOfBirth}
+              onChange={(e) => setNewEmployee({ ...newEmployee, dateOfBirth: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Position</label>
+            <input
+              type="text"
+              value={newEmployee.position}
+              onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Employment Date</label>
+            <input
+              type="date"
+              value={newEmployee.employmentDate}
+              onChange={(e) => setNewEmployee({ ...newEmployee, employmentDate: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Salary</label>
+            <input
+              type="number"
+              value={newEmployee.salary}
+              onChange={(e) => setNewEmployee({ ...newEmployee, salary: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Role</label>
+            <select
+              value={newEmployee.role}
+              onChange={(e) => setNewEmployee({ ...newEmployee, role: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            >
+              <option value="">Select Role</option>
+              <option value="Manager">Manager</option>
+              <option value="Employee">Employee</option>
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Organization</label>
+            <div className="relative">
+              <select
+                value={newEmployee.organisationId}
+                onChange={(e) => setNewEmployee({ ...newEmployee, organisationId: e.target.value })}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  isLoadingOrganizations ? 'bg-gray-100' : ''
+                }`}
+                required
+                disabled={isLoadingOrganizations}
+              >
+                <option value="">Select Organization</option>
+                {isLoadingOrganizations ? (
+                  <option value="" disabled>Loading organizations...</option>
+                ) : isOrganizationsError ? (
+                  <option value="" disabled>Error loading organizations</option>
+                ) : organizationsData?.length > 0 ? (
+                  organizationsData?.map((org) => (
+                    <option key={org.id} value={org.id}>
+                      {org.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>No organizations available</option>
+                )}
+              </select>
+              <ChevronDown className="w-5 h-5 absolute right-3 top-2.5 text-gray-400 pointer-events-none" />
+            </div>
+            {isOrganizationsError && (
+              <p className="mt-1 text-sm text-red-600">
+                {organizationsError?.data?.message || 'Failed to load organizations'}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setIsAddEmployeeModalOpen(false)}
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
         {/* Search and Filters */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
