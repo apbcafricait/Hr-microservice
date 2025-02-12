@@ -48,6 +48,7 @@ model Employee {
   departmentId    Int?         @map("department_id")
     department      Department?  @relation("DepartmentEmployees", fields: [departmentId], references: [id])
     managedDepartment Department? @relation("DepartmentManager")
+  Payroll Payroll[]
 }
 
 
@@ -168,4 +169,32 @@ model Department {
 
     @@unique([organisationId, name])
     @@map("departments")
+}
+model Payroll {
+    id            Int      @id @default(autoincrement())
+    employeeId    Int      @map("employee_id")
+    monthYear     DateTime @map("month_year") @db.Date
+    grossSalary   Decimal  @map("gross_salary") @db.Decimal(10,2)
+    deductions    Json     @map("deductions")
+    netSalary     Decimal  @map("net_salary") @db.Decimal(10,2)
+    payslipPath   String?  @map("payslip_path")
+    processedAt   DateTime @default(now()) @map("processed_at")
+    
+    employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+    @@unique([employeeId, monthYear])
+    @@map("payroll")
+    PayrollDeductions PayrollDeductions[]
+}
+
+model PayrollDeductions {
+    id          Int      @id @default(autoincrement())
+    nssf        Decimal  @db.Decimal(10,2)
+    shif        Decimal  @db.Decimal(10,2) // Changed from nhif to shif
+    paye        Decimal  @db.Decimal(10,2)
+    housingLevy Decimal  @db.Decimal(10,2)
+    payrollId   Int      @unique
+    payroll     Payroll  @relation(fields: [payrollId], references: [id])
+
+    @@map("payroll_deductions")
 }

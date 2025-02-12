@@ -1,3 +1,4 @@
+
 import  { useState } from 'react';
 
 const Input = ({ label, type, name, value, onChange, required }) => (
@@ -16,6 +17,9 @@ const Input = ({ label, type, name, value, onChange, required }) => (
     />
   </div>
 );
+
+import React, { useState } from "react";
+
 import ManagerSidebar from "../../Layouts/ManagerSidebar";
 import AddEmployee from "./AddEmployee";
 import EmployeeList from "./EmployeeList";
@@ -71,3 +75,4 @@ const ManagerDashboard = () => {
 };
 
 export default ManagerDashboard;
+
