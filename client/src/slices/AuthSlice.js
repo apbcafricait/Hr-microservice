@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import { createSlice } from "@reduxjs/toolkit";
-
-// Load user and token from localStorage safely
-const storedUser = localStorage.getItem("user");
-const storedToken = localStorage.getItem("token");
-
-const initialState = {
-  user:  null,
-  token: null,
-};
-=======
 // authSlice.js
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -21,33 +9,12 @@ const initialState = {
   status: 'idle',
   error: null
 }
->>>>>>> ef3225f79777507f32da2d00793167843ddb22d0
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-<<<<<<< HEAD
-      const { user, token } = action.payload;
-      state.user = user;
-      state.token = token;
-
-      // Save to localStorage
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-    },
-    logout: (state) => {
-      state.user = null;
-      state.token = null;
-
-      // Remove from localStorage
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-    },
-  },
-});
-=======
       state.userInfo = action.payload
       localStorage.setItem('userInfo', JSON.stringify(action.payload))
     },
@@ -61,7 +28,6 @@ const authSlice = createSlice({
 export const { setCredentials, logout } = authSlice.actions
 
 export default authSlice.reducer
->>>>>>> ef3225f79777507f32da2d00793167843ddb22d0
 
 
 export const selectCurrentUser = (state) => state.auth.user;
