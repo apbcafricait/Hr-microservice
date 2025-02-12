@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 
 const Input = ({ label, type, name, value, onChange, required }) => (
   <div className="mb-4">
