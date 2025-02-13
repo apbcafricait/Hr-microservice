@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useCreateEmployeeMutation } from "../../../slices/employeeSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddEmployee = ({ onClose }) => {
   const [employeeData, setEmployeeData] = useState({
@@ -13,6 +15,8 @@ const AddEmployee = ({ onClose }) => {
     email: "",
     username: "",
     password: "",
+    role: "employee", // Default role
+    organisationId: 1, // Default organisation ID (adjust as needed)
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -45,7 +49,17 @@ const AddEmployee = ({ onClose }) => {
     }
 
     try {
-      await createEmployee(employeeData).unwrap();
+      // Include the `organisationId` and `role` fields in the payload
+      const response = await createEmployee({ ...employeeData }).unwrap();
+      console.log("Employee Data:", {
+        id: response.id, // Assuming the response includes the employee's ID
+        email: response.email,
+        nationalId: response.nationalId,
+        dateOfBirth: response.dateOfBirth,
+      });
+      toast.success("Employee added successfully!");
+
+      // Reset the form
       setEmployeeData({
         firstName: "",
         lastName: "",
@@ -57,11 +71,16 @@ const AddEmployee = ({ onClose }) => {
         email: "",
         username: "",
         password: "",
+        role: "employee", // Reset role to default
+        organisationId: 2, // Reset organisation ID to default
       });
       setFormErrors({});
       onClose(); // Close the form on successful submission
     } catch (err) {
       console.error("Error adding employee:", err);
+      if (err.data && err.data.message) {
+        toast.error(err.data.message); // Show the backend error message to the user
+      }
     }
   };
 
@@ -238,6 +257,25 @@ const AddEmployee = ({ onClose }) => {
             required
             className="border border-gray-300 rounded px-2 py-1"
           />
+        </div>
+
+        {/* Role */}
+        <div className="flex flex-col">
+          <label htmlFor="role" className="text-sm font-medium mb-1">
+            Role
+          </label>
+          <select
+            id="role"
+            name="role"
+            value={employeeData.role}
+            onChange={handleChange}
+            required
+            className="border border-gray-300 rounded px-2 py-1"
+          >
+            <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
 
         {/* Submit Button */}

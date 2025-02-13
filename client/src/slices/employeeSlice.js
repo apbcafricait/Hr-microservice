@@ -5,14 +5,14 @@ export const employeeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Fetch all employees
     getAllEmployees: builder.query({
-      query: ({ page = 1, limit = 10, search = '', role = '' }) => {
+      query: () => {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const token = userInfo?.token;
 
         return {
           url: `${EMPLOYEE_URL}`,
           method: "GET",
-          params: { page, limit, search, role },
+         
           headers: {
             Authorization: `Bearer ${token}`,
           },

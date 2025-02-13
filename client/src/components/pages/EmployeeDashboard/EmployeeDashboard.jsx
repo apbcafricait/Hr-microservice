@@ -1,17 +1,8 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Ensure XMarkIcon is imported
 import { motion } from 'framer-motion';
-
 import { ClockArrowUp, ClockArrowDown, RotateCwSquare } from 'lucide-react'; // Import RotateCwSquare icon
 import React, { useState, useEffect } from 'react';
-
-import { ClockArrowUp, ClockArrowDown, RotateCwSquare } from 'lucide-react'; // Import the RotateCwSquare icon
-
-import React, { useState } from 'react';
-
-
-
-
 import { HashLink as Link } from 'react-router-hash-link'; // Import HashLink for smooth scrolling
 import { useClockInMutation } from '../../../slices/attendanceSlice';
 import { useSelector } from 'react-redux';
