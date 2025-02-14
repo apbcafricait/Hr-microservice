@@ -1,8 +1,15 @@
 // Dashboard.jsx
 import React from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
+import { useGetAllEmployeesQuery } from "../../../slices/employeeSlice";
 
 const data = [
   { name: "Jan", Employees: 12, Leaves: 2 },
@@ -12,6 +19,13 @@ const data = [
 ];
 
 const Dashboard = () => {
+  const { data: employees, error, isLoading } = useGetAllEmployeesQuery({
+    page: 1, // Default page number
+    limit: 100, // Arbitrary large number to fetch all employees
+  });
+
+  const totalEmployees = employees?.data?.employees?.length || 0;
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       {/* Header */}
@@ -23,7 +37,13 @@ const Dashboard = () => {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white shadow-md p-4 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600">Total Employees</h2>
-          <p className="text-3xl font-bold text-blue-500">25</p>
+          <p className="text-3xl font-bold text-blue-500">
+            {isLoading
+              ? "Loading..."
+              : error
+              ? "Error"
+              : totalEmployees}
+          </p>
         </div>
         <div className="bg-white shadow-md p-4 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600">Pending Leave Requests</h2>
@@ -61,7 +81,7 @@ const Dashboard = () => {
               <span className="text-sm text-gray-500">2 hours ago</span>
             </li>
             <li className="py-2 flex justify-between">
-              <span>david Wainaina  was promoted</span>
+              <span>david Wainaina was promoted</span>
               <span className="text-sm text-gray-500">1 day ago</span>
             </li>
             <li className="py-2 flex justify-between">
@@ -73,8 +93,6 @@ const Dashboard = () => {
       </section>
 
       {/* Quick Actions */}
-
-
       <section className="mt-6">
         <h2 className="text-lg font-medium text-gray-600 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
