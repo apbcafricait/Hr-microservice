@@ -73,7 +73,24 @@ export const employeeApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Employee'],
     }),
+    getEmployee: builder.query({
+      query: (id) => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo?.token;
+    
+        return {
+          url: `${EMPLOYEE_URL}/${id}`,
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      providesTags: ['Employee'],
+    }),
+    
   }),
+
 });
 
 export const {
@@ -81,4 +98,5 @@ export const {
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
+  useGetEmployeeQuery,
 } = employeeApiSlice;
