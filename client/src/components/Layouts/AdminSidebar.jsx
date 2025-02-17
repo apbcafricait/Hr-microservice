@@ -1,215 +1,166 @@
 import React, { useState } from 'react';
-import { FaSearch, FaUserCog, FaUsers, FaCalendarAlt, FaClock, FaUserPlus, FaUser, FaStar, FaHome, FaBook, FaWrench, FaHandshake } from 'react-icons/fa';
-import LeaveDashboard from '../pages/AdminDashboard/LeaveDashboard';
+import { motion } from 'framer-motion';
+import {
+  Search,
+  Settings,
+  Users,
+  Calendar,
+  Clock,
+  UserPlus,
+  User,
+  Star,
+  Home,
+  FileText,
+  Award,
+  Menu,
+  ChevronRight,
+  BarChart2,
+  Shield
+} from 'lucide-react';
 
 const Sidebar = () => {
-  const [activeLink, setActiveLink] = useState('LeaveDashboard'); // Initialize with 'Dashboard'
-  const [showLeaveDashboard, setShowLeaveDashboard] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [activeLink, setActiveLink] = useState('Dashboard');
+  const [hoveredLink, setHoveredLink] = useState(null);
 
-  const handleLinkClick = (linkName) => {
-    setActiveLink(linkName);
-    if (linkName === 'Leave') {
-      setShowLeaveDashboard(true);
-    } else {
-      setShowLeaveDashboard(false);
-    }
-  };
+  const menuItems = [
+    { name: 'Dashboard', icon: Home },
+    // { name: 'Search', icon: Search },
+    { name: 'Admin', icon: Shield },
+    { name: 'PIM', icon: Users },
+    { name: 'Leave', icon: Calendar },
+    { name: 'Time', icon: Clock },
+    { name: 'Recruitment', icon: UserPlus },
+    { name: 'My Info', icon: User },
+    { name: 'Performance', icon: BarChart2 },
+    { name: 'Claims', icon: FileText },
+    { name: 'Settings', icon: Settings },
+  ];
 
   return (
-    <div className="sidebar bg-white w-64 h-screen shadow-lg flex"> {/* Use flex to control the layout */}
-      <div className="w-64"> {/* Sidebar content */}
-        <div className="p-4 text-center">
-          <h1 className="text-2xl font-bold text-green-600">Nexus</h1>
+    <motion.div
+      initial={{ width: isExpanded ? 256 : 80 }}
+      animate={{ width: isExpanded ? 256 : 80 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="relative h-screen bg-white border-r border-gray-200 shadow-lg"
+    >
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="absolute -right-3 top-6 bg-purple-600 rounded-full p-1.5 text-white shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 z-50"
+      >
+        <motion.div
+          animate={{ rotate: isExpanded ? 0 : 180 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </motion.div>
+      </button>
+
+      {/* Logo Section */}
+      <div className={`p-6 ${isExpanded ? 'px-6' : 'px-4'}`}>
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg shadow-lg">
+            <Award className="w-6 h-6 text-white" />
+          </div>
+          {isExpanded && (
+            <motion.h1
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
+            >
+              Nexus Pro
+            </motion.h1>
+          )}
         </div>
-        <nav className="mt-5">
-          <ul>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Search' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault(); // Prevent default link behavior
-                  handleLinkClick('Search');
-                }}
-              >
-                <FaSearch className={`mr-2 ${activeLink === 'Search' ? 'text-white' : 'text-gray-500'}`} />
-                Search
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Admin' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Admin');
-                }}
-              >
-                <FaUserCog className={`mr-2 ${activeLink === 'Admin' ? 'text-white' : 'text-gray-500'}`} />
-                Admin
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'PIM' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('PIM');
-                }}
-              >
-                <FaUsers className={`mr-2 ${activeLink === 'PIM' ? 'text-white' : 'text-gray-500'}`} />
-                PIM
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Leave' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Leave');
-                }}
-              >
-                <FaCalendarAlt className={`mr-2 ${activeLink === 'Leave' ? 'text-white' : 'text-gray-500'}`} />
-                Leave
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Time' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Time');
-                }}
-              >
-                <FaClock className={`mr-2 ${activeLink === 'Time' ? 'text-white' : 'text-gray-500'}`} />
-                Time
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Recruitment' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Recruitment');
-                }}
-              >
-                <FaUserPlus className={`mr-2 ${activeLink === 'Recruitment' ? 'text-white' : 'text-gray-500'}`} />
-                Recruitment
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'My Info' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('My Info');
-                }}
-              >
-                <FaUser className={`mr-2 ${activeLink === 'My Info' ? 'text-white' : 'text-gray-500'}`} />
-                My Info
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Performance' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Performance');
-                }}
-              >
-                <FaStar className={`mr-2 ${activeLink === 'Performance' ? 'text-white' : 'text-gray-500'}`} />
-                Performance
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 ${
-                  activeLink === 'Dashboard' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : 'text-gray-700 hover:bg-gray-100'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Dashboard');
-                }}
-              >
-                <FaHome className={`mr-2 ${activeLink === 'Dashboard' ? 'text-white' : 'text-gray-500'}`} />
-                Dashboard
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Directory' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Directory');
-                }}
-              >
-                <FaBook className={`mr-2 ${activeLink === 'Directory' ? 'text-white' : 'text-gray-500'}`} />
-                Directory
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Maintenance' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Maintenance');
-                }}
-              >
-                <FaWrench className={`mr-2 ${activeLink === 'Maintenance' ? 'text-white' : 'text-gray-500'}`} />
-                Maintenance
-              </a>
-            </li>
-            <li className="mb-2">
-              <a
-                href="#"
-                className={`flex items-center p-2 text-gray-700 hover:bg-gray-100 ${
-                  activeLink === 'Claim' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-r-full' : ''
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('Claim');
-                }}
-              >
-                <FaHandshake className={`mr-2 ${activeLink === 'Claim' ? 'text-white' : 'text-gray-500'}`} />
-                Claim
-              </a>
-            </li>
-          </ul>
-        </nav>
       </div>
-      <div className="flex-1 p-4"> {/* Main content area */}
-        {showLeaveDashboard && <LeaveDashboard />} {/* Render LeaveDashboard based on showLeaveDashboard */}
-      </div>
-    </div>
+
+      {/* Navigation Menu */}
+      <nav className="px-4 mt-6">
+        <ul className="space-y-1">
+          {menuItems.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <motion.li key={item.name}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveLink(item.name);
+                  }}
+                  onMouseEnter={() => setHoveredLink(item.name)}
+                  onMouseLeave={() => setHoveredLink(null)}
+                  className={`relative flex items-center px-3 py-3 rounded-lg transition-all duration-200 group
+                    ${activeLink === item.name
+                      ? 'text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-md'
+                      : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                >
+                  <IconComponent
+                    className={`w-5 h-5 ${
+                      activeLink === item.name ? 'text-white' : 'text-gray-500 group-hover:text-purple-600'
+                    }`}
+                  />
+                  
+                  {isExpanded && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="ml-3 font-medium"
+                    >
+                      {item.name}
+                    </motion.span>
+                  )}
+
+                  {/* Hover Effect */}
+                  {hoveredLink === item.name && !activeLink === item.name && (
+                    <motion.div
+                      layoutId="hoverBackground"
+                      className="absolute inset-0 bg-gray-50 rounded-lg -z-10"
+                      initial={false}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30
+                      }}
+                    />
+                  )}
+                </a>
+              </motion.li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Profile Section */}
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute bottom-0 left-0 right-0 p-4"
+        >
+          <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                John Doe
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                Administrator
+              </p>
+            </div>
+            <button className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
+              <Settings className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 
