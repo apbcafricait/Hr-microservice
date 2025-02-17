@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Search,
   Settings,
   Users,
   Calendar,
   Clock,
   UserPlus,
   User,
-  Star,
   Home,
   FileText,
   Award,
-  Menu,
   ChevronRight,
   BarChart2,
   Shield
