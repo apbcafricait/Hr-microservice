@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import { useCreateEmployeeContactMutation } from "../../../slices/ContactSlice";
 
@@ -148,6 +149,20 @@ const ContactDetails = () => {
             </form>
           </div>
         )}
+=======
+import { useState, useEffect } from "react";
+const ContactDetails = () => {
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Contact Details</h2>
+      <div className="bg-white p-4 rounded shadow">
+        <p><strong>Email:</strong> john.doe@company.com</p>
+        <p><strong>Phone:</strong> +1 234 567 890</p>
+        <p><strong>Emergency Contact:</strong> Jane Doe (+1 234 567 891)</p>
+        <button className="bg-blue-500 text-white px-4 py-2 rounded mt-4">
+          Edit Contact Details
+        </button>
+>>>>>>> f17d3e844ed71d2b594e4a5d89a193b70bb5c5f2
       </div>
     </div>
   );
