@@ -14,7 +14,7 @@ const PersonalDetails = () => {
     error 
   } = useGetEmployeeQuery(id);
 
-  console.log(employeeResponse, 'employee daya')
+  console.log(employeeResponse, 'employee data')
 
   const [formData, setFormData] = useState({
     firstName: "",
