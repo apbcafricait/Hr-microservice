@@ -20,11 +20,12 @@ router.get(
 router.get('/download/:id', payrollController.downloadPayslip)
 
 // Admin only routes
-router.use(admin)
+// router.use(admin)
 router.post(
   '/process/employee/:employeeId',
   payrollController.processEmployeePayroll
 )
+
 router.post('/process/bulk', payrollController.processBulkPayroll)
 
 export default router

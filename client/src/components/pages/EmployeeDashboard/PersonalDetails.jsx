@@ -1,68 +1,112 @@
-import { useState } from "react";
-import { useCreateEmployeeMutation } from "../../../slices/employeeSlice";
+import { useState, useEffect } from "react";
+import { useUpdateEmployeeMutation, useGetEmployeeQuery } from "../../../slices/employeeSlice";
+import { useSelector } from "react-redux";
 
 const PersonalDetails = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
+  console.log(id, 'id')
+
+  const { 
+    data: employeeResponse, 
+    isLoading: isFetchingEmployee,
+    isError,
+    error 
+  } = useGetEmployeeQuery(id);
+
+  console.log(employeeResponse, 'employee daya')
+
   const [formData, setFormData] = useState({
-    firstname: "",
-    lastname: "",
-    employeeId: "",
+    firstName: "",
+    lastName: "",
+    nationalId: "",
     position: "",
     dateOfBirth: "",
     employmentDate: "",
-    nationality: "",
-    email: "",
-    organisationId: 1,
-  });
-
-  const [personalDetails, setPersonalDetails] = useState({
-    employmentDate: "",
     salary: "",
+    email: "",
+    organisationName: "",
+    role: ""
   });
 
   const [loading, setLoading] = useState(false);
+  const [updateEmployee] = useUpdateEmployeeMutation();
 
-  // Redux mutation hook
-  const [createEmployee] = useCreateEmployeeMutation();
-
+  // Update form data when employee data is fetched
+  useEffect(() => {
+    if (employeeResponse?.data?.employee) {
+      const { employee } = employeeResponse.data;
+      setFormData({
+        firstName: employee.firstName || "",
+        lastName: employee.lastName || "",
+        nationalId: employee.nationalId || "",
+        position: employee.position || "",
+        dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : "",
+        employmentDate: employee.employmentDate ? new Date(employee.employmentDate).toISOString().split('T')[0] : "",
+        salary: employee.salary || "",
+        email: employee.user?.email || "",
+        organisationName: employee.organisation?.name || "",
+        role: employee.user?.role || ""
+      });
+    }
+  }, [employeeResponse]);
+const employeeId = employeeResponse?.data?.employee?.id;
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    // Update the correct state dynamically based on the field name
+    
+    // List of fields that shouldn't be edited
+    const restrictedFields = ['email', 'position', 'employmentDate', 'organisationName', 'role'];
+    
+    if (restrictedFields.includes(name)) {
+      return;
+    }
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
-    
-    if (name === "salary") {
-      setPersonalDetails((prevDetails) => ({
-        ...prevDetails,
-        salary: value,
-      }));
-    }
   };
-  
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Combine formData and personalDetails
-      const payload = {
-        ...formData,
-        ...personalDetails,
-      };
+      // Only include fields that have values in the payload
+      const payload = {};
+      
+      if (formData.firstName) payload.firstName = formData.firstName;
+      if (formData.lastName) payload.lastName = formData.lastName;
+      if (formData.nationalId) payload.nationalId = formData.nationalId;
+      if (formData.position) payload.position = formData.position;
+      if (formData.dateOfBirth) payload.dateOfBirth = formData.dateOfBirth;
+      if (formData.employmentDate) payload.employmentDate = formData.employmentDate;
+      if (formData.salary) payload.salary = parseFloat(formData.salary);
 
-      // Call createEmployee mutation
-      const response = await createEmployee(payload).unwrap();
-      console.log("Employee created successfully:", response);
-
-      alert("Details Saved Successfully!");
+      const response = await updateEmployee({ id: employeeId, payload }).unwrap();
+      console.log(response)
+      alert("Details Updated Successfully!");
     } catch (error) {
-      console.error("Error creating employee:", error);
-      alert("Failed to save details. Please try again.");
+      console.error("Error updating employee:", error);
+      alert("Failed to update details. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  if (isFetchingEmployee) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-lg text-blue-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-lg text-red-600">Error: {error?.data?.message || 'Failed to fetch employee data'}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -70,15 +114,18 @@ const PersonalDetails = () => {
         <h2 className="text-2xl font-semibold text-center text-blue-600 mb-6">
           Personal Details
         </h2>
+        <div className="mb-6 text-center">
+          <p className="text-sm text-gray-600">Organization: {formData.organisationName}</p>
+          <p className="text-sm text-gray-600">Role: {formData.role}</p>
+        </div>
         <form>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">First Name</label>
               <input
                 type="text"
-                name="firstname"
-                value={formData.firstname}
-                placeholder="Enter first name"
+                name="firstName"
+                value={formData.firstName}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
@@ -87,36 +134,32 @@ const PersonalDetails = () => {
               <label className="block text-sm font-medium text-gray-700">Last Name</label>
               <input
                 type="text"
-                name="lastname"
-                value={formData.lastname}
-                placeholder="Enter last name"
+                name="lastName"
+                value={formData.lastName}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Employee National ID</label>
+              <label className="block text-sm font-medium text-gray-700">National ID</label>
               <input
                 type="text"
-                name="employeeId"
-                value={formData.employeeId}
-                placeholder="Enter ID"
+                name="nationalId"
+                value={formData.nationalId}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-  <label className="block text-sm font-medium text-gray-700">Position</label>
-  <input
-    type="text"
-    name="position"
-    value={formData.position}
-    onChange={handleChange}
-    disabled={true} // Restricts the employee from editing
-    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-200 cursor-not-allowed"
-    placeholder="Position is set by the organization"
-  />
-        </div>  
+              <label className="block text-sm font-medium text-gray-700">Position</label>
+              <input
+                type="text"
+                name="position"
+                value={formData.position}
+                disabled={true}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
               <input
@@ -128,42 +171,33 @@ const PersonalDetails = () => {
               />
             </div>
             <div>
-  <label className="block text-sm font-medium text-gray-700">Employment Date</label>
-  <input
-    type="date"
-    name="employmentDate"
-    value={formData.employmentDate} // Ensure this is pointing to formData
-    onChange={handleChange} // Corrected handleChange
-    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-  />
-</div>
-
-<div>
-  <label className="block text-sm font-medium text-gray-700">Salary</label>
-  <select
-    name="salary"
-    value={personalDetails.salary || ""}
-    onChange={handleChange}
-    disabled={true} // Restricts the employee from editing
-    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-200 cursor-not-allowed"
-  >
-    <option value="">-- Select Salary Range --</option>
-    <option value="0-20000">0 - 20,000</option>
-    <option value="20001-50000">20,001 - 50,000</option>
-    <option value="50001-100000">50,001 - 100,000</option>
-    <option value="100001-200000">100,001 - 200,000</option>
-    <option value="200001+">200,001 and above</option>
-  </select>
-</div>
+              <label className="block text-sm font-medium text-gray-700">Employment Date</label>
+              <input
+                type="date"
+                name="employmentDate"
+                value={formData.employmentDate}
+                disabled={true}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Salary</label>
+              <input
+                type="number"
+                name="salary"
+                value={formData.salary}
+                disabled={true}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
               <input
-                type="text"
+                type="email"
                 name="email"
                 value={formData.email}
-                placeholder="Enter email address"
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                disabled={true}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
               />
             </div>
           </div>
@@ -172,7 +206,7 @@ const PersonalDetails = () => {
               type="button"
               onClick={handleSave}
               disabled={loading}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Saving..." : "Save Details"}
             </button>

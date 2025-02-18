@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, User, Lock } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
