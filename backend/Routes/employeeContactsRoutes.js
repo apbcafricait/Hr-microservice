@@ -1,7 +1,7 @@
 // src/routes/employeeContactsRoutes.js
 import { Router } from 'express'
 import EmployeeContactsController from '../controllers/EmployeeContactsController.js'
-import { authenticated, admin } from '../middleware/Authentication.js'
+import { authenticated,admin } from '../middleware/Authentication.js'
 
 const router = Router()
 const controller = new EmployeeContactsController()
@@ -10,26 +10,20 @@ const controller = new EmployeeContactsController()
 router.use(authenticated)
 
 /**
- * GET /api/employee-contacts/get-employee-contact/:id
+ * GET /api/employee-contacts/:id
  * Retrieves a specific employee contact by its id.
  */
-router.get(
-  '/get-employee-contact/:id',
-  controller.getEmployeeContact.bind(controller)
-)
+router.get('/:id', controller.getEmployeeContact.bind(controller))
 
 /**
- * GET /api/employee-contacts/get-all-employee-contacts?page=1&limit=10
+ * GET /api/employee-contacts
  * Retrieves all employee contacts with pagination.
  * Optional: filter by employeeId (e.g., ?employeeId=3)
  */
-router.get(
-  '/get-all-employee-contacts',
-  controller.getAllEmployeeContacts.bind(controller)
-)
+router.get('/', controller.getAllEmployeeContacts.bind(controller))
 
 /**
- * POST /api/employee-contacts/create-employee-contact
+ * POST /api/employee-contacts
  * Request Body Example:
  * {
  *   "employeeId": "5",
@@ -39,14 +33,12 @@ router.get(
  *   "emergencyContactPhone": "098-765-4321"
  * }
  * Creates a new employee contact record.
+ * (Admin-only route)
  */
-router.post(
-  '/create-employee-contact',
-  controller.createEmployeeContact.bind(controller)
-)
+router.post('/', controller.createEmployeeContact.bind(controller))
 
 /**
- * PUT /api/employee-contacts/update-employee-contact/:id
+ * PUT /api/employee-contacts/:id
  * Request Body Example:
  * {
  *   "phone": "111-222-3333",
@@ -55,21 +47,13 @@ router.post(
  * Updates an existing employee contact record.
  * (Admin-only route)
  */
-router.put(
-  '/update-employee-contact/:id',
-  admin,
-  controller.updateEmployeeContact.bind(controller)
-)
+router.put('/:id', admin, controller.updateEmployeeContact.bind(controller))
 
 /**
- * DELETE /api/employee-contacts/delete-employee-contact/:id
+ * DELETE /api/employee-contacts/:id
  * Deletes an employee contact record.
  * (Admin-only route)
  */
-router.delete(
-  '/delete-employee-contact/:id',
-  admin,
-  controller.deleteEmployeeContact.bind(controller)
-)
+router.delete('/:id', admin, controller.deleteEmployeeContact.bind(controller))
 
 export default router
