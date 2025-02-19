@@ -1,207 +1,154 @@
-// Qualifications.js
-
-import { useSelector, useDispatch } from 'react-redux';
+import{ useState, useEffect } from "react";
 import {
-  addWorkExperience,
-  addEducation,
-  addSkill,
-  addLanguage,
-  updateWorkExperience,
-  updateEducation,
-  updateSkill,
-  updateLanguage,
-  deleteWorkExperience,
-  deleteEducation,
-  deleteSkill,
-  deleteLanguage
-} from '../../../slices/qualificationSlice'
+  useGetAllQualificationsQuery,
+  useCreateQualificationMutation,
+  useUpdateQualificationMutation,
+  useDeleteQualificationMutation,
+} from "../../../slices/qualificationSlice";
 
-const Qualifications = () => {
-  const dispatch = useDispatch();
-  const workExperiences = useSelector(state => state.qualifications.workExperiences);
-  const educations = useSelector(state => state.qualifications.educations);
-  const skills = useSelector(state => state.qualifications.skills);
-  const languages = useSelector(state => state.qualifications.languages);
+const QualificationsForm = () => {
+  const [qualificationData, setQualificationData] = useState({
+    id: null,
+    institution: "",
+    qualification: "",
+    startDate: "",
+    endDate: "",
+  });
 
-  const handleWorkExperienceChange = (index, field, value) => {
-    dispatch(updateWorkExperience({ index, field, value }));
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Fetch qualifications
+  const { data: qualifications, isLoading, isError } = useGetAllQualificationsQuery();
+
+  // Mutations
+  const [createQualification] = useCreateQualificationMutation();
+  const [updateQualification] = useUpdateQualificationMutation();
+  const [deleteQualification] = useDeleteQualificationMutation();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setQualificationData({ ...qualificationData, [name]: value });
   };
 
-  const handleEducationChange = (index, field, value) => {
-    dispatch(updateEducation({ index, field, value }));
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      if (isEditing) {
+        // Update qualification
+        await updateQualification(qualificationData).unwrap();
+        alert("Qualification updated successfully");
+      } else {
+        // Create qualification
+        await createQualification(qualificationData).unwrap();
+        alert("Qualification added successfully");
+      }
+      setQualificationData({ id: null, institution: "", qualification: "", startDate: "", endDate: "" });
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error submitting qualification:", error);
+    }
   };
 
-  const handleSkillChange = (index, value) => {
-    dispatch(updateSkill({ index, value }));
+  const handleEdit = (qualification) => {
+    setQualificationData(qualification);
+    setIsEditing(true);
   };
 
-  const handleLanguageChange = (index, value) => {
-    dispatch(updateLanguage({ index, value }));
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this qualification?")) {
+      try {
+        await deleteQualification(id).unwrap();
+        alert("Qualification deleted successfully");
+      } catch (error) {
+        console.error("Error deleting qualification:", error);
+      }
+    }
   };
+
+  useEffect(() => {
+    if (!isEditing) {
+      setQualificationData({ id: null, institution: "", qualification: "", startDate: "", endDate: "" });
+    }
+  }, [isEditing]);
+
+  if (isLoading) return <p>Loading qualifications...</p>;
+  if (isError) return <p>Error loading qualifications</p>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Qualifications</h2>
-      
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2">Work Experience</h3>
-        <button onClick={() => dispatch(addWorkExperience())} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">Company</th>
-                <th className="py-2 px-4 border-b">Title</th>
-                <th className="py-2 px-4 border-b">From</th>
-                <th className="py-2 px-4 border-b">To</th>
-                <th className="py-2 px-4 border-b">Comment</th>
-                <th className="py-2 px-4 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workExperiences.map((experience, index) => (
-                <tr key={index}>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="text"
-                      value={experience.company}
-                      onChange={(e) => handleWorkExperienceChange(index, 'company', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="text"
-                      value={experience.title}
-                      onChange={(e) => handleWorkExperienceChange(index, 'title', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="date"
-                      value={experience.from}
-                      onChange={(e) => handleWorkExperienceChange(index, 'from', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="date"
-                      value={experience.to}
-                      onChange={(e) => handleWorkExperienceChange(index, 'to', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="text"
-                      value={experience.comment}
-                      onChange={(e) => handleWorkExperienceChange(index, 'comment', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <button onClick={() => dispatch(deleteWorkExperience(index))} className="text-red-500">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div>
+      <h2>{isEditing ? "Edit Qualification" : "Add Qualification"}</h2>
+
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="institution">Institution:</label>
+          <input
+            type="text"
+            id="institution"
+            name="institution"
+            value={qualificationData.institution}
+            onChange={handleInputChange}
+            placeholder="Enter institution"
+            required
+          />
         </div>
-      </div>
-
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2">Education</h3>
-        <button onClick={() => dispatch(addEducation())} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">Level</th>
-                <th className="py-2 px-4 border-b">Year</th>
-                <th className="py-2 px-4 border-b">GPA/Serve</th>
-                <th className="py-2 px-4 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {educations.map((education, index) => (
-                <tr key={index}>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="text"
-                      value={education.level}
-                      onChange={(e) => handleEducationChange(index, 'level', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="text"
-                      value={education.year}
-                      onChange={(e) => handleEducationChange(index, 'year', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <input
-                      type="text"
-                      value={education.gpa}
-                      onChange={(e) => handleEducationChange(index, 'gpa', e.target.value)}
-                      className="w-full"
-                    />
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <button onClick={() => dispatch(deleteEducation(index))} className="text-red-500">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          <label htmlFor="qualification">Qualification:</label>
+          <input
+            type="text"
+            id="qualification"
+            name="qualification"
+            value={qualificationData.qualification}
+            onChange={handleInputChange}
+            placeholder="Enter qualification"
+            required
+          />
         </div>
-      </div>
+        <div>
+          <label htmlFor="startDate">Start Date:</label>
+          <input
+            type="date"
+            id="startDate"
+            name="startDate"
+            value={qualificationData.startDate}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="endDate">End Date:</label>
+          <input
+            type="date"
+            id="endDate"
+            name="endDate"
+            value={qualificationData.endDate}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
 
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2">Skills</h3>
-        <button onClick={() => dispatch(addSkill())} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">+ Add</button>
-        {skills.length === 0 ? (
-          <p>No Records Found</p>
-        ) : (
-          skills.map((skill, index) => (
-            <div key={index} className="flex items-center mb-2">
-              <input
-                type="text"
-                value={skill}
-                onChange={(e) => handleSkillChange(index, e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <button onClick={() => dispatch(deleteSkill(index))} className="text-red-500 ml-2">Delete</button>
-            </div>
-          ))
+        <button type="submit">{isEditing ? "Update" : "Add"} Qualification</button>
+        {isEditing && (
+          <button type="button" onClick={() => setIsEditing(false)}>
+            Cancel
+          </button>
         )}
-      </div>
+      </form>
 
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2">Languages</h3>
-        <button onClick={() => dispatch(addLanguage())} className="bg-blue-500 text-white px-4 py-2 rounded">+ Add</button>
-        {languages.length === 0 ? (
-          <p>No Records Found</p>
-        ) : (
-          languages.map((language, index) => (
-            <div key={index} className="flex items-center mb-2">
-              <input
-                type="text"
-                value={language}
-                onChange={(e) => handleLanguageChange(index, e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <button onClick={() => dispatch(deleteLanguage(index))} className="text-red-500 ml-2">Delete</button>
-            </div>
-          ))
-        )}
-      </div>
+      <h2>Qualifications List</h2>
+      <ul>
+        {qualifications?.map((qualification) => (
+          <li key={qualification.id}>
+            <strong>{qualification.institution}</strong> - {qualification.qualification} ({
+              qualification.startDate
+            } to {qualification.endDate})
+            <button onClick={() => handleEdit(qualification)}>Edit</button>
+            <button onClick={() => handleDelete(qualification.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default Qualifications;
+export default QualificationsForm;

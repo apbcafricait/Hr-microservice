@@ -1,77 +1,91 @@
-// qualificationsSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { QUALIFICATIONS_URL } from "../Constants/constants";
+import { apiSlice } from "./apiSlice";
 
-const initialState = {
-  workExperiences: [
-    { company: 'TCS', title: 'TESTER', from: '2020-09-02', to: '2023-07-16', comment: 'HII HELLO' }
-  ],
-  educations: [
-    { level: "Bachelor's Degree", year: '', gpa: '' }
-  ],
-  skills: [],
-  languages: []
-};
+export const qualificationSlice = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    getAllQualifications: builder.query({
+      query: (args = {}) => {
+        const { page = 1, limit = 10, search } = args;
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
 
-const qualificationsSlice = createSlice({
-  name: 'qualifications',
-  initialState,
-  reducers: {
-    addWorkExperience: (state) => {
-      state.workExperiences.push({ company: '', title: '', from: '', to: '', comment: '' });
-    },
-    addEducation: (state) => {
-      state.educations.push({ level: '', year: '', gpa: '' });
-    },
-    addSkill: (state) => {
-      state.skills.push('');
-    },
-    addLanguage: (state) => {
-      state.languages.push('');
-    },
-    updateWorkExperience: (state, action) => {
-      const { index, field, value } = action.payload;
-      state.workExperiences[index][field] = value;
-    },
-    updateEducation: (state, action) => {
-      const { index, field, value } = action.payload;
-      state.educations[index][field] = value;
-    },
-    updateSkill: (state, action) => {
-      const { index, value } = action.payload;
-      state.skills[index] = value;
-    },
-    updateLanguage: (state, action) => {
-      const { index, value } = action.payload;
-      state.languages[index] = value;
-    },
-    deleteWorkExperience: (state, action) => {
-      state.workExperiences = state.workExperiences.filter((_, i) => i !== action.payload);
-    },
-    deleteEducation: (state, action) => {
-      state.educations = state.educations.filter((_, i) => i !== action.payload);
-    },
-    deleteSkill: (state, action) => {
-      state.skills = state.skills.filter((_, i) => i !== action.payload);
-    },
-    deleteLanguage: (state, action) => {
-      state.languages = state.languages.filter((_, i) => i !== action.payload);
-    }
-  }
+        const queryParams = new URLSearchParams();
+        if (page) queryParams.append("page", page);
+        if (limit) queryParams.append("limit", limit);
+        if (search) queryParams.append("search", search);
+
+        return {
+          url: `${QUALIFICATIONS_URL}?${queryParams.toString()}`,
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      providesTags: ["Qualifications"],
+    }),
+    
+    // Create a new qualification
+    createQualification: builder.mutation({
+      query: (qualificationData) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
+
+        return {
+          url: `${QUALIFICATIONS_URL}`,
+          method: "POST",
+          body: qualificationData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        };
+      },
+      invalidatesTags: ["Qualifications"],
+    }),
+
+    // Update an existing qualification
+    updateQualification: builder.mutation({
+      query: ({ id, updatedData }) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
+
+        return {
+          url: `${QUALIFICATIONS_URL}/${id}`,
+          method: "PUT",
+          body: updatedData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        };
+      },
+      invalidatesTags: ["Qualifications"],
+    }),
+
+    // Delete a qualification
+    deleteQualification: builder.mutation({
+      query: (id) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
+
+        return {
+          url: `${QUALIFICATIONS_URL}/${id}`,
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      invalidatesTags: ["Qualifications"],
+    }),
+  }),
 });
 
+// Export hooks for each endpoint
 export const {
-  addWorkExperience,
-  addEducation,
-  addSkill,
-  addLanguage,
-  updateWorkExperience,
-  updateEducation,
-  updateSkill,
-  updateLanguage,
-  deleteWorkExperience,
-  deleteEducation,
-  deleteSkill,
-  deleteLanguage
-} = qualificationsSlice.actions;
-
-export default qualificationsSlice.reducer;
+  useGetAllQualificationsQuery,
+  useCreateQualificationMutation,
+  useUpdateQualificationMutation,
+  useDeleteQualificationMutation,
+} = qualificationSlice;

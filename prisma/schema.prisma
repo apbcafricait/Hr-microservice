@@ -50,6 +50,7 @@ model Employee {
     managedDepartment Department? @relation("DepartmentManager")
   Payroll Payroll[]
   Qualification Qualification[]
+  Dependents Dependent[]
 }
 
 
@@ -265,3 +266,13 @@ model Language {
   @@map("languages")
 }
 
+model Dependent {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  relationship String   @db.VarChar(100)
+  dob          DateTime
+  employeeId   Int
+  Employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
