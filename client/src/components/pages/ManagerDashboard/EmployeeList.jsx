@@ -1,17 +1,13 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import AddEmployee from "./AddEmployee"; // Import the AddEmployee component
 import { useGetAllEmployeesQuery } from "../../../slices/employeeSlice";
 
 const EmployeeList = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit] = useState(10);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [deleteEmployee, setDeleteEmployee] = useState(null);
-
-  const [sortField, setSortField] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [positionFilter, setPositionFilter] = useState("");
+  const [limit] = useState(10); // Items per page
+  const [showForm, setShowForm] = useState(false); // State to show/hide the form
+  const [selectedEmployee, setSelectedEmployee] = useState(null); // State for selected employee
+  const [deleteEmployee, setDeleteEmployee] = useState(null); // State for employee to delete
 
   const { data: employees, error, isLoading } = useGetAllEmployeesQuery({
     page: currentPage,
@@ -34,114 +30,62 @@ const EmployeeList = () => {
     : [];
   const totalPages = employees?.data?.totalPages || 1;
 
-  // Sorting Logic
-  const sortedEmployees = useMemo(() => {
-    let sorted = [...employeeList];
+  const handleEditClick = (employee) => {
+    setSelectedEmployee(employee); // Set the employee to edit
+    setShowForm(true); // Show the AddEmployee form
+  };
 
-    if (sortField) {
-      sorted.sort((a, b) => {
-        let aValue = a[sortField] || "";
-        let bValue = b[sortField] || "";
+  const handleCloseForm = () => {
+    setSelectedEmployee(null); // Clear the selected employee
+    setShowForm(false); // Hide the form
+  };
 
-        if (sortField === "firstName") {
-          aValue = `${a.firstName} ${a.lastName}`;
-          bValue = `${b.firstName} ${b.lastName}`;
-        }
+  const handleDeleteClick = (employee) => {
+    setDeleteEmployee(employee); // Set the employee to delete
+  };
 
-        return sortOrder === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      });
-    }
-
-    return sorted;
-  }, [employeeList, sortField, sortOrder]);
-
-  // Filtering Logic
-  const filteredEmployees = sortedEmployees.filter((emp) =>
-    positionFilter ? emp.position === positionFilter : true
-  );
-
-  // Handle Sorting
-  const handleSort = (field) => {
-    setSortOrder(sortField === field && sortOrder === "asc" ? "desc" : "asc");
-    setSortField(field);
+  const confirmDelete = () => {
+    console.log("Deleting employee:", deleteEmployee.id);
+    setDeleteEmployee(null); // Close modal after deleting
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4">
-      {/* Sorting & Filtering Controls */}
-      <div className="flex justify-between items-center mb-4">
-        <select
-          className="border p-2 rounded"
-          value={positionFilter}
-          onChange={(e) => setPositionFilter(e.target.value)}
-        >
-          <option value="">All Positions</option>
-          {[...new Set(employeeList.map((emp) => emp.position))].map(
-            (position) => (
-              <option key={position} value={position}>
-                {position}
-              </option>
-            )
-          )}
-        </select>
-      </div>
-
-      {/* Employee Table */}
-      <table className="w-full text-left border-collapse shadow-lg rounded-lg overflow-hidden">
+    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <table className="w-full text-left border-collapse">
         <thead className="bg-gray-200 text-gray-600 uppercase text-sm">
           <tr>
-            <th
-              className="p-4 border-b cursor-pointer hover:bg-gray-300"
-              onClick={() => handleSort("firstName")}
-            >
-              Name {sortField === "firstName" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-            </th>
-            <th
-              className="p-4 border-b cursor-pointer hover:bg-gray-300"
-              onClick={() => handleSort("position")}
-            >
-              Position {sortField === "position" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-            </th>
-            <th
-              className="p-4 border-b cursor-pointer hover:bg-gray-300"
-              onClick={() => handleSort("email")}
-            >
-              Email {sortField === "email" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-4 border-b">Action</th>
+            <th className="p-3">Name</th>
+            <th className="p-3">Position</th>
+            <th className="p-3">Email</th>
+            <th className="p-3">Action</th>
           </tr>
         </thead>
         <tbody>
-          {filteredEmployees.length === 0 ? (
+          {employeeList.length === 0 ? (
             <tr>
-              <td colSpan="4" className="p-4 text-center text-gray-500">
+              <td colSpan="4" className="p-3 text-center text-gray-500">
                 No employees found.
               </td>
             </tr>
           ) : (
-            filteredEmployees.map((employee, index) => (
+            employeeList.map((employee, index) => (
               <tr
                 key={employee.id}
-                className={`border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"} hover:bg-gray-200 transition`}
+                className={`border-b ${index % 2 === 0 ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-200`}
               >
-                <td className="p-4">{`${employee.firstName} ${employee.lastName}`}</td>
-                <td className="p-4">{employee.position || "N/A"}</td>
-                <td className="p-4">{employee.user?.email || "N/A"}</td>
-                <td className="p-4 flex gap-2">
+                <td className="p-3">{`${employee.firstName} ${employee.lastName}`}</td>
+                <td className="p-3">{employee.position || "N/A"}</td>
+                <td className="p-3">{employee.user?.email || "N/A"}</td>
+                <td className="p-3">
                   <button
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                    onClick={() => {
-                      setSelectedEmployee(employee);
-                      setShowForm(true);
-                    }}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
+                    onClick={() => handleEditClick(employee)}
                   >
                     Edit
                   </button>
                   <button
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                    onClick={() => setDeleteEmployee(employee)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    onClick={() => handleDeleteClick(employee)}
                   >
                     Delete
                   </button>
@@ -189,10 +133,7 @@ const EmployeeList = () => {
               </button>
               <button
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                onClick={() => {
-                  console.log("Deleting employee:", deleteEmployee.id);
-                  setDeleteEmployee(null);
-                }}
+                onClick={confirmDelete}
               >
                 Delete
               </button>
@@ -205,7 +146,10 @@ const EmployeeList = () => {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <AddEmployee employee={selectedEmployee} onClose={() => setShowForm(false)} />
+            <AddEmployee
+              employee={selectedEmployee} // Pass the employee to edit
+              onClose={handleCloseForm} // Close the form
+            />
           </div>
         </div>
       )}

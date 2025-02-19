@@ -3,24 +3,25 @@ import { apiSlice } from "./apiSlice";
 
 export const leaveApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Fetch all leave requests
     getAllLeaveRequests: builder.query({
-      query: ({ page = 1, limit = 10, employeeId = null }) => ({
-        url: `${LEAVE_URL}`,
-        method: "GET",
-        params: { page, limit, employeeId },
-      }),
+      query: () => ({
+          url: `${LEAVE_URL}/get-all-leave-requests`,
+          method: "GET",
+    }),
     }),
 
     // Fetch a single leave request by ID
     getLeaveRequest: builder.query({
-      query: (id) => `${LEAVE_URL}/${id}`,
+      query: (id) => ({
+        url: `${LEAVE_URL}/${id}`,
+        method: "GET",
+      }),
     }),
 
     // Create a new leave request
     createLeaveRequest: builder.mutation({
       query: (body) => ({
-        url: `${LEAVE_URL}`,
+        url: `${LEAVE_URL}/create-leave-request`,
         method: "POST",
         body,
       }),
