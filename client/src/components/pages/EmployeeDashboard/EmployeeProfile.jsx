@@ -3,6 +3,11 @@ import ContactDetails from "./ContactDetails";
 import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
+
+
+
+
+
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -66,13 +71,7 @@ const EmployeeProfile = () => {
             {/* Add more components for other tabs if needed */}
           </div>
 
-          {/* Space for Form at the Bottom */}
-          <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Form Section</h2>
-            <p className="text-gray-600">
-              This space can be used for additional forms or content.
-            </p>
-          </div>
+        
         </div>
       </div>
     </div>

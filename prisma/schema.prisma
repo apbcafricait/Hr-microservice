@@ -48,6 +48,8 @@ model Employee {
   departmentId    Int?         @map("department_id")
     department      Department?  @relation("DepartmentEmployees", fields: [departmentId], references: [id])
     managedDepartment Department? @relation("DepartmentManager")
+  Payroll Payroll[]
+  Qualification Qualification[]
 }
 
 
@@ -169,3 +171,97 @@ model Department {
     @@unique([organisationId, name])
     @@map("departments")
 }
+model Payroll {
+    id            Int      @id @default(autoincrement())
+    employeeId    Int      @map("employee_id")
+    monthYear     DateTime @map("month_year") @db.Date
+    grossSalary   Decimal  @map("gross_salary") @db.Decimal(10,2)
+    deductions    Json     @map("deductions")
+    netSalary     Decimal  @map("net_salary") @db.Decimal(10,2)
+    payslipPath   String?  @map("payslip_path")
+    processedAt   DateTime @default(now()) @map("processed_at")
+    
+    employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+    @@unique([employeeId, monthYear])
+    @@map("payroll")
+    PayrollDeductions PayrollDeductions[]
+}
+
+model PayrollDeductions {
+    id          Int      @id @default(autoincrement())
+    nssf        Decimal  @db.Decimal(10,2)
+    shif        Decimal  @db.Decimal(10,2) // Changed from nhif to shif
+    paye        Decimal  @db.Decimal(10,2)
+    housingLevy Decimal  @db.Decimal(10,2)
+    payrollId   Int      @unique
+    payroll     Payroll  @relation(fields: [payrollId], references: [id])
+
+    @@map("payroll_deductions")
+}
+model Qualification {
+  id              Int              @id @default(autoincrement())
+  employeeId      Int              @map("employee_id")
+  institution     String           @db.VarChar(255)
+  qualification   String           @db.VarChar(255)
+  startDate       DateTime         @map("start_date") @db.Date
+  endDate         DateTime         @map("end_date") @db.Date
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  employee        Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  educations      Education[]
+  workExperiences WorkExperience[]
+  skills          Skill[]
+  languages       Language[]
+
+  @@map("qualifications")
+}
+
+model Education {
+  id              Int           @id @default(autoincrement())
+  level           String        @db.VarChar(255)
+  year            String        @db.VarChar(4)
+  gpa             String        @db.VarChar(10)
+  
+  qualificationId Int
+  qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
+
+  @@map("educations")
+}
+
+model WorkExperience { 
+  id              Int           @id @default(autoincrement())
+  company         String        @db.VarChar(255)
+  title           String        @db.VarChar(255)
+  fromDate        DateTime      @map("from_date") @db.Date
+  toDate          DateTime      @map("to_date") @db.Date
+  comment         String?       @db.Text
+
+  qualificationId Int
+  qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
+
+  @@map("work_experiences")
+}
+
+model Skill {
+  id              Int           @id @default(autoincrement())
+  skill           String        @db.VarChar(255)
+
+  qualificationId Int
+  qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+}
+
+model Language {
+  id              Int           @id @default(autoincrement())
+  language        String        @db.VarChar(255)
+
+  qualificationId Int
+  qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
+
+  @@map("languages")
+}
+

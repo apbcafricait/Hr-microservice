@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, User, Lock } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -32,18 +32,23 @@ const Login = () => {
   };
 //const orgid = resizeBy.bogdy.orgId
   const handleRedirect = (role) => {
-    switch (role) {
-      case 'admin':
-        navigate('/admin');
+    if (!role) {
+      console.error("Role is undefined or null");
+      return;
+    }
+  
+    switch (role.toLowerCase()) {
+      case "admin":
+        navigate("/admin");
         break;
-      case 'manager':
-        navigate('/manager');
+      case "manager":
+        navigate("/manager");
         break;
-      case 'employee':
-        navigate('/employee');
+      case "employee":
+        navigate("/employee");
         break;
       default:
-       null // Default to admin as specified
+        console.error("Invalid role:", role);
     }
   };
 
