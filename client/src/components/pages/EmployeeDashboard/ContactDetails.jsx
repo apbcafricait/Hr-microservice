@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import React, { useState, useEffect } from "react";
 import { useCreateEmployeeContactMutation } from "../../../slices/ContactSlice";
 
@@ -149,7 +149,7 @@ const ContactDetails = () => {
             </form>
           </div>
         )}
-=======
+
 import { useState, useEffect } from "react";
 const ContactDetails = () => {
   return (
