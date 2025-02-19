@@ -2,6 +2,7 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
+
 export class LeaveRequestsController {
   // GET a single leave request by its id
   async getLeaveRequest (req, res) {
@@ -31,16 +32,19 @@ export class LeaveRequestsController {
     }
   }
 
+
   // GET all leave requests with pagination and optional employee filtering
-  async getAllLeaveRequests (req, res) {
+  async getAllLeaveRequests(req, res) {
     try {
-      const page = parseInt(req.query.page) || 1
-      const limit = parseInt(req.query.limit) || 10
-      const skip = (page - 1) * limit
-      const whereClause = {}
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const whereClause = {};
+
       if (req.query.employeeId) {
-        whereClause.employeeId = parseInt(req.query.employeeId)
+        whereClause.employeeId = parseInt(req.query.employeeId);
       }
+
       const [leaveRequests, total] = await Promise.all([
         prisma.leaveRequest.findMany({
           where: whereClause,
@@ -48,29 +52,30 @@ export class LeaveRequestsController {
           take: limit,
           include: {
             employee: { select: { firstName: true, lastName: true } },
-            approver: { select: { email: true } }
+            approver: { select: { email: true } },
           },
-          orderBy: { requestedAt: 'desc' }
+          orderBy: { requestedAt: 'desc' },
         }),
-        prisma.leaveRequest.count({ where: whereClause })
-      ])
+        prisma.leaveRequest.count({ where: whereClause }),
+      ]);
+
       return res.status(200).json({
         status: 'success',
         data: {
           leaveRequests,
-          pagination: { total, pages: Math.ceil(total / limit), page, limit }
-        }
-      })
+          pagination: { total, pages: Math.ceil(total / limit), page, limit },
+        },
+      });
     } catch (error) {
-      return res
-        .status(500)
-        .json({
-          status: 'error',
-          message: 'Failed to fetch leave requests',
-          error: error.message
-        })
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch leave requests',
+        error: error.message,
+      });
     }
   }
+
+
 
   // POST: Create a new leave request
   async createLeaveRequest (req, res) {
@@ -105,6 +110,7 @@ export class LeaveRequestsController {
         })
     }
   }
+
 
   // PUT: Update an existing leave request (e.g., to approve/reject)
   async updateLeaveRequest (req, res) {
@@ -154,6 +160,7 @@ export class LeaveRequestsController {
     }
   }
 
+
   // DELETE: Remove a leave request
   async deleteLeaveRequest (req, res) {
     try {
@@ -178,4 +185,8 @@ export class LeaveRequestsController {
   }
 }
 
+
 export default LeaveRequestsController
+
+
+

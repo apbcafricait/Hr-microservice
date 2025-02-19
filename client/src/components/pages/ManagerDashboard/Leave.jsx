@@ -1,93 +1,126 @@
 import React, { useState } from "react";
+import { useGetAllLeaveRequestsQuery } from "../../../slices/leaveApiSlice"; // Import API hook
 
 const Leave = () => {
-  const [leaveRequests, setLeaveRequests] = useState([]); // Empty array initially
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit] = useState(10);
 
-  // Placeholder action handlers (no backend logic yet)
+  // Fetch leave requests using RTK Query
+  const { data, error, isLoading } = useGetAllLeaveRequestsQuery({ page: currentPage, limit });
+
+  const leaveRequests = data?.data?.leaveRequests || []; // Ensure data is always an array
+  const totalPages = data?.data?.pagination?.pages || 1;
+
+  // Placeholder Approve/Reject functions (only updates UI)
   const handleApprove = (id) => {
-    setLeaveRequests((prev) =>
-      prev.map((leave) =>
-        leave.id === id ? { ...leave, status: "approved" } : leave
-      )
-    );
+    console.log(`Approving leave request ${id}`);
   };
 
   const handleReject = (id) => {
-    setLeaveRequests((prev) =>
-      prev.map((leave) =>
-        leave.id === id ? { ...leave, status: "rejected" } : leave
-      )
-    );
+    console.log(`Rejecting leave request ${id}`);
   };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="container mx-auto"> {/* Center the content */}
+      <div className="container mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-center">Leave Requests</h1>
-        <div className="overflow-x-auto bg-white shadow rounded-lg p-6">
-          <table className="min-w-full text-left border-collapse table-auto"> {/* Added table-auto */}
-            <thead className="bg-gray-200"> {/* Added background to header */}
-              <tr>
-                <th className="py-3 px-4 font-medium text-gray-700 uppercase tracking-wider">Employee Name</th>
-                <th className="py-3 px-4 font-medium text-gray-700 uppercase tracking-wider">Leave Type</th>
-                <th className="py-3 px-4 font-medium text-gray-700 uppercase tracking-wider">Start Date</th>
-                <th className="py-3 px-4 font-medium text-gray-700 uppercase tracking-wider">End Date</th>
-                <th className="py-3 px-4 font-medium text-gray-700 uppercase tracking-wider">Status</th>
-                <th className="py-3 px-4 font-medium text-gray-700 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaveRequests.length === 0 ? ( // Display message if no requests
+
+        {/* Handle Loading and Errors */}
+        {isLoading && <p className="text-center text-gray-500">Loading leave requests...</p>}
+        {error && <p className="text-center text-red-500">Failed to load leave requests.</p>}
+
+        {!isLoading && !error && (
+          <div className="overflow-x-auto bg-white shadow rounded-lg p-6">
+            <table className="min-w-full text-left border-collapse table-auto">
+              <thead className="bg-gray-200">
                 <tr>
-                  <td colSpan="6" className="py-4 px-6 text-center text-gray-500">
-                    No leave requests found.
-                  </td>
+                  <th className="py-3 px-4 font-medium text-gray-700 uppercase">Employee Name</th>
+                  <th className="py-3 px-4 font-medium text-gray-700 uppercase">Leave Type</th>
+                  <th className="py-3 px-4 font-medium text-gray-700 uppercase">Start Date</th>
+                  <th className="py-3 px-4 font-medium text-gray-700 uppercase">End Date</th>
+                  <th className="py-3 px-4 font-medium text-gray-700 uppercase">Status</th>
+                  <th className="py-3 px-4 font-medium text-gray-700 uppercase">Actions</th>
                 </tr>
-              ) : (
-                leaveRequests.map((leave) => (
-                  <tr key={leave.id} className="hover:bg-gray-50 transition duration-300"> {/* Added transition */}
-                    <td className="py-3 px-4 border-b">{leave.employee?.firstName} {leave.employee?.lastName}</td> {/* Optional chaining */}
-                    <td className="py-3 px-4 border-b">{leave.type}</td>
-                    <td className="py-3 px-4 border-b">{leave.startDate ? new Date(leave.startDate).toLocaleDateString() : "-"}</td> {/* Handle empty dates */}
-                    <td className="py-3 px-4 border-b">{leave.endDate ? new Date(leave.endDate).toLocaleDateString() : "-"}</td> {/* Handle empty dates */}
-                    <td className="py-3 px-4 border-b capitalize">
-                      <span
-                        className={`px-3 py-1 rounded text-sm ${
-                          leave.status === "approved"
-                            ? "bg-green-100 text-green-700"
-                            : leave.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700" // Added yellow for pending
-                        }`}
-                      >
-                        {leave.status || "-"} {/* Display "-" if status is empty */}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 border-b">
-                      {leave.status === "pending" ? (
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleApprove(leave.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition duration-300"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleReject(leave.id)}
-                            className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition duration-300"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      ) : (
-                        "-" // Display "-" if not pending
-                      )}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {leaveRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="py-4 px-6 text-center text-gray-500">
+                      No leave requests found.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  leaveRequests.map((leave, index) => (
+                    <tr
+                      key={leave.id}
+                      className={`${index % 2 === 0 ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-200`}
+                    >
+                      <td className="py-3 px-4 border-b">
+                        {leave.employee?.firstName} {leave.employee?.lastName}
+                      </td>
+                      <td className="py-3 px-4 border-b">{leave.type}</td>
+                      <td className="py-3 px-4 border-b">{new Date(leave.startDate).toLocaleDateString()}</td>
+                      <td className="py-3 px-4 border-b">{new Date(leave.endDate).toLocaleDateString()}</td>
+                      <td className="py-3 px-4 border-b capitalize">
+                        <span
+                          className={`px-3 py-1 rounded text-sm ${
+                            leave.status === "approved"
+                              ? "bg-green-100 text-green-700"
+                              : leave.status === "rejected"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {leave.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 border-b">
+                        {leave.status === "pending" ? (
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleApprove(leave.id)}
+                              className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleReject(leave.id)}
+                              className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

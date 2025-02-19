@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useGetAllEmployeesQuery } from "../../../slices/employeeSlice";
+import { useGetAllLeaveRequestsQuery } from "../../../slices/leaveApiSlice";
 
 const data = [
   { name: "Jan", Employees: 12, Leaves: 2 },
@@ -19,12 +20,18 @@ const data = [
 ];
 
 const Dashboard = () => {
-  const { data: employees, error, isLoading } = useGetAllEmployeesQuery({
+  const { data: employees, error: employeesError, isLoading: employeesLoading } = useGetAllEmployeesQuery({
     page: 1, // Default page number
     limit: 100, // Arbitrary large number to fetch all employees
   });
 
+  const { data: leaveRequests, error: leaveError, isLoading: leaveLoading } = useGetAllLeaveRequestsQuery({
+    page: 1, // Default page number
+    limit: 100, // Arbitrary large number to fetch all leave requests
+  });
+
   const totalEmployees = employees?.data?.employees?.length || 0;
+  const pendingLeaveCount = leaveRequests?.data?.leaveRequests?.filter((leave) => leave.status === "pending").length || 0;
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -38,16 +45,14 @@ const Dashboard = () => {
         <div className="bg-white shadow-md p-4 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600">Total Employees</h2>
           <p className="text-3xl font-bold text-blue-500">
-            {isLoading
-              ? "Loading..."
-              : error
-              ? "Error"
-              : totalEmployees}
+            {employeesLoading ? "Loading..." : employeesError ? "Error" : totalEmployees}
           </p>
         </div>
         <div className="bg-white shadow-md p-4 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600">Pending Leave Requests</h2>
-          <p className="text-3xl font-bold text-red-500">4</p>
+          <p className="text-3xl font-bold text-red-500">
+            {leaveLoading ? "Loading..." : leaveError ? "Error" : pendingLeaveCount}
+          </p>
         </div>
         <div className="bg-white shadow-md p-4 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600">Ongoing Recruitments</h2>
