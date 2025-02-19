@@ -20,7 +20,7 @@ export const generatePayslip = async (employee, payrollData, monthYear) => {
     // Create PDF document
     const doc = new PDFDocument({
       size: 'A4',
-      margin: 50
+      margin: 10
     })
 
     // Pipe PDF to file
@@ -94,7 +94,7 @@ export const generatePayslip = async (employee, payrollData, monthYear) => {
     // Earnings and Deductions
     const tableTop = doc.y
     const tableLeft = 50
-    const columnWidth = 165
+    const columnWidth = 140
 
     // Headers
     doc
@@ -144,6 +144,7 @@ export const generatePayslip = async (employee, payrollData, monthYear) => {
         tableLeft + columnWidth * 3,
         rowTop
       )
+
 
     rowTop += lineHeight
 

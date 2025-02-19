@@ -1,123 +1,91 @@
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import axios from "axios"; // Or your preferred HTTP client
+import { CONTACT_DETAILS_URL } from "../Constants/constants";
+import { apiSlice } from "./apiSlice";
 
-// const initialState = {
-//   contactDetails: null,
-//   attachments: [],
-//   loading: false,
-//   error: null,
-// };
+export const contactDetailsApiSlice = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    // Fetch all employee contacts with pagination and optional filtering by employeeId
+    getAllEmployeeContacts: builder.query({
+      query: ({ page = 1, limit = 10, employeeId }) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
 
-// // Async Thunks
-// export const getContactDetails = createAsyncThunk(
-//   "contact/getContactDetails",
-//   async () => {
-//     try {
-//       const response = await axios.get("/api/contact"); // Replace with your API endpoint
-//       return response.data;
-//     } catch (error) {
-//       throw error.response.data.message || error.message; // Re-throw the error for the rejected case
-//     }
-//   }
-// );
+        const queryParams = new URLSearchParams();
+        if (page) queryParams.append("page", page);
+        if (limit) queryParams.append("limit", limit);
+        if (employeeId) queryParams.append("employeeId", employeeId);
 
-// export const updateContactDetails = createAsyncThunk(
-//   "contact/updateContactDetails",
-//   async (contactData) => {
-//     try {
-//       const response = await axios.put("/api/contact", contactData); // Replace with your API endpoint
-//       return response.data;
-//     } catch (error) {
-//       throw error.response.data.message || error.message;
-//     }
-//   }
-// );
+        return {
+          url: `${CONTACT_DETAILS_URL}?${queryParams.toString()}`,
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      providesTags: ["ContactDetails"],
+    }),
 
-// export const uploadAttachments = createAsyncThunk(
-//   "contact/uploadAttachments",
-//   async (formData) => {
-//     try {
-//       const response = await axios.post("/api/attachments", formData, {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//         },
-//       });
-//       return response.data;
-//     } catch (error) {
-//       throw error.response.data.message || error.message;
-//     }
-//   }
-// );
+    // Create a new employee contact record
+    createEmployeeContact: builder.mutation({
+      query: (contactData) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
 
+        return {
+          url: `${CONTACT_DETAILS_URL}/create-employee-contact`,
+          method: "POST",
+          body: contactData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        };
+      },
+      invalidatesTags: ["ContactDetails"],
+    }),
 
-// export const getAttachments = createAsyncThunk(
-//     "contact/getAttachments",
-//     async () => {
-//       try {
-//         const response = await axios.get("/api/attachments"); // Replace with your API endpoint
-//         return response.data;
-//       } catch (error) {
-//         throw error.response.data.message || error.message;
-//       }
-//     }
-//   );
+    // Update an existing employee contact record
+    updateEmployeeContact: builder.mutation({
+      query: ({ id, updatedData }) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
 
+        return {
+          url: `${CONTACT_DETAILS_URL}/${id}`,
+          method: "PUT",
+          body: updatedData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        };
+      },
+      invalidatesTags: ["ContactDetails"],
+    }),
 
-// const contactSlice = createSlice({
-//   name: "contact",
-//   initialState,
-//   reducers: {}, // You might have some regular reducers here if needed
-//   extraReducers: (builder) => {
-//     // Get Contact Details
-//     builder.addCase(getContactDetails.pending, (state) => {
-//       state.loading = true;
-//       state.error = null;
-//     });
-//     builder.addCase(getContactDetails.fulfilled, (state, action) => {
-//       state.loading = false;
-//       state.contactDetails = action.payload;
-//     });
-//     builder.addCase(getContactDetails.rejected, (state, action) => {
-//       state.loading = false;
-//       state.error = action.error.message; // Set the error message
-//     });
+    // Delete an employee contact record
+    deleteEmployeeContact: builder.mutation({
+      query: (id) => {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const token = userInfo?.token;
 
-//     // Update Contact Details
-//     builder.addCase(updateContactDetails.pending, (state) => {
-//       state.loading = true;
-//       state.error = null;
-//     });
-//     builder.addCase(updateContactDetails.fulfilled, (state, action) => {
-//       state.loading = false;
-//       state.contactDetails = action.payload; // Update contact details in the state
-//     });
-//     builder.addCase(updateContactDetails.rejected, (state, action) => {
-//       state.loading = false;
-//       state.error = action.error.message;
-//     });
+        return {
+          url: `${CONTACT_DETAILS_URL}/${id}`,
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+      invalidatesTags: ["ContactDetails"],
+    }),
+  }),
+});
 
-//     // Upload Attachments
-//     builder.addCase(uploadAttachments.pending, (state) => {
-//         state.loading = true;
-//         state.error = null;
-//       });
-//       builder.addCase(uploadAttachments.fulfilled, (state) => {
-//         state.loading = false;
-//       });
-//       builder.addCase(uploadAttachments.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.error.message;
-//       });
-
-//     // Get Attachments
-//     builder.addCase(getAttachments.pending, (state) => {
-//         state.loading = true;
-//         state.error = null;
-//       });
-//       builder.addCase(getAttachments.fulfilled, (state, action) => {
-//         state.loading = false;
-//         state.attachments = action.payload;
-//       });
-//       builder.addCase(getAttachments.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.error.message;
+// Export hooks for each endpoint
+export const {
+  useGetAllEmployeeContactsQuery,
+  useCreateEmployeeContactMutation,
+  useUpdateEmployeeContactMutation,
+  useDeleteEmployeeContactMutation,
+} = contactDetailsApiSlice;
