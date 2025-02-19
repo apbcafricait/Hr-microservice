@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useClockInMutation, useClockOutMutation } from '../../../slices/attendanceSlice';
 
 const TimeAtWork = () => {
   const [isClockedIn, setIsClockedIn] = useState(false);
@@ -9,10 +10,11 @@ const TimeAtWork = () => {
     { date: 'Feb 14, 2025', clockIn: '8:55 AM', clockOut: '4:50 PM' },
   ]);
   const [currentClockInTime, setCurrentClockInTime] = useState(null);
+  
+  const [clockIn] = useClockInMutation();
+  const [clockOut] = useClockOutMutation();
 
-  // Simulate checking initial clock-in status (e.g., from local storage or API)
   useEffect(() => {
-    // Replace with actual API call to check if user is clocked in
     const storedClockInTime = localStorage.getItem('clockInTime');
     if (storedClockInTime) {
       setIsClockedIn(true);
@@ -20,17 +22,16 @@ const TimeAtWork = () => {
     }
   }, []);
 
-  // Simulate API call to clock in
   const handleClockIn = async () => {
     try {
-      // Replace with actual API call to your backend
-      // Example: const response = await fetch('/api/time-attendance/clock-in', { method: 'POST' });
-      // if (!response.ok) throw new Error('Failed to clock in');
+      const response = await clockIn({
+        employeeId: 14, // Replace with actual employee ID
+      }).unwrap();
 
-      const clockInTime = new Date().toLocaleTimeString();
+      const clockInTime = new Date(response.attendance.clockIn).toLocaleTimeString();
       setIsClockedIn(true);
       setCurrentClockInTime(clockInTime);
-      localStorage.setItem('clockInTime', clockInTime); // Simulate storing in DB
+      localStorage.setItem('clockInTime', clockInTime);
 
       toast.success('Clocked in successfully!', {
         position: 'top-right',
@@ -44,14 +45,13 @@ const TimeAtWork = () => {
     }
   };
 
-  // Simulate API call to clock out
   const handleClockOut = async () => {
     try {
-      // Replace with actual API call to your backend
-      // Example: const response = await fetch('/api/time-attendance/clock-out', { method: 'POST' });
-      // if (!response.ok) throw new Error('Failed to clock out');
+      const response = await clockOut({
+        employeeId: 14, // Replace with actual employee ID
+      }).unwrap();
 
-      const clockOutTime = new Date().toLocaleTimeString();
+      const clockOutTime = new Date(response.updatedAttendance.clockOut).toLocaleTimeString();
       setIsClockedIn(false);
       setAttendanceRecords([
         {
@@ -61,7 +61,7 @@ const TimeAtWork = () => {
         },
         ...attendanceRecords,
       ]);
-      localStorage.removeItem('clockInTime'); // Simulate removing from DB
+      localStorage.removeItem('clockInTime');
 
       toast.success('Clocked out successfully!', {
         position: 'top-right',
