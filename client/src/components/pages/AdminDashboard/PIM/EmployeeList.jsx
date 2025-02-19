@@ -7,9 +7,9 @@ const EmployeeList = () => {
     employeeId: '',
     employmentStatus: '',
     include: 'Current Employees Only',
-    supervisorName: '',
+    managerName: '',
     jobTitle: '',
-    subUnit: '',
+    department: '',
   });
 
   const [activeTab, setActiveTab] = useState('Employee List');
@@ -17,13 +17,13 @@ const EmployeeList = () => {
     employmentStatus: false,
     include: false,
     jobTitle: false,
-    subUnit: false,
+    department: false,
   });
 
   // Sample data for dropdowns
   const employmentStatuses = ['Full-Time', 'Part-Time', 'Contract', 'Temporary'];
   const jobTitles = ['Software Engineer', 'Manager', 'Designer', 'Analyst'];
-  const subUnits = ['Engineering', 'Marketing', 'Sales', 'HR'];
+  const department = ['Engineering', 'Marketing', 'Sales', 'HR'];
 
   const handleDropdown = (dropdown) => {
     setDropdownStates(prev => ({
@@ -165,7 +165,7 @@ const EmployeeList = () => {
               {/* Supervisor Name */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Supervisor Name
+                  Mnaager Name
                 </label>
                 <input
                   type="text"
@@ -195,7 +195,7 @@ const EmployeeList = () => {
               {/* Sub Unit */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Sub Unit
+                  Department
                 </label>
                 <div className="relative">
                   <button
@@ -273,13 +273,13 @@ const EmployeeList = () => {
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
                     <div className="flex items-center space-x-1">
-                      <span>Sub Unit</span>
+                      <span>Department</span>
                       <ArrowUpDown className="h-4 w-4" />
                     </div>
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
                     <div className="flex items-center space-x-1">
-                      <span>Supervisor</span>
+                      <span>Manager Name</span>
                       <ArrowUpDown className="h-4 w-4" />
                     </div>
                   </th>

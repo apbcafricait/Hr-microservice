@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+
 import {
   Settings,
   Users,
@@ -15,11 +16,13 @@ import {
   Shield
 } from 'lucide-react';
 
-const Sidebar = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [activeLink, setActiveLink] = useState('Dashboard');
-  const [hoveredLink, setHoveredLink] = useState(null);
 
+
+const Sidebar = ({ activeLink, setActiveLink }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  
+  const [hoveredLink, setHoveredLink] = useState(null);
+ 
   const menuItems = [
     { name: 'Dashboard', icon: Home },
     // { name: 'Search', icon: Search },
@@ -33,6 +36,8 @@ const Sidebar = () => {
     { name: 'Claims', icon: FileText },
     { name: 'Settings', icon: Settings },
   ];
+
+
 
   return (
     <motion.div
@@ -86,6 +91,7 @@ const Sidebar = () => {
                     e.preventDefault();
                     setActiveLink(item.name);
                   }}
+                  
                   onMouseEnter={() => setHoveredLink(item.name)}
                   onMouseLeave={() => setHoveredLink(null)}
                   className={`relative flex items-center px-3 py-3 rounded-lg transition-all duration-200 group
@@ -157,6 +163,8 @@ const Sidebar = () => {
           </div>
         </motion.div>
       )}
+
+
     </motion.div>
   );
 };

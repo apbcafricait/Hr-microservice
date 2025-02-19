@@ -7,18 +7,35 @@ import {
   Users2, Network, ListTodo, FileText, BarChart2, Menu as MenuIcon,
 } from 'lucide-react';
 import AdminSidebar from '../../Layouts/AdminSidebar';
-import User from './User';
-import CreateOrganization from './CreateOrganization';
-import ViewOrganization from './ViewOrganizations';
+import Dashboard from './Dashboard';
+import EmployeList from './PIM/EmployeeList';
+import Recruitment from './Recruitment';
+import ManageReview from './Peformance/ManageReview'
+import AdminImports from './AdminImports';
+import Time from '../AdminDashboard/Time'
+import MyInfo from './MyInfo';
+import Claims from './Claims';
+import LeaveApply from './Leave Dashboard/LeaveApply'
+
+const componentMap = {
+  Dashboard: Dashboard,
+  PIM: EmployeList,
+  Recruitment: Recruitment,
+  Performance: ManageReview,
+  Admin:AdminImports,
+  Time: Time,
+  "My Info": MyInfo,
+  Claims: Claims,
+  Leave:LeaveApply
+};
 
 const AdminDashboard = () => {
   const [theme, setTheme] = useState('light');
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeCard, setActiveCard] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showUser, setShowUser] = useState(false);
-  const [showCreateOrg, setShowCreateOrg] = useState(false);
-  const [showViewOrg, setShowViewOrg] = useState(false);
+  const [activeLink, setActiveLink] = useState("Dashboard");
+
+  const ActiveComponent = componentMap[activeLink];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,100 +56,37 @@ const AdminDashboard = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const handleUserClick = () => {
-    setShowUser(!showUser);
-    setShowCreateOrg(false);
-    setShowViewOrg(false);
-  };
-
-  const handleCreateOrgClick = () => {
-    setShowCreateOrg(!showCreateOrg);
-    setShowUser(false);
-    setShowViewOrg(false);
-  };
-
-  const handleViewOrgClick = () => {
-    setShowViewOrg(!showViewOrg);
-    setShowUser(false);
-    setShowCreateOrg(false);
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const dropdownVariants = {
-    hidden: { opacity: 0, height: 0 },
-    visible: { opacity: 1, height: 'auto' },
-  };
-
-  const cards = [
-    {
-      icon: Users,
-      title: 'User Management',
-      description: 'Manage system users and their permissions',
-      color: 'indigo',
-      subItems: [
-        { icon: Users2, title: 'User', onClick: handleUserClick },
-      ],
-    },
-    {
-      icon: Briefcase,
-      title: 'Jobs',
-      description: 'Handle job postings and applications',
-      color: 'emerald',
-      subItems: [
-        { icon: ListTodo, title: 'Job Listings', path: '/jobs' },
-        { icon: FileText, title: 'Applications', path: '/applications' },
-        { icon: BarChart2, title: 'Statistics', path: '/job-stats' },
-      ],
-    },
-    {
-      icon: Building2,
-      title: 'Organization',
-      description: 'Manage organizational structure and details',
-      color: 'violet',
-      subItems: [
-        { icon: Plus, title: 'Create Organization', onClick: handleCreateOrgClick, highlight: true },
-        { icon: Building, title: 'View Organizations', onClick: handleViewOrgClick, highlight: true },
-        { icon: Network, title: 'Departments', path: '/departments' },
-        { icon: Users, title: 'Employees', path: '/employees' },
-      ],
-    },
-  ];
-
   return (
-      <div className={`h-screen flex overflow-hidden ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-900'}`}>
-        {/* Static Sidebar */}
-        <div className="hidden md:flex md:flex-shrink-0">
-          <div className="w-64">
-            <AdminSidebar isOpen={true} onClose={() => {}} />
-          </div>
+    <div className={`h-screen flex overflow-hidden ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-900'}`}>
+      {/* Static Sidebar */}
+      <div className="hidden md:flex md:flex-shrink-0">
+        <div className="w-64">
+          <AdminSidebar isOpen={true} onClose={() => {}} activeLink={activeLink} setActiveLink={setActiveLink} />
         </div>
-  
-        {/* Mobile Sidebar */}
-        <div className="md:hidden">
-          {isSidebarOpen && (
-            <div className="fixed inset-0 z-50">
-              <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={toggleSidebar}></div>
-              <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-                <AdminSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
-              </div>
+      </div>
+
+      {/* Mobile Sidebar */}
+      <div className="md:hidden">
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={toggleSidebar}></div>
+            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+              <AdminSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
             </div>
-          )}
-        </div>
-  
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Fixed Header */}
-          <nav
-            className={`z-50 transition-all duration-300 ${
-              isScrolled
-                ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-lg'
-                : 'bg-white dark:bg-gray-900'
-            }`}
-          >
+          </div>
+        )}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <nav
+          className={`z-50 transition-all duration-300 ${
+            isScrolled
+              ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-lg'
+              : 'bg-white dark:bg-gray-900'
+          }`}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-16">
               <div className="flex items-center gap-2">
@@ -208,122 +162,7 @@ const AdminDashboard = () => {
           id="main-content"
           className="flex-1 overflow-y-auto"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cards.map((card, index) => (
-              <motion.div
-                key={index}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: index * 0.1 }}
-                className={`rounded-xl ${
-                  theme === 'light'
-                    ? 'bg-white shadow-lg hover:shadow-xl'
-                    : 'bg-gray-800 shadow-gray-700/30 hover:shadow-gray-700/40'
-                } transition-all duration-300`}
-              >
-                <div
-                  className="p-6 cursor-pointer"
-                  onClick={() => setActiveCard(activeCard === index ? null : index)}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`p-3 rounded-lg bg-${card.color}-100 dark:bg-${card.color}-900/30 text-${card.color}-600 dark:text-${card.color}-400`}>
-                      <card.icon className="w-6 h-6" />
-                    </div>
-                    <h3 className={`text-lg font-semibold ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>
-                      {card.title}
-                    </h3>
-                    <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${activeCard === index ? 'rotate-180' : ''}`} />
-                  </div>
-
-                  <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                    {card.description}
-                  </p>
-                </div>
-
-                <AnimatePresence>
-                  {activeCard === index && (
-                    <motion.div
-                      variants={dropdownVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="hidden"
-                      className="px-6 pb-6 space-y-2"
-                    >
-                      {card.subItems.map((item, itemIndex) => (
-                        item.path ? (
-                          <a
-                            key={itemIndex}
-                            href={item.path}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm ${
-                              item.highlight
-                                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                                : theme === 'light'
-                                ? 'hover:bg-gray-50 text-gray-700'
-                                : 'hover:bg-gray-700 text-gray-300'
-                            } transition-colors`}
-                          >
-                            <item.icon className="w-5 h-5" />
-                            <span className="font-medium">{item.title}</span>
-                          </a>
-                        ) : (
-                          <button
-                            key={itemIndex}
-                            onClick={item.onClick}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm ${
-                              item.highlight
-                                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                                : theme === 'light'
-                                ? 'hover:bg-gray-50 text-gray-700'
-                                : 'hover:bg-gray-700 text-gray-300'
-                            } transition-colors`}
-                          >
-                            <item.icon className="w-5 h-5" />
-                            <span className="font-medium">{item.title}</span>
-                          </button>
-                        )
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
-          </div>
-          
-          <AnimatePresence>
-            {showUser && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="mt-6"
-              >
-                <User />
-              </motion.div>
-            )}
-            {showCreateOrg && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="mt-6"
-              >
-                <CreateOrganization />
-              </motion.div>
-            )}
-            {showViewOrg && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="mt-6"
-              >
-                <ViewOrganization />
-              </motion.div>
-            )}
-         </AnimatePresence>
-          </div>
+          {activeLink === "Admin" ? <AdminImports /> : <ActiveComponent />}
         </div>
       </div>
     </div>
