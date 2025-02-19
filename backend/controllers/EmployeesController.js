@@ -43,6 +43,11 @@ export class EmployeesController {
             },
             organisation: {
               select: {
+                name: true,
+              }
+            },
+            department: {
+              select: {
                 name: true
               }
             }
@@ -91,6 +96,7 @@ export class EmployeesController {
           organisation: {
             select: {
               name: true,
+              id: true
             },
           },
         },

@@ -88,6 +88,14 @@ export const employeeApiSlice = apiSlice.injectEndpoints({
       },
       providesTags: ['Employee'],
     }),
+
+    // get employes of an org route /organisation/id
+    getOrganisationEmployees: builder.query({
+      query: (organisationId) =>({
+        url: `${EMPLOYEE_URL}/organisation/${organisationId}`,
+        method: 'GET'
+      })
+    })
     
   }),
 
@@ -99,4 +107,5 @@ export const {
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
   useGetEmployeeQuery,
+  useGetOrganisationEmployeesQuery
 } = employeeApiSlice;

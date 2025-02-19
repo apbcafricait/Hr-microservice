@@ -2,7 +2,7 @@
 
 import { Router } from 'express'
 import { LeaveBalancesController } from '../controllers/LeaveBalancesController.js'
-import {authenticated, admin} from '../middleware/Authentication.js'
+import {authenticated, admin, manager} from '../middleware/Authentication.js'
 
 const router = Router()
 const leaveBalancesController = new LeaveBalancesController()
