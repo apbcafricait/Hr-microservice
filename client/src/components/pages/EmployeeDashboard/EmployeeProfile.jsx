@@ -3,6 +3,7 @@ import ContactDetails from "./ContactDetails";
 import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
+import Dependents from "./Dependents";
 
 
 
@@ -45,7 +46,7 @@ const EmployeeProfile = () => {
               "Dependents",
               "Report-to",
               "Qualifications",
-              "Memberships",
+            
             ].map((item) => (
               <li
                 key={item}
@@ -64,9 +65,10 @@ const EmployeeProfile = () => {
         <div className="flex-1 p-6 overflow-y-auto">
           {/* Conditional Rendering for Active Tab */}
           <div className="bg-white p-6 rounded-lg shadow-md">
-            {activeTab === "Contact Details" && <ContactDetails />}
             {activeTab === "Personal Details" && <PersonalDetails />}
-            {activeTab === "Qualifications" && <Qualifications />}
+            {activeTab === "Contact Details" && <ContactDetails />}
+            {activeTab === "Dependents" && <Dependents />}
+           {activeTab === "Qualifications" && <Qualifications />}
             {activeTab === "Report-to" && <ReportTo />}
             {/* Add more components for other tabs if needed */}
           </div>

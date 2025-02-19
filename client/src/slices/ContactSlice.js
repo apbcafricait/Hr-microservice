@@ -32,7 +32,7 @@ export const contactDetailsApiSlice = apiSlice.injectEndpoints({
         const token = userInfo?.token;
 
         return {
-          url: `${CONTACT_DETAILS_URL}/create-employee-contact`,
+          url: `${CONTACT_DETAILS_URL}`,
           method: "POST",
           body: contactData,
           headers: {

@@ -12,8 +12,8 @@ const PersonalDetails = () => {
     isLoading: isFetchingEmployee,
     isError,
     error 
-  } = useGetEmployeeQuery(id);
-
+  } = useGetEmployeeQuery(id, { skip: !id }); 
+  
   console.log(employeeResponse, 'employee data')
 
   const [formData, setFormData] = useState({

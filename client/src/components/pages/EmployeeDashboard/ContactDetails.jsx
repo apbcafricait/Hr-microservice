@@ -1,10 +1,13 @@
-
-import React, { useState, useEffect } from "react";
+import  { useState } from "react";
 import { useCreateEmployeeContactMutation } from "../../../slices/ContactSlice";
-
+import { useSelector } from "react-redux";
 const ContactDetails = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
+  console.log(id, 'id')
+
   const [contact, setContact] = useState({
-    employeeId: "",
+    employeeId: id,
     phone: "",
     email: "",
     emergencyContactName: "",
@@ -14,8 +17,7 @@ const ContactDetails = () => {
   const [activeTab, setActiveTab] = useState("Contact Details");
 
   // Use the createEmployeeContact mutation from the API slice
-  const [createEmployeeContact, { isLoading, error, isSuccess }] =
-    useCreateEmployeeContactMutation();
+  const [createEmployeeContact, { isLoading }] = useCreateEmployeeContactMutation();
 
   // Handle input changes
   const handleChange = (e) => {
@@ -34,7 +36,8 @@ const ContactDetails = () => {
     }
 
     try {
-      await createEmployeeContact(contact).unwrap(); // Trigger the mutation
+     const res= await createEmployeeContact(contact).unwrap(); // Trigger the mutation
+     console.log(res);
       alert("Contact created successfully!");
       setContact({
         employeeId: "",
@@ -65,7 +68,7 @@ const ContactDetails = () => {
                 <input
                   type="text"
                   name="employeeId"
-                  value={contact.employeeId || ""}
+                  value={contact.employeeId}
                   onChange={handleChange}
                   placeholder="Employee ID"
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -79,7 +82,7 @@ const ContactDetails = () => {
                 <input
                   type="text"
                   name="emergencyContactName"
-                  value={contact.emergencyContactName || ""}
+                  value={contact.emergencyContactName}
                   onChange={handleChange}
                   placeholder="Emergency Contact Name"
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -90,7 +93,7 @@ const ContactDetails = () => {
                 <input
                   type="text"
                   name="emergencyContactPhone"
-                  value={contact.emergencyContactPhone || ""}
+                  value={contact.emergencyContactPhone}
                   onChange={handleChange}
                   placeholder="Emergency Contact Phone"
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -104,7 +107,7 @@ const ContactDetails = () => {
                 <input
                   type="text"
                   name="phone"
-                  value={contact.phone || ""}
+                  value={contact.phone}
                   onChange={handleChange}
                   placeholder="Phone Number"
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -118,7 +121,7 @@ const ContactDetails = () => {
                 <input
                   type="email"
                   name="email"
-                  value={contact.email || ""}
+                  value={contact.email}
                   onChange={handleChange}
                   placeholder="Email Address"
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -139,6 +142,7 @@ const ContactDetails = () => {
                   </button>
                 ) : (
                   <button
+                    type="button"
                     className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
                     onClick={toggleEdit}
                   >
@@ -149,20 +153,6 @@ const ContactDetails = () => {
             </form>
           </div>
         )}
-
-import { useState, useEffect } from "react";
-const ContactDetails = () => {
-  return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Contact Details</h2>
-      <div className="bg-white p-4 rounded shadow">
-        <p><strong>Email:</strong> john.doe@company.com</p>
-        <p><strong>Phone:</strong> +1 234 567 890</p>
-        <p><strong>Emergency Contact:</strong> Jane Doe (+1 234 567 891)</p>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded mt-4">
-          Edit Contact Details
-        </button>
->>>>>>> f17d3e844ed71d2b594e4a5d89a193b70bb5c5f2
       </div>
     </div>
   );
