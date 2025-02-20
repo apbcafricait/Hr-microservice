@@ -29,8 +29,8 @@ export const leaveApiSlice = apiSlice.injectEndpoints({
 
     // Update an existing leave request
     updateLeaveRequest: builder.mutation({
-      query: ({ id, ...body }) => ({
-        url: `${LEAVE_URL}/${id}`,
+      query: () => ({
+        url: `${LEAVE_URL}/update-leave-request/${id} `,
         method: "PUT",
         body,
       }),

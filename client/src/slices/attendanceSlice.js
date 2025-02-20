@@ -1,6 +1,6 @@
-import { apiSlice } from '../features/api/apiSlice';
+import { apiSlice } from '../slices/apiSlice';
 
-export const attendanceApiSlice = apiSlice.injectEndpoints({
+export const attendanceSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     clockIn: builder.mutation({
       query: (data) => ({
@@ -19,4 +19,4 @@ export const attendanceApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useClockInMutation, useClockOutMutation } = attendanceApiSlice;
+export const { useClockInMutation, useClockOutMutation } = attendanceSlice;
