@@ -6,7 +6,7 @@ import EmployeeList from "./EmployeeList";
 import Dashboard from "./Dashboard";
 import Leave from "./Leave";
 import { useSelector } from "react-redux";
-
+import Payroll from "./Payroll";
 const ManagerDashboard = () => {
   const [currentSection, setCurrentSection] = useState("dashboard"); // Default to dashboard
   const [showForm, setShowForm] = useState(false);
@@ -86,6 +86,7 @@ const ManagerDashboard = () => {
 
         {currentSection === "leave" && <Leave />} {/* Leave Section */}
         {currentSection === "reports" && <p>Reports Section</p>}
+        {currentSection=== "payroll" && <Payroll />}
         {currentSection === "settings" && <p>Settings Section</p>}
       </main>
     </div>

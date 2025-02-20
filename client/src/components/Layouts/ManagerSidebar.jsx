@@ -8,6 +8,7 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
     { name: "Leave", id: "leave" },
     { name: "Recruitment", id: "recruitment" },
     { name: "Performance", id: "performance" },
+    {name: "Payroll", id: "payroll"},
     { name: "Settings", id: "settings" },
   ];
 
