@@ -8,7 +8,6 @@ export const suggestionsApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${SUGGESTIONS_URL}/get-all-suggestions`,
         method: "GET",
-         
       }),
     }),
 
@@ -27,6 +26,22 @@ export const suggestionsApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body,
       }),
+      // Handle successful response
+      transformResponse: (response) => {
+        if (response.error) {
+          throw new Error(response.error.message || "Failed to create suggestion.");
+        }
+        return response; // Transform if needed (e.g., return only specific fields)
+      },
+      // Optional logging for debugging
+      async onQueryStarted(arg, { queryFulfilled }) {
+        try {
+          const result = await queryFulfilled;
+          console.log("Suggestion created successfully:", result.data);
+        } catch (error) {
+          console.error("Error creating suggestion:", error);
+        }
+      },
     }),
 
     // Update an existing suggestion

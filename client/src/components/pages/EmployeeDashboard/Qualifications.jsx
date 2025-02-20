@@ -1,12 +1,13 @@
-import{ useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   useGetAllQualificationsQuery,
   useCreateQualificationMutation,
   useUpdateQualificationMutation,
   useDeleteQualificationMutation,
 } from "../../../slices/qualificationSlice";
+import { FaGraduationCap } from "react-icons/fa";
 
-const QualificationsForm = () => {
+const Qualifications = () => {
   const [qualificationData, setQualificationData] = useState({
     id: null,
     institution: "",
@@ -77,7 +78,10 @@ const QualificationsForm = () => {
 
   return (
     <div>
-      <h2>{isEditing ? "Edit Qualification" : "Add Qualification"}</h2>
+      <h2>
+        <FaGraduationCap style={{ marginRight: "8px" }} />
+        {isEditing ? "Edit Qualification" : "Add Qualification"}
+      </h2>
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -135,10 +139,14 @@ const QualificationsForm = () => {
         )}
       </form>
 
-      <h2>Qualifications List</h2>
+      <h2>
+        <FaGraduationCap style={{ marginRight: "8px" }} />
+        Qualifications List
+      </h2>
       <ul>
         {qualifications?.map((qualification) => (
           <li key={qualification.id}>
+            <FaGraduationCap style={{ marginRight: "4px" }} />
             <strong>{qualification.institution}</strong> - {qualification.qualification} ({
               qualification.startDate
             } to {qualification.endDate})
@@ -151,4 +159,4 @@ const QualificationsForm = () => {
   );
 };
 
-export default QualificationsForm;
+export default Qualifications;
