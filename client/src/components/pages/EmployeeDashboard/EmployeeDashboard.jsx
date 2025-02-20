@@ -13,13 +13,13 @@ import {
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
 
-import TimeAtWork from './TimeAtWork';
+
+import TimeAtWork from './Timeatwork';
 import Suggestion from './Suggestion';
+
 
 import PersonalDetails from './PersonalDetails';
 import ReportTo from './ReportTo';
-
-
 
 const EmployeeDashboard = () => {
   const [activeSubComponent, setActiveSubComponent] = useState('Dashboard');

@@ -18,9 +18,9 @@ const SummaryCard = ({ title, value, icon: Icon, color }) => (
 const PayrollSummary = ({ data }) => {
     const summaryData = {
         totalProcessed: data?.payrolls.length || 0,
-        totalAmount: data?.payrolls?.reduce((acc, curr) => acc + curr.grossSalary, 0) || 0,
+        totalAmount: data?.payrolls?.reduce((acc, curr) => acc +curr.grossSalary, 0) || 0,
         averageSalary: data?.payrolls?.length
-            ? (data.payrolls.reduce((acc, curr) => acc + curr.grossSalary, 0) / data.payrolls.length)
+            ? (data.payrolls.reduce((acc, curr) => acc +curr.grossSalary, 0) / data.payrolls.length)
             : 0,
         monthProcessed: data?.payrolls?.[0]?.monthYear
             ? new Date(data.payrolls[0].monthYear).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
