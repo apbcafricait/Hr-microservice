@@ -20,7 +20,7 @@ export const leaveApiSlice = apiSlice.injectEndpoints({
     // Create a new leave request
     createLeaveRequest: builder.mutation({
       query: (body) => ({
-        url: `${LEAVE_URL}`,
+        url: `${LEAVE_URL}/create-leave-request`,
         method: "POST",
         body,
       }),
