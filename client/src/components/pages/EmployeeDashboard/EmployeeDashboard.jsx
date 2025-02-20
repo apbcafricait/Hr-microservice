@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import {
   HomeIcon,
   ClockIcon,
   CalendarIcon,
   UserIcon,
   DocumentTextIcon,
-  PhoneIcon,
-  ShieldCheckIcon,
-  AcademicCapIcon,
-  UserGroupIcon,
   CogIcon,
   XMarkIcon,
   ChevronLeftIcon,
@@ -16,9 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
-import PersonalDetails from './PersonalDetails';
-import ReportTo from './ReportTo';
 import TimeAtWork from './TimeAtWork';
+import Suggestion from './Suggestion';
 
 const EmployeeDashboard = () => {
   const [activeSubComponent, setActiveSubComponent] = useState('Dashboard');
@@ -29,8 +24,7 @@ const EmployeeDashboard = () => {
     { name: 'Dashboard', icon: HomeIcon, component: 'Dashboard' },
     { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
     // { name: 'Employee Profile', icon: UserIcon, component: 'EmployeeProfile' },
-    { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
-    { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
+    { name: 'Suggestion', icon: DocumentTextIcon, component: 'Suggestion' },
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
   ];
 
@@ -42,7 +36,7 @@ const EmployeeDashboard = () => {
             <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white p-4 rounded shadow">
-                <h3 className="text-lg font-semibold">Today's Attendance</h3>
+                <h3 className="text-lg font-semibold">Todays Attendance</h3>
                 <p>Check-in: 9:00 AM</p>
                 <p>Check-out: --</p>
               </div>
@@ -62,12 +56,10 @@ const EmployeeDashboard = () => {
         return <ApplyLeave />;
       case 'EmployeeProfile':
         return <EmployeeProfile />;
-      case 'PersonalDetails':
-        return <PersonalDetails />;
-      case 'ReportTo':
-        return <ReportTo />;
       case 'TimeAtWork':
         return <TimeAtWork />;
+      case 'Suggestion':
+        return <Suggestion />;
       default:
         return <div>Please select a menu item.</div>;
     }
