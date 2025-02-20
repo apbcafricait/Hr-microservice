@@ -1,57 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useGetAllEmployeesQuery } from "../../../slices/employeeSlice";
+import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import ManagerSidebar from "../../Layouts/ManagerSidebar";
 import AddEmployee from "./AddEmployee";
 import EmployeeList from "./EmployeeList";
 import Dashboard from "./Dashboard";
 import Leave from "./Leave";
-import { compose } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 const ManagerDashboard = () => {
   const [currentSection, setCurrentSection] = useState("dashboard"); // Default to dashboard
   const [showForm, setShowForm] = useState(false);
-  const [organisationName, setOrganisationName] = useState(""); // State to store the organisation name
-
-  // Fetch all employees data
-  const { data, isLoading, error } = useGetAllEmployeesQuery();
-
-  console.log(data)
-  // Log the data for debugging
-  useEffect(() => {
-    console.log( data);
-  }, [data]);
-
   const { userInfo } = useSelector((state) => state.auth);
-  const employeeId = userInfo?.id;
- 
-// Ensure data is available
-if (data && data.employees) {
-  const employeeData = data?.employees?.find((employee) => {
-    // Convert both IDs to strings for comparison if necessary
-    return String(employee.userId) === String(employeeId);
-  });
-  
-  console.log(employeeData, "employeeData");
-  
-  if (employeeData && employeeData.organisation && employeeData.organisation.name) {
-    const organisationName = employeeData.organisation.name;
-    setOrganisationName(organisationName);
-    console.log("Organisation Name:", organisationName);
-  } else {
-    console.error("Employee or Organisation details not found.");
-  }
-} else {
-  console.error("Employee data not available.");
-}
+  const id = userInfo?.id;
+  console.log(userInfo, "user info")
+  const { data: orgEmpData } = useGetEmployeeQuery(id)
+  console.log(orgEmpData, "data needed")
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    console.error("Error fetching data:", error);
-    return <p>Error fetching data: {error.message}</p>;
-  }
+  const organisationName = orgEmpData?.data.employee.organisation.name
 
 
   return (
