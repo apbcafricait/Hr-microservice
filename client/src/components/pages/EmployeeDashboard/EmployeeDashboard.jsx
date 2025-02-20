@@ -12,8 +12,14 @@ import {
 } from '@heroicons/react/24/outline';
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
+
 import TimeAtWork from './TimeAtWork';
 import Suggestion from './Suggestion';
+
+import PersonalDetails from './PersonalDetails';
+import ReportTo from './ReportTo';
+import TimeAtWork from './Timeatwork';
+
 
 const EmployeeDashboard = () => {
   const [activeSubComponent, setActiveSubComponent] = useState('Dashboard');

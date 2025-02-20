@@ -1,24 +1,32 @@
 import React, { useState } from "react";
 import { useGetAllLeaveRequestsQuery, useUpdateLeaveRequestMutation } from "../../../slices/leaveApiSlice"; // Import API hooks
-
+import { useSelector } from "react-redux";
 const Leave = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
 
   // Fetch leave requests using RTK Query
   const { data, error, isLoading } = useGetAllLeaveRequestsQuery({ page: currentPage, limit });
-
+  const { userInfo } = useSelector((state) => state.auth);
+  const userId = parseInt(userInfo?.id);
   const leaveRequests = data?.data?.leaveRequests || []; // Ensure data is always an array
   const totalPages = data?.data?.pagination?.pages || 1;
+
 
   // Mutation hook for updating leave requests
   const [updateLeaveRequest] = useUpdateLeaveRequestMutation();
 
   // Approve leave request function
   const handleApprove = async (id) => {
+    const body = {
+    status: "approved",
+      approvedBy: userId
+    }
+    console.log(body, "body being sent")
     try {
-      const { data } = await updateLeaveRequest({ id, status: "approved" }).unwrap();
-      console.log(`Leave request approved:`, data);
+   
+      const res = await updateLeaveRequest({id ,body}).unwrap();
+      console.log(`Leave request approved:`, res);
     } catch (error) {
       console.error('Error approving leave request:', error);
     }
