@@ -18,7 +18,7 @@ import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
 import PersonalDetails from './PersonalDetails';
 import ReportTo from './ReportTo';
-import TimeAtWork from './TimeAtWork';
+import TimeAtWork from './Timeatwork';
 
 const EmployeeDashboard = () => {
   const [activeSubComponent, setActiveSubComponent] = useState('Dashboard');
