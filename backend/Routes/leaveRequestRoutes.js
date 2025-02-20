@@ -58,7 +58,7 @@ router.post(
  */
 router.put(
   '/update-leave-request/:id',
-  admin,
+ 
   controller.updateLeaveRequest.bind(controller)
 )
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useGetAllLeaveRequestsQuery } from "../../../slices/leaveApiSlice"; // Import API hook
+import { useGetAllLeaveRequestsQuery, useUpdateLeaveRequestMutation } from "../../../slices/leaveApiSlice"; // Import API hooks
 
 const Leave = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,11 +11,20 @@ const Leave = () => {
   const leaveRequests = data?.data?.leaveRequests || []; // Ensure data is always an array
   const totalPages = data?.data?.pagination?.pages || 1;
 
-  // Placeholder Approve/Reject functions (only updates UI)
-  const handleApprove = (id) => {
-    console.log(`Approving leave request ${id}`);
+  // Mutation hook for updating leave requests
+  const [updateLeaveRequest] = useUpdateLeaveRequestMutation();
+
+  // Approve leave request function
+  const handleApprove = async (id) => {
+    try {
+      const { data } = await updateLeaveRequest({ id, status: "approved" }).unwrap();
+      console.log(`Leave request approved:`, data);
+    } catch (error) {
+      console.error('Error approving leave request:', error);
+    }
   };
 
+  // Placeholder Reject function (only updates UI)
   const handleReject = (id) => {
     console.log(`Rejecting leave request ${id}`);
   };
