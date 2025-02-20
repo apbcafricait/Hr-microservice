@@ -18,7 +18,7 @@ import Suggestion from './Suggestion';
 
 import PersonalDetails from './PersonalDetails';
 import ReportTo from './ReportTo';
-import TimeAtWork from './Timeatwork';
+
 
 
 const EmployeeDashboard = () => {
