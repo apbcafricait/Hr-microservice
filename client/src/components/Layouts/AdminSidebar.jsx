@@ -29,10 +29,11 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
     { name: 'Admin', icon: Shield },
     { name: 'PIM', icon: Users },
     { name: 'Leave', icon: Calendar },
-    { name: 'Time', icon: Clock },
     { name: 'Recruitment', icon: UserPlus },
-    { name: 'My Info', icon: User },
     { name: 'Performance', icon: BarChart2 },
+    { name: 'Time', icon: Clock },
+    { name: 'My Info', icon: User },
+  
     { name: 'Claims', icon: FileText },
     { name: 'Settings', icon: Settings },
   ];
