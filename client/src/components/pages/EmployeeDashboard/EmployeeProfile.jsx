@@ -4,33 +4,25 @@ import PersonalDetails from "./PersonalDetails";
 import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
 import Dependents from "./Dependents";
-
-
-
-
+import { FaUser, FaPhone, FaUsers, FaRegListAlt, FaGraduationCap } from "react-icons/fa";
 
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  
-  // const toggleSidebar = () => {
-  //   setIsSidebarOpen(!isSidebarOpen);
-  // };
-
-  // Log activeTab state to verify it's updating correctly
-  console.log("Active Tab:", activeTab);
+  const tabs = [
+    { name: "Personal Details", icon: <FaUser /> },
+    { name: "Contact Details", icon: <FaPhone /> },
+    { name: "Dependents", icon: <FaUsers /> },
+    { name: "Report-to", icon: <FaRegListAlt /> },
+    { name: "Qualifications", icon: <FaGraduationCap /> },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       {/* Main Container */}
       <div className="flex flex-1">
         {/* Sidebar */}
-        <div
-          className={`w-64 bg-white shadow-md p-4 transition-all duration-300 ${
-            "block"
-          }`}
-        >
+        <div className={`w-64 bg-white shadow-md p-4 transition-all duration-300`}>
           <div className="text-center mb-4">
             <img
               src="https://via.placeholder.com/100"
@@ -40,22 +32,16 @@ const EmployeeProfile = () => {
             <h2 className="text-lg font-semibold mt-2">Vincensher</h2>
           </div>
           <ul className="space-y-2">
-            {[
-              "Personal Details",
-              "Contact Details",
-              "Dependents",
-              "Report-to",
-              "Qualifications",
-            
-            ].map((item) => (
+            {tabs.map((tab) => (
               <li
-                key={item}
-                className={`p-2 rounded-md cursor-pointer ${
-                  activeTab === item ? "bg-gray-200" : "hover:bg-gray-200"
+                key={tab.name}
+                className={`flex items-center p-2 rounded-md cursor-pointer ${
+                  activeTab === tab.name ? "bg-gray-200" : "hover:bg-gray-200"
                 }`}
-                onClick={() => setActiveTab(item)}
+                onClick={() => setActiveTab(tab.name)}
               >
-                {item}
+                <span className="mr-2 text-gray-600">{tab.icon}</span>
+                {tab.name}
               </li>
             ))}
           </ul>
@@ -68,12 +54,9 @@ const EmployeeProfile = () => {
             {activeTab === "Personal Details" && <PersonalDetails />}
             {activeTab === "Contact Details" && <ContactDetails />}
             {activeTab === "Dependents" && <Dependents />}
-           {activeTab === "Qualifications" && <Qualifications />}
+            {activeTab === "Qualifications" && <Qualifications />}
             {activeTab === "Report-to" && <ReportTo />}
-            {/* Add more components for other tabs if needed */}
           </div>
-
-        
         </div>
       </div>
     </div>
