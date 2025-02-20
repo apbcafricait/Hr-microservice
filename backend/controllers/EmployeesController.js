@@ -91,6 +91,7 @@ export class EmployeesController {
           organisation: {
             select: {
               name: true,
+              id: true,
             },
           },
         },
