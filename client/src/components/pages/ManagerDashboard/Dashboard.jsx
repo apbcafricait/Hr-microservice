@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useGetAllEmployeesQuery, useGetOrganisationEmployeesQuery } from "../../../slices/employeeSlice";
-import { useGetAllLeaveRequestsQuery } from "../../../slices/leaveApiSlice";
+import { useGetAllLeaveRequestsOfOrganisationQuery } from "../../../slices/leaveApiSlice";
 import { PieChart, Pie, Cell } from "recharts"; // Importing additional chart types
 import { HiUsers, HiOutlineCash, HiOutlineClipboardList } from "react-icons/hi"; // Example icons from Lucide
 import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
@@ -24,15 +24,13 @@ const { data: orgEmpData } = useGetEmployeeQuery(id)
   console.log(orgEmpData, "data needed")
 
   const organisationId = orgEmpData?.data.employee.organisation.id
+  const employeeId = orgEmpData?.data.employee.id
 
 console.log(organisationId, "org date")
 
   const { data: employees, error: employeesError, isLoading: employeesLoading } = useGetOrganisationEmployeesQuery(organisationId);
 
-  const { data: leaveRequests, error: leaveError, isLoading: leaveLoading } = useGetAllLeaveRequestsQuery({
-    page: 1,
-    limit: 100,
-  });
+  const { data: leaveRequests, error: leaveError, isLoading: leaveLoading } = useGetAllLeaveRequestsOfOrganisationQuery(employeeId);
 
   const totalEmployees = employees?.data?.employees?.length || 0;
   const totalSalary = employees?.data?.employees?.reduce((acc, emp) => acc + parseFloat(emp.salary), 0) || 0;
