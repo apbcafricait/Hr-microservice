@@ -10,6 +10,13 @@ export const leaveApiSlice = apiSlice.injectEndpoints({
     }),
     }),
 
+    getAllLeaveRequestsOfOrganisation: builder.query({
+      query: (employeeId) => ({
+        url: `${LEAVE_URL}/get-all-organisation-leave-requests/${employeeId}`,
+        method: 'GET'
+      }),
+    }),
+
     // Fetch a single leave request by ID
     getLeaveRequest: builder.query({
       query: (id) => ({
@@ -52,4 +59,5 @@ export const {
   useCreateLeaveRequestMutation,
   useUpdateLeaveRequestMutation,
   useDeleteLeaveRequestMutation,
+  useGetAllLeaveRequestsOfOrganisationQuery
 } = leaveApiSlice;
