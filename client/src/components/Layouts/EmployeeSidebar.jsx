@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { 
   HomeIcon, 
   ClockIcon, 
@@ -20,7 +21,7 @@ const EmployeeSidebar = ({ setActiveComponent }) => {
     { name: 'Leave Approval', icon: ShieldCheckIcon, component: 'LeaveApproval' },
     { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
     { name: 'Qualifications', icon: AcademicCapIcon, component: 'Qualifications' },
-    { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
+    // { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
   ];
 
