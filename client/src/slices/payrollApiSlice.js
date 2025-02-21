@@ -27,15 +27,31 @@ export const payrollApiSlice = apiSlice.injectEndpoints({
             query: (payrollId) =>({
                 url: `${PAYROLL_URL}/download-payslip/${payrollId}`,
                 method: "GET",
-        })
+        }),
+    }),
+        getOrganisationSummaries: builder.query({
+            query:(organisationId) =>({
+                url: `${PAYROLL_URL}/summaries/organisation/${organisationId}`,
+                method: "GET",
+            })
+        }),
+        getDepartmentPayrollSummary: builder.query({
+            query:(organisationId,departmentId) =>({
+                url: `${PAYROLL_URL}/summaries/${organisationId}/${departmentId}`,
+                method: "GET",
+            })
+        }),
+
     })
             
-}),
 })
+
 export const {
     useDownloadPayslipQuery,
     useGetEmployeePayrollHistoryQuery,
     useProcessBulkPayrollMutation,
-    useProcessPayrollforSingleEmployeeMutation
+    useProcessPayrollforSingleEmployeeMutation,
+    useGetOrganisationSummariesQuery,
+    useGetDepartmentPayrollSummaryQuery
 
 }=payrollApiSlice
