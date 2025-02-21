@@ -73,7 +73,7 @@ console.log(organisationId, "org date")
           <div>
             <h2 className="text-lg font-medium text-gray-600">Total Salary</h2>
             <p className="text-3xl font-bold text-green-500">
-              {employeesLoading ? "Loading..." : employeesError ? "Error" : `$${totalSalary.toLocaleString()}`}
+              {employeesLoading ? "Loading..." : employeesError ? "Error" : `Ksh ${totalSalary.toLocaleString()}`}
             </p>
           </div>
         </div>
