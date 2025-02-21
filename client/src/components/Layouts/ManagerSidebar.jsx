@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { FaBars, FaTachometerAlt, FaUsers, FaRegCalendarAlt, FaClipboardList, FaChartBar, FaMoneyBillWave, FaCog } from "react-icons/fa";
+import { FaBars, FaTimes, FaTachometerAlt, FaUsers, FaRegCalendarAlt, FaClipboardList, FaChartBar, FaMoneyBillWave, FaCog } from "react-icons/fa";
 
 const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const sections = [
-    { name: "Dashboard", id: "dashboard", icon: <FaTachometerAlt /> },
-    { name: "Employees", id: "employees", icon: <FaUsers /> },
-    { name: "Leave", id: "leave", icon: <FaRegCalendarAlt /> },
-    { name: "Recruitment", id: "recruitment", icon: <FaClipboardList /> },
-    { name: "Performance", id: "performance", icon: <FaChartBar /> },
-    { name: "Payroll", id: "payroll", icon: <FaMoneyBillWave /> },
-    { name: "Settings", id: "settings", icon: <FaCog /> },
+    { name: "Dashboard", id: "dashboard", icon: <FaTachometerAlt className="text-blue-500" /> },
+    { name: "Employees", id: "employees", icon: <FaUsers className="text-green-500" /> },
+    { name: "Leave", id: "leave", icon: <FaRegCalendarAlt className="text-yellow-500" /> },
+    { name: "Recruitment", id: "recruitment", icon: <FaClipboardList className="text-purple-500" /> },
+    { name: "Performance", id: "performance", icon: <FaChartBar className="text-red-500" /> },
+    { name: "Payroll", id: "payroll", icon: <FaMoneyBillWave className="text-indigo-500" /> },
+    { name: "Settings", id: "settings", icon: <FaCog className="text-gray-500" /> },
   ];
 
   return (
@@ -24,7 +24,7 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
           className="p-2 rounded focus:outline-none bg-purple-600 text-white hover:bg-purple-700"
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
-          <FaBars />
+          {isCollapsed ? <FaBars /> : <FaTimes />}
         </button>
       </div>
       <nav className="mt-4">
