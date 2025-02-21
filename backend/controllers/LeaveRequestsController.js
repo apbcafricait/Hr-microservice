@@ -32,7 +32,46 @@ export class LeaveRequestsController {
     }
   }
 
+  // New method: GET leave requests by organisationId
+ async getLeaveRequestsByOrganisation(req, res) {
+  try {
+    const employeeId = parseInt(req.params.employeeId);
+    
+    // First, find the organisationId using the employeeId
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { organisationId: true },
+    });
 
+    if (!employee) {
+      return res.status(404).json({ status: 'error', message: 'Employee not found' });
+    }
+
+    const organisationId = employee.organisationId;
+
+    // Now, get leave requests for that organisationId
+    const leaveRequests = await prisma.leaveRequest.findMany({
+      where: {
+        employee: {
+          organisationId: organisationId, // Filter by organisationId
+        },
+      },
+      include: {
+        employee: { select: { firstName: true, lastName: true } },
+        approver: { select: { email: true } },
+      },
+      orderBy: { requestedAt: 'desc' },
+    });
+
+    return res.status(200).json({ status: 'success', data: leaveRequests });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch leave requests by organisation',
+      error: error.message,
+    });
+  }
+}
   // GET all leave requests with pagination and optional employee filtering
   async getAllLeaveRequests(req, res) {
     try {

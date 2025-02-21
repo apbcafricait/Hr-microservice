@@ -1,33 +1,47 @@
-import React, { useState } from "react";
-import { useGetAllLeaveRequestsQuery, useUpdateLeaveRequestMutation } from "../../../slices/leaveApiSlice"; // Import API hooks
+import React, { useState, useEffect } from "react";
+import { useGetAllLeaveRequestsQuery, useUpdateLeaveRequestMutation } from "../../../slices/leaveApiSlice";
+import { useSelector } from "react-redux";
 
 const Leave = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
 
   // Fetch leave requests using RTK Query
-  const { data, error, isLoading } = useGetAllLeaveRequestsQuery({ page: currentPage, limit });
+  const { data, error, isLoading, refetch } = useGetAllLeaveRequestsQuery({ page: currentPage, limit });
 
-  const leaveRequests = data?.data?.leaveRequests || []; // Ensure data is always an array
+  const { userInfo } = useSelector((state) => state.auth);
+  const userId = parseInt(userInfo?.id);
+
+  const leaveRequests = data?.data?.leaveRequests || [];
   const totalPages = data?.data?.pagination?.pages || 1;
 
   // Mutation hook for updating leave requests
-  const [updateLeaveRequest] = useUpdateLeaveRequestMutation();
+  const [updateLeaveRequest, { isLoading: isUpdating }] = useUpdateLeaveRequestMutation();
 
-  // Approve leave request function
-  const handleApprove = async (id) => {
+  // Function to update leave request status
+  const updateLeaveStatus = async (id, status) => {
+    const body = {
+      status,
+      approvedBy: userId
+    };
+    console.log(body, "Body being sent");
+
     try {
-      const { data } = await updateLeaveRequest({ id, status: "approved" }).unwrap();
-      console.log(`Leave request approved:`, data);
+      const res = await updateLeaveRequest({ id, body }).unwrap();
+      console.log(`Leave request ${status}:`, res);
+      
+      // **Trigger a refetch after updating**
+      refetch();
     } catch (error) {
-      console.error('Error approving leave request:', error);
+      console.error(`Error updating leave request:`, error);
     }
   };
 
-  // Placeholder Reject function (only updates UI)
-  const handleReject = (id) => {
-    console.log(`Rejecting leave request ${id}`);
-  };
+  // Approve leave request
+  const handleApprove = (id) => updateLeaveStatus(id, "approved");
+
+  // Reject leave request
+  const handleReject = (id) => updateLeaveStatus(id, "rejected");
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">

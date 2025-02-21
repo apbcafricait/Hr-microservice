@@ -1,12 +1,19 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 
+=======
+import  { useState } from 'react';
+>>>>>>> 3c1917114a3d9be500a86f0317b69182864e1bc8
 import {
   HomeIcon,
   ClockIcon,
   CalendarIcon,
   UserIcon,
   DocumentTextIcon,
+<<<<<<< HEAD
   UserGroupIcon,
+=======
+>>>>>>> 3c1917114a3d9be500a86f0317b69182864e1bc8
   CogIcon,
   XMarkIcon,
   ChevronLeftIcon,
@@ -15,10 +22,15 @@ import {
 } from '@heroicons/react/24/outline';
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
+
+
+import TimeAtWork from './Timeatwork';
+import Suggestion from './Suggestion';
 import PersonalDetails from './PersonalDetails';
 import ReportTo from './ReportTo';
 import TimeAtWork from './TimeAtWork';
 import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
+
 
 const EmployeeDashboard = () => {
   const [activeSubComponent, setActiveSubComponent] = useState('Dashboard');
@@ -32,8 +44,13 @@ const EmployeeDashboard = () => {
   const subMenuItems = [
     { name: 'Dashboard', icon: HomeIcon, component: 'Dashboard' },
     { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
+<<<<<<< HEAD
     { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
     { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
+=======
+    // { name: 'Employee Profile', icon: UserIcon, component: 'EmployeeProfile' },
+    { name: 'Suggestion', icon: DocumentTextIcon, component: 'Suggestion' },
+>>>>>>> 3c1917114a3d9be500a86f0317b69182864e1bc8
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
     // Add more items as needed
   ];
@@ -42,6 +59,7 @@ const EmployeeDashboard = () => {
     switch (activeSubComponent) {
       case 'Dashboard':
         return (
+<<<<<<< HEAD
           <div className="p-6 grid grid-cols-3 gap-4">
             {/* Blank Cards */}
             {[...Array(3)].map((_, index) => (
@@ -50,6 +68,15 @@ const EmployeeDashboard = () => {
                 className="bg-white rounded-lg shadow-lg transition-transform duration-300 transform hover:scale-105 p-4 flex items-center justify-center"
               >
                 <span className="text-gray-400">Card {index + 1}</span>
+=======
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded shadow">
+                <h3 className="text-lg font-semibold">Todays Attendance</h3>
+                <p>Check-in: 9:00 AM</p>
+                <p>Check-out: --</p>
+>>>>>>> 3c1917114a3d9be500a86f0317b69182864e1bc8
               </div>
             ))}
           </div>
@@ -58,12 +85,10 @@ const EmployeeDashboard = () => {
         return <ApplyLeave />;
       case 'EmployeeProfile':
         return <EmployeeProfile />;
-      case 'PersonalDetails':
-        return <PersonalDetails />;
-      case 'ReportTo':
-        return <ReportTo />;
       case 'TimeAtWork':
         return <TimeAtWork />;
+      case 'Suggestion':
+        return <Suggestion />;
       default:
         return <div>Select an option</div>;
     }
