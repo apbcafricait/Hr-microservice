@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -7,49 +7,62 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
-import { useGetAllEmployeesQuery, useGetOrganisationEmployeesQuery } from "../../../slices/employeeSlice";
+import { HiUsers, HiOutlineCash, HiOutlineClipboardList } from "react-icons/hi";
+import { useGetOrganisationEmployeesQuery, useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import { useGetAllLeaveRequestsOfOrganisationQuery } from "../../../slices/leaveApiSlice";
-import { PieChart, Pie, Cell } from "recharts"; // Importing additional chart types
-import { HiUsers, HiOutlineCash, HiOutlineClipboardList } from "react-icons/hi"; // Example icons from Lucide
-import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import { useSelector } from "react-redux";
+import AddEmployee from "./AddEmployee";
+import Leave from "./Leave";
+
 const Dashboard = () => {
-// Get organisations employees alone so we need to filter the logged in user :
+  const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
+  const [isApproveLeaveOpen, setIsApproveLeaveOpen] = useState(false);
+  const [employee, setEmployee] = useState(null);
 
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
-  console.log(userInfo, "user info")
-const { data: orgEmpData } = useGetEmployeeQuery(id)
-  console.log(orgEmpData, "data needed")
-
-  const organisationId = orgEmpData?.data.employee.organisation.id
-  const employeeId = orgEmpData?.data.employee.id
-
-console.log(organisationId, "org date")
+  const { data: orgEmpData } = useGetEmployeeQuery(id);
+  const organisationId = orgEmpData?.data.employee.organisation.id;
+  const employeeId = orgEmpData?.data.employee.id;
 
   const { data: employees, error: employeesError, isLoading: employeesLoading } = useGetOrganisationEmployeesQuery(organisationId);
-
   const { data: leaveRequests, error: leaveError, isLoading: leaveLoading } = useGetAllLeaveRequestsOfOrganisationQuery(employeeId);
 
   const totalEmployees = employees?.data?.employees?.length || 0;
   const totalSalary = employees?.data?.employees?.reduce((acc, emp) => acc + parseFloat(emp.salary), 0) || 0;
   const totalLeaveRequests = leaveRequests?.data?.leaveRequests?.length || 0;
 
-  // Prepare data for department salary distribution pie chart
   const departmentSalaryData = employees?.data?.employees?.reduce((acc, emp) => {
-    const departmentName = emp.department?.name || "Unassigned"; // Handle cases where department is null
+    const departmentName = emp.department?.name || "Unassigned";
     acc[departmentName] = (acc[departmentName] || 0) + parseFloat(emp.salary);
     return acc;
-  }, {}) || {}; // Ensure it's at least an empty object
+  }, {}) || {};
 
   const departmentSalaryArray = Object.keys(departmentSalaryData).length > 0 ?
     Object.keys(departmentSalaryData).map(department => ({
       name: department,
       value: departmentSalaryData[department],
-    })) : []; // Handle case where there are no departments
+    })) : [];
 
   const uniqueDepartments = new Set(employees?.data?.employees?.map(emp => emp.department?.name)).size || 0;
+
+  const handleAddEmployeeClick = () => {
+    setEmployee(null);
+    setIsAddEmployeeOpen(true);
+  };
+
+  const handleApproveLeaveClick = () => {
+    setIsApproveLeaveOpen(true);
+  };
+
+  const handleFormClose = () => {
+    setIsAddEmployeeOpen(false);
+    setIsApproveLeaveOpen(false);
+  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -100,7 +113,6 @@ console.log(organisationId, "org date")
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Department Salary Distribution */}
         <div className="bg-white shadow-md p-6 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600 mb-4">Department Salary Distribution</h2>
           <ResponsiveContainer width="100%" height={250}>
@@ -125,7 +137,6 @@ console.log(organisationId, "org date")
           </ResponsiveContainer>
         </div>
 
-        {/* Employee Salary Statistics */}
         <div className="bg-white shadow-md p-6 rounded-lg">
           <h2 className="text-lg font-medium text-gray-600 mb-4">Employee Salary Statistics</h2>
           <ResponsiveContainer width="100%" height={250}>
@@ -143,10 +154,16 @@ console.log(organisationId, "org date")
       <section className="mt-6">
         <h2 className="text-lg font-medium text-gray-600 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105">
+          <button
+            onClick={handleAddEmployeeClick}
+            className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
+          >
             Add Employee
           </button>
-          <button className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105">
+          <button
+            onClick={handleApproveLeaveClick}
+            className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
+          >
             Approve Leave
           </button>
           <button className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105">
@@ -154,6 +171,38 @@ console.log(organisationId, "org date")
           </button>
         </div>
       </section>
+
+      {/* Add Employee Modal */}
+      {isAddEmployeeOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg relative w-full max-w-md sm:max-w-lg md:max-w-xl max-h-[80vh] overflow-y-auto shadow-lg">
+            <button
+              onClick={handleFormClose}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-gray-700 hover:text-red-500 hover:bg-gray-100 rounded-full text-2xl font-bold transition duration-200 z-50"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+            <AddEmployee onClose={handleFormClose} />
+          </div>
+        </div>
+      )}
+
+      {/* Approve Leave Modal */}
+      {isApproveLeaveOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg relative w-full max-w-xl sm:max-w-2xl md:max-w-3xl max-h-[80vh] overflow-y-auto shadow-lg">
+            <button
+              onClick={handleFormClose}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-gray-700 hover:text-red-500 hover:bg-gray-100 rounded-full text-2xl font-bold transition duration-200 z-50"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+            <Leave />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
