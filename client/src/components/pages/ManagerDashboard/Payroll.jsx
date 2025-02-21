@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { format } from 'date-fns';
-import { Loader2, Download, FileText, Users, UserCheck } from 'lucide-react';
+import { Loader2, Download, FileText, Users, UserCheck, Search } from 'lucide-react';
 import {
     useDownloadPayslipQuery,
     useGetEmployeePayrollHistoryQuery,
@@ -12,23 +12,26 @@ import PayrollSummary from './PayrollSummary';
 import ProcessPayrollModal from './ProcessPayrollModal';
 import  PDFViewer  from './PDFViewer';
 import { useGetOrganisationSummariesQuery } from '../../../slices/payrollApiSlice';
-import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
+import { useGetEmployeeQuery, useGetOrganisationEmployeesQuery } from '../../../slices/employeeSlice';
 import { useSelector } from 'react-redux';
+import BulkPayrollModal from './BulkPayrollModal';
 const Payroll = () => {
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [showProcessModal, setShowProcessModal] = useState(false);
     const [showPDFViewer, setShowPDFViewer] = useState(false);
     const [currentPayslip, setCurrentPayslip] = useState(null);
-
+    const [historySelectedEmployee, setHistorySelectedEmployee] = useState(null); 
     const { userInfo } = useSelector((state) => state.auth);
     const id = userInfo?.id;
 
-    const { data: orgEmpData } = useGetEmployeeQuery(id);
+    const { data: orgEmpData, isLoading: employeesLoading } = useGetEmployeeQuery(id);
     const organisationId = orgEmpData?.data.employee.organisation.id;
 
-    const { data: payrollHistory, isLoading: historyLoading } =
-        useGetEmployeePayrollHistoryQuery(selectedEmployee?.id || 6);
+    const { data: payrollHistory, isLoading: historyLoading } = useGetEmployeePayrollHistoryQuery(
+        historySelectedEmployee?.id,
+        { skip: !historySelectedEmployee } // Only fetch when an employee is selected
+    );
 
     const [processPayroll, { isLoading: processingPayroll }] =
         useProcessPayrollforSingleEmployeeMutation();
@@ -37,34 +40,56 @@ const Payroll = () => {
         useProcessBulkPayrollMutation();
     
     const { data: summaryData } = useGetOrganisationSummariesQuery(organisationId);
-    
-    console.log(summaryData)
+    const {data:Employees } = useGetOrganisationEmployeesQuery(organisationId)
+    // Payroll History States
+    // Renamed to avoid conflict
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showBulkModal, setShowBulkModal] = useState(false);
+    console.log(Employees)
+
+
+
+    useEffect(() => {
+        if (Employees?.data?.employees && !historySelectedEmployee) {
+            setHistorySelectedEmployee(Employees.data.employees[0]);
+        }
+    }, [Employees, historySelectedEmployee]);
+
+    // Filter employees based on search term
+    const filteredEmployees = Employees?.data?.employees?.filter(employee =>
+        `${employee.firstName} ${employee.lastName}`
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+    ) || [];
+
     const handleProcessPayroll = async (employeeId) => {
+        const monthYear = selectedMonth.toString();
+        console.log(monthYear, "monthyear")
         try {
-            await processPayroll({
+            const result = await processPayroll({
                 employeeId,
-                monthYear: selectedMonth
+                monthYear, // Match Postman’s camelCase
             }).unwrap();
-            // Refresh data after processing
+            console.log('Processing payroll with:', { employeeId, monthYear: selectedMonth });
+            return result; // Return the result to the modal
         } catch (error) {
             console.error('Failed to process payroll:', error);
+            throw error; // Re-throw to handle in modal
         }
     };
 
-    const handleBulkProcess = async () => {
-       
-        const dateFormart = "2023-08"
-        console.log(dateFormart)
+    const handleBulkProcess = async ({ monthYear, organisationId }) => {
         try {
-            await processBulk({
-                monthYear: dateFormart,
-                organisationId: 1 // Get from context/state
-            }).unwrap();
-            // Refresh data after processing
+            const result = await processBulk({ monthYear, organisationId }).unwrap();
+            console.log('Bulk Process Result:', result);
+            return result; // Return result to modal
         } catch (error) {
             console.error('Failed to process bulk payroll:', error);
+            throw error;
         }
     };
+
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -90,36 +115,61 @@ const Payroll = () => {
                 </button>
 
                 <button
-                    onClick={handleBulkProcess}
+                    onClick={() => setShowBulkModal(true)}
                     className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    disabled={processingBulk}
                 >
-                    {processingBulk ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                        <Users className="w-4 h-4 mr-2" />
-                    )}
+                    <Users className="w-4 h-4 mr-2" />
                     Process Bulk Payroll
                 </button>
 
-                <div className="flex items-center ml-auto">
-                    <label className="mr-2 text-gray-700">Month:</label>
-                    <input
-                        type="month"
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(e.target.value)}
-                        className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                
             </div>
+            
 
             {/* Summary Cards */}
             <PayrollSummary summaryData={summaryData} />
+            {/* Employee Search for Payroll History */}
+            <div className="mb-6 mt-6 text-center">
+                <h2 className="text-xl font-semibold mb-2">Payroll History</h2>
+                <div className="relative w-64">
+                    <input
+                        type="text"
+                        placeholder="Search employee..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onFocus={() => setShowDropdown(true)}
+                        className="w-full px-4 py-2 border rounded-lg pl-10 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+                    {showDropdown && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            {employeesLoading ? (
+                                <div className="p-2 text-gray-500">Loading employees...</div>
+                            ) : filteredEmployees.length > 0 ? (
+                                filteredEmployees.map(employee => (
+                                    <div
+                                        key={employee.id}
+                                        onClick={() => {
+                                            setHistorySelectedEmployee(employee);
+                                            setSearchTerm(`${employee.firstName} ${employee.lastName}`);
+                                            setShowDropdown(false);
+                                        }}
+                                        className="p-2 cursor-pointer hover:bg-gray-100"
+                                    >
+                                        {employee.firstName} {employee.lastName}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-2 text-gray-500">No employees found</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Payroll Table */}
-            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                <h2 className="text-xl font-semibold mb-4">Payroll History</h2>
-                {historyLoading ? (
+            <div className="bg-white rounded-lg shadow-md p-6">
+                {historyLoading || !historySelectedEmployee ? (
                     <div className="flex justify-center items-center h-48">
                         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                     </div>
@@ -127,8 +177,8 @@ const Payroll = () => {
                     <PayrollTable
                         data={payrollHistory?.data?.payrolls || []}
                         onViewPayslip={(payslip) => {
-                            setCurrentPayslip(payslip);
-                            setShowPDFViewer(true);
+                            setCurrentPayslip(payslip); // Assuming this is defined elsewhere
+                            setShowPDFViewer(true); // Assuming this is defined elsewhere
                         }}
                     />
                 )}
@@ -139,14 +189,23 @@ const Payroll = () => {
                 isOpen={showProcessModal}
                 onClose={() => setShowProcessModal(false)}
                 onProcess={handleProcessPayroll}
+                selectedEmployee={selectedEmployee}
+                setSelectedEmployee={setSelectedEmployee}
+                Employees={Employees}
                 selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
             />
-
+            <BulkPayrollModal
+                isOpen={showBulkModal}
+                onClose={() => setShowBulkModal(false)}
+                onProcess={handleBulkProcess}
+                organisationId={organisationId}
+            />
             {/* PDF Viewer Modal */}
             <PDFViewer
                 isOpen={showPDFViewer}
                 onClose={() => setShowPDFViewer(false)}
-                pdfUrl={currentPayslip?.payslipPath}
+                pdfUrl={`http://localhost:8100/uploads/payslips/${currentPayslip?.payslipPath.split('/').pop()}`}
             />
         </div>
     );

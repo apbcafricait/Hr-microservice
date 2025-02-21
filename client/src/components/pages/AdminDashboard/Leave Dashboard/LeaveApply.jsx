@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import AssignLeave from "../../../pages/AdminDashboard/Leave Dashboard/AssignLeave";
-import LeaveList from "./Leavelist";
+import LeaveList from "./LeaveList";
 import MyLeave from "../../AdminDashboard/Leave Dashboard/MyLeave";
 import {
   useGetAllLeaveRequestsQuery,
