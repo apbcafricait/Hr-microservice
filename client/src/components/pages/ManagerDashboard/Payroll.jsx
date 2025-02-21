@@ -11,13 +11,21 @@ import PayrollTable from './PayrollTable';
 import PayrollSummary from './PayrollSummary';
 import ProcessPayrollModal from './ProcessPayrollModal';
 import  PDFViewer  from './PDFViewer';
-
+import { useGetOrganisationSummariesQuery } from '../../../slices/payrollApiSlice';
+import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
+import { useSelector } from 'react-redux';
 const Payroll = () => {
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [showProcessModal, setShowProcessModal] = useState(false);
     const [showPDFViewer, setShowPDFViewer] = useState(false);
     const [currentPayslip, setCurrentPayslip] = useState(null);
+
+    const { userInfo } = useSelector((state) => state.auth);
+    const id = userInfo?.id;
+
+    const { data: orgEmpData } = useGetEmployeeQuery(id);
+    const organisationId = orgEmpData?.data.employee.organisation.id;
 
     const { data: payrollHistory, isLoading: historyLoading } =
         useGetEmployeePayrollHistoryQuery(selectedEmployee?.id || 6);
@@ -27,7 +35,10 @@ const Payroll = () => {
 
     const [processBulk, { isLoading: processingBulk }] =
         useProcessBulkPayrollMutation();
-
+    
+    const { data: summaryData } = useGetOrganisationSummariesQuery(organisationId);
+    
+    console.log(summaryData)
     const handleProcessPayroll = async (employeeId) => {
         try {
             await processPayroll({
@@ -103,7 +114,7 @@ const Payroll = () => {
             </div>
 
             {/* Summary Cards */}
-            <PayrollSummary data={payrollHistory?.data} />
+            <PayrollSummary summaryData={summaryData} />
 
             {/* Payroll Table */}
             <div className="bg-white rounded-lg shadow-md p-6 mt-6">
