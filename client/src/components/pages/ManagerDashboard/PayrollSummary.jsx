@@ -1,6 +1,6 @@
 import React from 'react';
-import { DollarSign, Users, Calendar, TrendingUp } from 'lucide-react';
-
+import { DollarSign, Users, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { useGetOrganisationSummariesQuery, useGetDepartmentPayrollSummaryQuery } from '../../../slices/payrollApiSlice';
 const SummaryCard = ({ title, value, icon: Icon, color }) => (
     <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center">
@@ -15,43 +15,41 @@ const SummaryCard = ({ title, value, icon: Icon, color }) => (
     </div>
 );
 
-const PayrollSummary = ({ data }) => {
-    const summaryData = {
-        totalProcessed: data?.payrolls.length || 0,
-        totalAmount: data?.payrolls?.reduce((acc, curr) => acc +curr.grossSalary, 0) || 0,
-        averageSalary: data?.payrolls?.length
-            ? (data.payrolls.reduce((acc, curr) => acc +curr.grossSalary, 0) / data.payrolls.length)
-            : 0,
-        monthProcessed: data?.payrolls?.[0]?.monthYear
-            ? new Date(data.payrolls[0].monthYear).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-            : '-'
-    };
+const PayrollSummary = ({summaryData}) => {
+
+   
+    const totalDeductions = summaryData?.data?.totalDeductions
+    const totalDeductionsSum =
+        (totalDeductions?.paye) +
+        (totalDeductions?.nssf) +
+        (totalDeductions?.housingLevy);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <SummaryCard
                 title="Total Processed"
-                value={summaryData.totalProcessed}
+                value={summaryData?.data.processedPayrolls}
                 icon={Users}
                 color="text-blue-600"
             />
             <SummaryCard
                 title="Total Amount"
-                value={`KES ${summaryData.totalAmount.toLocaleString()}`}
+                value={`KES ${summaryData?.data.totalGrossSalary.toLocaleString()}`}
                 icon={DollarSign}
                 color="text-green-600"
             />
             <SummaryCard
                 title="Average Salary"
-                value={`KES ${summaryData.averageSalary.toLocaleString()}`}
+                value={`KES ${summaryData?.data.averageSalary.toLocaleString()}`}
                 icon={TrendingUp}
                 color="text-purple-600"
             />
+
             <SummaryCard
-                title="Last Processed"
-                value={summaryData.monthProcessed}
-                icon={Calendar}
-                color="text-orange-600"
+                title="Total Deductions"
+                value={`KES ${totalDeductionsSum.toLocaleString()}`}
+                icon={TrendingDown}
+                color="text-red-600"
             />
         </div>
     );

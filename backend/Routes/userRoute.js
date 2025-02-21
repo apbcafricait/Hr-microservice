@@ -1,4 +1,4 @@
-import { getAllUsers,RegisterUser, loginUser } from "../controllers/userController.js";
+import { getAllUsers,RegisterUser, loginUser, logout } from "../controllers/userController.js";
 import express from "express";
 import { authenticated, admin, manager } from "../middleware/Authentication.js";
 
@@ -19,6 +19,7 @@ router.get(
 
 router.post("/", RegisterUser);
 router.post("/login", loginUser);
+router.post("/logout", logout)
 
 
 export default router;
