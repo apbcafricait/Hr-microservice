@@ -100,7 +100,7 @@ const AdminDashboard = () => {
                   <span className="text-white font-bold">A</span>
                 </div>
                 <h1 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>
-                  Admin Portal
+                  Admin Dashboard
                 </h1>
               </div>
 
