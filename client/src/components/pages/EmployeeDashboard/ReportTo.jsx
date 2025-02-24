@@ -1,6 +1,9 @@
 // src/components/pages/EmployeeDashboard/ReportTo.jsx
-import { useSelector, useDispatch } from "react-redux";
-import { addSupervisor, addSubordinate, addAttachment, removeAttachment } from "../../../slices/ReportSlice";
+import React from 'react';
+import { useState } from 'react'; // Added since useState is used but wasn't imported
+import { useSelector, useDispatch } from 'react-redux';
+import { addSupervisor, addSubordinate, addAttachment, removeAttachment } from '../../../slices/ReportSlice';
+import EmployeeHeader from '../../Layouts/EmployeeHeader';
 
 
 
@@ -41,8 +44,12 @@ const ReportTo = () => {
   };
 
   return (
-    <div className="p-6">
-      <div>
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <EmployeeHeader />
+      
+      {/* Main Content with Offset for Fixed Header */}
+      <div className="pt-24 p-6 flex-1">
         <h2 className="text-lg font-semibold mb-4">Report To</h2>
         <div className="border border-gray-300 p-4 rounded">
           {/* Supervisors Section */}

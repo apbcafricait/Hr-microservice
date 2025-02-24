@@ -59,6 +59,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
 // Logout user
 //Post /api/users/logout
 const logout = asyncHandler(async (req, res) => {
+  // Clear the JWT cookie to log out the user
   res.cookie('jwt', '', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true

@@ -299,7 +299,7 @@ async getPayrollSummaries(req, res) {
             totalNetSalary: payrolls.reduce((sum, p) => sum + Number(p.netSalary), 0),
             totalDeductions: {
                 paye: payrolls.reduce((sum, p) => sum + Number(p.deductions.paye), 0),
-                nhif: payrolls.reduce((sum, p) => sum + Number(p.deductions.nhif), 0),
+                shif: payrolls.reduce((sum, p) => sum + Number(p.deductions.shif), 0),
                 nssf: payrolls.reduce((sum, p) => sum + Number(p.deductions.nssf.amount), 0),
                 housingLevy: payrolls.reduce((sum, p) => sum + Number(p.deductions.housingLevy), 0)
             },

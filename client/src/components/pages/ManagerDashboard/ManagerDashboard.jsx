@@ -1,24 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import ManagerSidebar from "../../Layouts/ManagerSidebar";
 import AddEmployee from "./AddEmployee";
 import EmployeeList from "./EmployeeList";
 import Dashboard from "./Dashboard";
 import Leave from "./Leave";
-import { useSelector } from "react-redux";
 import Payroll from "./Payroll";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../../slices/AuthSlice";
+import { useNavigate } from "react-router-dom";
+
 const ManagerDashboard = () => {
   const [currentSection, setCurrentSection] = useState("dashboard"); // Default to dashboard
   const [showForm, setShowForm] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const id = userInfo?.id;
-  
+
   const { data: orgEmpData } = useGetEmployeeQuery(id);
-  const organisationName = orgEmpData?.data.employee.organisation.name;
-  const managerName = orgEmpData?.data.employee.firstName
+  const organisationName = orgEmpData?.data.employee.organisation.name?.toUpperCase();
+
+  const managerName = orgEmpData?.data.employee.firstName;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
   const toggleDropdown = () => setDropdownOpen(!isDropdownOpen);
+
+  const handleLogout = () => {
+    console.log("Logging out...");
+    dispatch(logout());
+    console.log("User logged out.");
+  };
+
+  useEffect(() => {
+    if (!userInfo) {
+      navigate("/"); // Adjust the path to your landing page
+    }
+  }, [userInfo, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -33,8 +51,9 @@ const ManagerDashboard = () => {
         {/* Header Section */}
         <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
           <div className="text-start flex-1">
+            {/* Organisation name is passed here */}
             <h1 className="text-2xl font-semibold text-gray-700">
-              Organisation: {organisationName || "Unknown Organisation"}
+              {organisationName || "Unknown Organisation"}
             </h1>
           </div>
           <div className="relative">
@@ -49,7 +68,10 @@ const ManagerDashboard = () => {
                 <button className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
                   Profile
                 </button>
-                <button className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => console.log("Logout")}>
+                <button
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                  onClick={handleLogout}
+                >
                   Logout
                 </button>
               </div>
