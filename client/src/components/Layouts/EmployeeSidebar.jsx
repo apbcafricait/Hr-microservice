@@ -5,7 +5,7 @@ import {
   CalendarIcon, 
   UserIcon, 
   DocumentTextIcon,
-  PhoneIcon,
+  
   ShieldCheckIcon,
   AcademicCapIcon,
   UserGroupIcon,
