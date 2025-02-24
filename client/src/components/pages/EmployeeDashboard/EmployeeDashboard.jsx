@@ -1,11 +1,18 @@
 
+import { useState } from 'react';
+
+
 import  { useState } from 'react';
+
 import {
   HomeIcon,
   ClockIcon,
   CalendarIcon,
   UserIcon,
   DocumentTextIcon,
+
+  UserGroupIcon,
+
 
   UserGroupIcon,
 
@@ -17,11 +24,18 @@ import {
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
 
+import TimeAtWork from './TimeAtWork';
+import Suggestion from './Suggestion';
+import PersonalDetails from './PersonalDetails';
+import ReportTo from './ReportTo';
+import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
+
+
 
 import Suggestion from './Suggestion';
 import PersonalDetails from './PersonalDetails';
 import ReportTo from './ReportTo';
-import TimeAtWork from './Timeatwork';
+
 
 
 const EmployeeDashboard = () => {
@@ -29,11 +43,27 @@ const EmployeeDashboard = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
+
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
   const employeeId = userInfo?.employeeId || 18;
   const { data: employee, isLoading, error } = useGetEmployeeQuery(employeeId);
 
+
   const subMenuItems = [
+
+    { name: 'Dashboard', icon: HomeIcon, component: 'Dashboard' },
+    { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
+    { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
+    { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
+    // { name: 'Employee Profile', icon: UserIcon, component: 'EmployeeProfile' },
+    { name: 'Suggestion', icon: DocumentTextIcon, component: 'Suggestion' },
+    { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
+    // Add more items as needed
+  ];
+
+
+  const renderSubComponent = () => {
+
     { name: "Dashboard", icon: HomeIcon, component: "Dashboard" },
     { name: "dashboard", icon: ClockIcon, component: "dashboard" },
     { name: "Apply Leave", icon: CalendarIcon, component: "ApplyLeave" },
@@ -41,6 +71,7 @@ const EmployeeDashboard = () => {
     { name: "Time at Work", icon: ClockIcon, component: "TimeAtWork" },
   ];
     const renderSubComponent = () => {
+
     switch (activeSubComponent) {
       case "Dashboard":
         return (
@@ -53,6 +84,18 @@ const EmployeeDashboard = () => {
                 className="bg-white rounded-lg shadow-lg transition-transform duration-300 transform hover:scale-105 p-4 flex items-center justify-center"
               >
                 <span className="text-gray-400">Card {index + 1}</span>
+
+              </div>
+            ))}
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white p-4 rounded shadow">
+                  <h3 className="text-lg font-semibold">Today's Attendance</h3>
+                  <p>Check-in: 9:00 AM</p>
+                  <p>Check-out: --</p>
+                </div>
+
 
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
@@ -70,6 +113,7 @@ const EmployeeDashboard = () => {
               <div className="bg-white p-4 rounded shadow">
                 <h3 className="text-lg font-semibold">Pending Tasks</h3>
                 <p>3 tasks due this week</p>
+
               </div>
             </div>
           </div>
@@ -89,9 +133,11 @@ const EmployeeDashboard = () => {
     }
   };
 
+
   const toggleSidebar = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
   };
+
 
   return (
     <div className="flex">
@@ -183,4 +229,8 @@ const EmployeeDashboard = () => {
   );
 };
 
+
+
 export default EmployeeDashboard;
+
+
