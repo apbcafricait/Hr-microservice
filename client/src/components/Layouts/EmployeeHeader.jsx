@@ -1,145 +1,88 @@
-// src/components/layouts/Header.jsx
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Menu, X, User, Settings, ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useGetEmployeeQuery } from "../../slices/employeeSlice";
+import { useNavigate } from "react-router-dom";
 
 const EmployeeHeader = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { userInfo } = useSelector((state) => state.auth);
+  const employeeId = userInfo?.id;
+  const { data: orgEmpData } = useGetEmployeeQuery(employeeId);
+
+  const organisationName = orgEmpData?.data.employee.organisation.name?.toUpperCase();
+  const employeeName = orgEmpData?.data.employee.firstName;
   const navigate = useNavigate();
 
-  const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-  const employeeName = userInfo.firstName || 'Employee';
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('userInfo');
-    navigate('/login');
+  const handleMenuClick = (option) => {
+    setIsDropdownOpen(false); // Close dropdown after selection
+    switch (option) {
+      case "Profile":
+        navigate("/profile"); // Replace with your profile route
+        break;
+      case "Settings":
+        navigate("/settings"); // Replace with your settings route
+        break;
+      case "Log Out":
+        navigate("/Log Out"); // Replace with your about route
+        break;
+      case "Change Password":
+        navigate("/change-password"); // Replace with your change password route
+        break;
+      default:
+        break;
+    }
   };
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className={`fixed w-full top-0 z-50 ${scrolled ? 'bg-gray-800/80 backdrop-blur-lg shadow-lg' : 'bg-gray-800'} text-white transition-all duration-300`}
-    >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0">
-            <motion.h1
-              className="text-2xl font-bold"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              
-            </motion.h1>
-          </div>
-
-          <div className="hidden lg:flex items-center space-x-6">
-            <span className="text-lg">Welcome, {employeeName}</span>
-            <div className="relative">
-              <motion.button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center space-x-2 text-white hover:bg-blue-500 rounded-md px-3 py-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <User className="h-5 w-5" />
-                <span>Menu</span>
-                <ChevronDown className="h-4 w-4" />
-              </motion.button>
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-20">
-                  <motion.button
-                    onClick={() => navigate('/profile')}
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-blue-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Profile
-                  </motion.button>
-                  <motion.button
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-blue-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    About
-                  </motion.button>
-                  <motion.button
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-blue-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Change Password
-                  </motion.button>
-                  <motion.button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-blue-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Log Out
-                  </motion.button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-700 transition-colors duration-200"
-            onClick={() => setIsOpen(!isOpen)}
+    <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
+      <div className="text-start flex-1">
+        <h1 className="text-2xl font-semibold text-gray-700">
+          {organisationName || "Unknown Organisation"}
+        </h1>
+      </div>
+      <div className="relative">
+        <button
+          onClick={toggleDropdown}
+          className="flex items-center text-gray-700 focus:outline-none"
+        >
+          <span className="mr-2">Hello, {employeeName || "Employee"}</span>
+          <svg
+            className={`w-5 h-5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            {isOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
-          </motion.button>
-        </div>
-
-        {/* Mobile Menu */}
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden"
-          >
-            <div className="px-2 pt-2 pb-3 space-y-2">
-              <motion.div className="px-4 py-2 text-lg text-white">
-                Welcome, {employeeName}
-              </motion.div>
-              <motion.button
-                onClick={() => navigate('/profile')}
-                className="w-full flex items-center space-x-2 px-4 py-2 text-white hover:bg-gray-700 rounded-md"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <User className="h-5 w-5" />
-                <span>Profile</span>
-              </motion.button>
-              <motion.button
-                onClick={handleLogout}
-                className="w-full flex items-center space-x-2 px-4 py-2 text-white hover:bg-gray-700 rounded-md"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Settings className="h-5 w-5" />
-                <span>Logout</span>
-              </motion.button>
-            </div>
-          </motion.div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+              d="M19 9 l-7 7 l-7 -7"
+            />
+          </svg>
+        </button>
+        {isDropdownOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+            <ul className="py-1">
+              {["Profile", "Settings", "About", "Change Password"].map((option) => (
+                <li key={option}>
+                  <button
+                    onClick={() => handleMenuClick(option)}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    {option}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
-      </nav>
-    </motion.header>
+      </div>
+    </header>
   );
 };
 
