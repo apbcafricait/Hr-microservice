@@ -6,7 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AssignLeave from "../../../pages/AdminDashboard/Leave Dashboard/AssignLeave";
-import LeaveList from "./Leavelist";
+import LeaveList from "./LeaveList";
 import MyLeave from "../../AdminDashboard/Leave Dashboard/MyLeave";
 import {
   useGetAllLeaveRequestsQuery,
