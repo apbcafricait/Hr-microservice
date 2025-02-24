@@ -6,18 +6,18 @@ import {
   useClockOutMutation,
   useGetAttendanceRecordsQuery,
 } from "../../../slices/attendanceSlice";
-import EmployeeHeader from "../../Layouts/EmployeeHeader";
+import EmployeeHeader from "../../Layouts/EmployeeHeader"; // Import the new header component
 
 const Timeatwork = () => {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentClockInTime, setCurrentClockInTime] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { userInfo } = useSelector((state) => state.auth); // Get user info from Redux
-  const employeeId = userInfo?.id; // Ensure userInfo is defined
+  const { userInfo } = useSelector((state) => state.auth);
+  const employeeId = userInfo?.id;
 
   const { data: attendanceRecords = [], refetch } = useGetAttendanceRecordsQuery(employeeId, {
-    skip: !employeeId, // Skip the query if employeeId is not available
+    skip: !employeeId,
   });
 
   const [clockIn] = useClockInMutation();
@@ -82,11 +82,10 @@ const Timeatwork = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <EmployeeHeader />
-      <div className="pt-24 p-6 bg-gray-100 flex-1">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <EmployeeHeader /> {/* Use the imported header */}
+      <div className="p-6 flex-1">
         <h2 className="text-2xl font-bold mb-4 text-center">Time at Work</h2>
-
         <div className="flex flex-col items-center mb-6">
           <span
             className={`text-lg font-semibold ${
@@ -123,7 +122,6 @@ const Timeatwork = () => {
             </button>
           </div>
         </div>
-
         <div className="bg-white p-4 rounded shadow">
           <h3 className="text-lg font-semibold mb-2">Recent Attendance</h3>
           <ul className="divide-y divide-gray-200">
