@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
-import TimeAtWork from './Timeatwork';
+import TimeAtWork from './TimeAtWork';
 import Suggestion from './Suggestion';
 import PersonalDetails from './PersonalDetails';
 import ReportTo from './ReportTo';
@@ -167,4 +167,3 @@ const EmployeeDashboard = () => {
 
 
 export default EmployeeDashboard;
-
