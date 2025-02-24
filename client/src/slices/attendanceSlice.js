@@ -11,22 +11,15 @@ export const attendanceSlice = apiSlice.injectEndpoints({
     }),
     clockOut: builder.mutation({
       query: (data) => ({
-        url: `api/time-attendance/clock-out/${data.employeeId}`,
+        url: 'api/time-attendance/clock-out/3',
         method: 'PUT',
         body: data,
       }),
     }),
     getAttendanceRecords: builder.query({
-      query: (employeeId) => ({
-        url: `api/time-attendance/employee/${employeeId}`,
-        method: 'GET',
-      }),
+      query: (organisationId) => `api/time-attendance/organisation/${organisationId}`,
     }),
   }),
 });
 
-export const {
-  useClockInMutation,
-  useClockOutMutation,
-  useGetAttendanceRecordsQuery,
-} = attendanceSlice;
+export const { useClockInMutation, useClockOutMutation, useGetAttendanceRecordsQuery } = attendanceSlice;
