@@ -16,7 +16,10 @@ export const attendanceSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    getAttendanceRecords: builder.query({
+      query: (organisationId) => `api/time-attendance/organisation/${organisationId}`,
+    }),
   }),
 });
 
-export const { useClockInMutation, useClockOutMutation } = attendanceSlice;
+export const { useClockInMutation, useClockOutMutation, useGetAttendanceRecordsQuery } = attendanceSlice;
