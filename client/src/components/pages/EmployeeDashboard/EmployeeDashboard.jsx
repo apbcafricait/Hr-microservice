@@ -1,7 +1,3 @@
-
-
-
-
 import { useState } from 'react';
 import {
   HomeIcon,
@@ -171,4 +167,3 @@ const EmployeeDashboard = () => {
 
 
 export default EmployeeDashboard;
-
