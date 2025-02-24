@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Eye,
@@ -7,8 +7,12 @@ import {
   ChevronDown,
   Search,
   RefreshCw,
+  Plus,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useGetAllCandidatesQuery, useCreateCandidateMutation } from "../../../slices/recruitmentApiSlice";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Vacancy from "../../pages/AdminDashboard/Vacancy";
 
 const Recruitment = () => {
@@ -22,18 +26,17 @@ const Recruitment = () => {
   const [keywords, setKeywords] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [methodOfApplication, setMethodOfApplication] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCandidate, setNewCandidate] = useState({
+    vacancy: "",
+    candidateName: "",
+    hiringManager: "",
+    applicationDate: "",
+    status: "",
+  });
 
-  const dummyData = [
-    {
-      id: 1,
-      vacancy: "Senior QA Lead",
-      candidate: "John Doe",
-      hiringManager: "(Deleted)",
-      applicationDate: "2024-06-02",
-      status: "Shortlisted",
-    },
-    // Add more dummy data as needed
-  ];
+  const { data: candidates = [], isLoading, refetch } = useGetAllCandidatesQuery();
+  const [createCandidate, { isLoading: isCreating }] = useCreateCandidateMutation();
 
   const handleReset = () => {
     setSelectedJobTitle("");
@@ -61,11 +64,53 @@ const Recruitment = () => {
     });
   };
 
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setNewCandidate({
+      vacancy: "",
+      candidateName: "",
+      hiringManager: "",
+      applicationDate: "",
+      status: "",
+    });
+  };
+
+  const handleCandidateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createCandidate(newCandidate).unwrap();
+      toast.success("Candidate created successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+      refetch(); // Refresh the candidate list
+      closeModal();
+    } catch (error) {
+      toast.error("Failed to create candidate. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+    }
+  };
+
+  if (isLoading) return <div className="text-center text-gray-500 p-6">Loading...</div>;
+
   return (
-    <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Navigation Tabs */}
-        <div className="bg-white border-b border-gray-200 shadow-sm mb-6">
+        <div className="bg-white border-b border-gray-200 shadow-sm mb-6 rounded-t-lg">
           <div className="flex items-center justify-start space-x-6 px-6 py-4">
             {["Candidates", "Vacancy"].map((tab) => (
               <motion.button
@@ -96,14 +141,23 @@ const Recruitment = () => {
             <>
               {/* Filter Section */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">Candidates</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">Candidates</h2>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={openModal}
+                    className="inline-flex items-center px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors duration-200"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Candidate
+                  </motion.button>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Job Title */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Job Title
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Job Title</label>
                     <div className="relative">
                       <select
                         className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
@@ -120,9 +174,7 @@ const Recruitment = () => {
 
                   {/* Vacancy */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Vacancy
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Vacancy</label>
                     <div className="relative">
                       <select
                         className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
@@ -139,9 +191,7 @@ const Recruitment = () => {
 
                   {/* Hiring Manager */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Hiring Manager
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Hiring Manager</label>
                     <div className="relative">
                       <select
                         className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
@@ -158,9 +208,7 @@ const Recruitment = () => {
 
                   {/* Status */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Status
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Status</label>
                     <div className="relative">
                       <select
                         className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
@@ -179,9 +227,7 @@ const Recruitment = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                   {/* Candidate Name */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Candidate Name
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Candidate Name</label>
                     <input
                       type="text"
                       placeholder="Type for hints..."
@@ -193,9 +239,7 @@ const Recruitment = () => {
 
                   {/* Keywords */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Keywords
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Keywords</label>
                     <input
                       type="text"
                       placeholder="Enter comma separated words..."
@@ -207,9 +251,7 @@ const Recruitment = () => {
 
                   {/* Method of Application */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Method of Application
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700">Method of Application</label>
                     <div className="relative">
                       <select
                         className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
@@ -227,9 +269,7 @@ const Recruitment = () => {
 
                 {/* Date of Application */}
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date of Application
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date of Application</label>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <input
                       type="date"
@@ -252,7 +292,7 @@ const Recruitment = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
+                    className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
                     onClick={handleReset}
                   >
                     <RefreshCw className="h-4 w-4" />
@@ -261,7 +301,7 @@ const Recruitment = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors duration-200 flex items-center gap-2"
+                    className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 flex items-center gap-2"
                     onClick={handleSearch}
                   >
                     <Search className="h-4 w-4" />
@@ -272,14 +312,6 @@ const Recruitment = () => {
 
               {/* Table Section */}
               <div className="mt-8">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="mb-4 inline-flex items-center px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors duration-200"
-                >
-                  + Add Candidate
-                </motion.button>
-
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -308,7 +340,7 @@ const Recruitment = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {dummyData.map((item) => (
+                      {candidates.map((item) => (
                         <motion.tr
                           key={item.id}
                           whileHover={{ backgroundColor: "#F9FAFB" }}
@@ -324,7 +356,7 @@ const Recruitment = () => {
                             {item.vacancy}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {item.candidate}
+                            {item.candidateName}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {item.hiringManager}
@@ -373,6 +405,98 @@ const Recruitment = () => {
             <Vacancy />
           )}
         </motion.div>
+
+        {/* Modal for Adding Candidate */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
+              className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4"
+            >
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Candidate</h3>
+              <form onSubmit={handleCandidateSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Vacancy</label>
+                  <input
+                    type="text"
+                    value={newCandidate.vacancy}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, vacancy: e.target.value })}
+                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Candidate Name</label>
+                  <input
+                    type="text"
+                    value={newCandidate.candidateName}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, candidateName: e.target.value })}
+                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Hiring Manager</label>
+                  <input
+                    type="text"
+                    value={newCandidate.hiringManager}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, hiringManager: e.target.value })}
+                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Application Date</label>
+                  <input
+                    type="date"
+                    value={newCandidate.applicationDate}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, applicationDate: e.target.value })}
+                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Status</label>
+                  <select
+                    value={newCandidate.status}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, status: e.target.value })}
+                    className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    required
+                  >
+                    <option value="">-- Select --</option>
+                    <option value="shortlisted">Shortlisted</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    type="submit"
+                    disabled={isCreating}
+                    className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {isCreating ? "Saving..." : "Save Candidate"}
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        <ToastContainer />
       </div>
     </div>
   );
