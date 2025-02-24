@@ -5,7 +5,7 @@ import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
 import documentRoutes from './Routes/documentRoutes.js'
 import cookieParser from "cookie-parser"
-import timeAttendance from "./Routes/timeAttendance.js"
+import timeAttendance from "./Routes/timeAttendanceRoutes.js"
 import mpesaRoutes from "./Routes/mpesa_routes.js"
 import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
 import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
@@ -14,6 +14,7 @@ import employeeContactsRoutes from './Routes/employeeContactsRoutes.js'
 import suggestionsRoutes from './Routes/suggestionsRoutes.js'
 import departmentRoutes from './Routes/departmentRoutes.js'
 import payrollRoutes from './Routes/payrollRoutes.js'
+import PerformanceReviewsRoutes from './Routes/PerformanceReviewsRoutes.js'
 
 const app = express()
 
@@ -43,7 +44,7 @@ app.use('/api/suggestions', suggestionsRoutes)
 
 app.use('/api/departments', departmentRoutes)
 app.use('/api/payroll', payrollRoutes)
-
+app.use('/api/performance', PerformanceReviewsRoutes)
 
 /* 
 @params Payment routes
