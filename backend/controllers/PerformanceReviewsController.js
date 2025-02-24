@@ -5,8 +5,15 @@ export class PerformanceReviewsController {
   // Create a new performance review
   async createPerformanceReview (req, res) {
     try {
-      const { employeeId, jobTitle, reviewStatus, reviewer, fromDate, toDate } =
-        req.body
+      const {
+        employeeId,
+        jobTitle,
+        reviewStatus,
+        reviewer,
+        fromDate,
+        toDate,
+        reviewMessage
+      } = req.body
 
       const performanceReview = await prisma.performanceReview.create({
         data: {
@@ -15,7 +22,8 @@ export class PerformanceReviewsController {
           reviewStatus,
           reviewer,
           fromDate: new Date(fromDate),
-          toDate: new Date(toDate)
+          toDate: new Date(toDate),
+          reviewMessage
         }
       })
 
@@ -86,7 +94,14 @@ export class PerformanceReviewsController {
   async updatePerformanceReview (req, res) {
     try {
       const id = parseInt(req.params.id)
-      const { jobTitle, reviewStatus, reviewer, fromDate, toDate } = req.body
+      const {
+        jobTitle,
+        reviewStatus,
+        reviewer,
+        fromDate,
+        toDate,
+        reviewMessage
+      } = req.body
 
       const updatedReview = await prisma.performanceReview.update({
         where: { id },
@@ -95,7 +110,8 @@ export class PerformanceReviewsController {
           reviewStatus,
           reviewer,
           fromDate: new Date(fromDate),
-          toDate: new Date(toDate)
+          toDate: new Date(toDate),
+          reviewMessage
         }
       })
 
