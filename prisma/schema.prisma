@@ -287,9 +287,35 @@ model PerformanceReview {
   fromDate       DateTime   @map("from_date")
   toDate         DateTime   @map("to_date")
   createdAt      DateTime   @default(now()) @map("created_at")
-
+  reviewMessage String?    @map("review_message")
   // Relations
   employee       Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("performance_reviews")
+}
+
+model Candidate {
+  id                Int       @id @default(autoincrement())
+  jobTitle          String
+  vacancy           String
+  hiringManager     String
+  status            String     @default("pending")
+  candidateName     String
+  keywords          String
+  methodOfApplication String
+  dateOfApplication DateTime   @map("date_of_application")
+  from              DateTime?
+  to                DateTime?
+
+  @@map("candidates")
+}
+
+model Vacancy {
+  id             Int       @id @default(autoincrement())
+  jobTitle       String
+  vacancy        String
+  hiringManager  String
+  status         String     @default("open")
+
+  @@map("vacancies")
 }
