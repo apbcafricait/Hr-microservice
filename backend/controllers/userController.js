@@ -56,6 +56,18 @@ const RegisterUser = asyncHandler(async (req, res) => {
     }
 });
 
+// Logout user
+//Post /api/users/logout
+const logout = asyncHandler(async (req, res) => {
+  // Clear the JWT cookie to log out the user
+  res.cookie('jwt', '', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  })
+  res.status(200).json({ success: true, data: {} })
+})
+
+
 //Login a user
 //POST /api/users/login
 //Access: Public
@@ -93,4 +105,4 @@ const loginUser = asyncHandler(async (req, res) => {
       res.status(500).json({ message: "Server error during authentication" });
     }
   });
-export { getAllUsers, RegisterUser, loginUser };
+export { getAllUsers, RegisterUser, loginUser, logout };

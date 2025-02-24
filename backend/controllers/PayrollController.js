@@ -248,7 +248,173 @@ export class PayrollController {
       })
     }
   }
+// Add these methods to your PayrollController class
 
+// Get payroll summaries for an organisation
+async getPayrollSummaries(req, res) {
+    try {
+        const { organisationId } = req.params;
+        const { monthYear } = req.query;
+
+        // Parse date if provided
+        const payrollDate = monthYear ? new Date(monthYear) : null;
+
+        // Base where clause
+        const whereClause = {
+            employee: {
+                organisationId: parseInt(organisationId)
+            }
+        };
+
+        // Add month filter if provided
+        if (payrollDate && !isNaN(payrollDate.getTime())) {
+            whereClause.monthYear = payrollDate;
+        }
+
+        // Get all payrolls for the organisation
+        const payrolls = await prisma.payroll.findMany({
+            where: whereClause,
+            include: {
+                employee: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        department: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Calculate summaries
+        const summaries = {
+            totalEmployees: await prisma.employee.count({
+                where: { organisationId: parseInt(organisationId) }
+            }),
+            processedPayrolls: payrolls.length,
+            totalGrossSalary: payrolls.reduce((sum, p) => sum + Number(p.grossSalary), 0),
+            totalNetSalary: payrolls.reduce((sum, p) => sum + Number(p.netSalary), 0),
+            totalDeductions: {
+                paye: payrolls.reduce((sum, p) => sum + Number(p.deductions.paye), 0),
+                shif: payrolls.reduce((sum, p) => sum + Number(p.deductions.shif), 0),
+                nssf: payrolls.reduce((sum, p) => sum + Number(p.deductions.nssf.amount), 0),
+                housingLevy: payrolls.reduce((sum, p) => sum + Number(p.deductions.housingLevy), 0)
+            },
+            departmentSummaries: {},
+            averageSalary: 0,
+            unprocessedEmployees: 0
+        };
+
+        // Calculate department summaries
+        payrolls.forEach(payroll => {
+            const deptName = payroll.employee.department?.name || 'Unassigned';
+            if (!summaries.departmentSummaries[deptName]) {
+                summaries.departmentSummaries[deptName] = {
+                    count: 0,
+                    totalGross: 0,
+                    totalNet: 0
+                };
+            }
+            summaries.departmentSummaries[deptName].count++;
+            summaries.departmentSummaries[deptName].totalGross += Number(payroll.grossSalary);
+            summaries.departmentSummaries[deptName].totalNet += Number(payroll.netSalary);
+        });
+
+        // Calculate averages
+        summaries.averageSalary = summaries.totalGrossSalary / (payrolls.length || 1);
+        summaries.unprocessedEmployees = summaries.totalEmployees - summaries.processedPayrolls;
+
+        return res.status(200).json({
+            status: 'success',
+            data: summaries
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch payroll summaries',
+            error: error.message
+        });
+    }
+}
+
+
+// Get detailed department payroll summary
+async getDepartmentPayrollSummary(req, res) {
+    try {
+        const { organisationId, departmentId } = req.params;
+        const { monthYear } = req.query;
+
+        const payrollDate = monthYear ? new Date(monthYear) : null;
+
+        const whereClause = {
+            employee: {
+                organisationId: parseInt(organisationId),
+                departmentId: parseInt(departmentId)
+            }
+        };
+
+        if (payrollDate && !isNaN(payrollDate.getTime())) {
+            whereClause.monthYear = payrollDate;
+        }
+
+        const payrolls = await prisma.payroll.findMany({
+            where: whereClause,
+            include: {
+                employee: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        position: true
+                    }
+                }
+            }
+        });
+
+        const summary = {
+            totalEmployees: await prisma.employee.count({
+                where: {
+                    organisationId: parseInt(organisationId),
+                    departmentId: parseInt(departmentId)
+                }
+            }),
+            processedPayrolls: payrolls.length,
+            totalGrossSalary: payrolls.reduce((sum, p) => sum + Number(p.grossSalary), 0),
+            totalNetSalary: payrolls.reduce((sum, p) => sum + Number(p.netSalary), 0),
+            totalDeductions: {
+                paye: payrolls.reduce((sum, p) => sum + Number(p.deductions.paye), 0),
+                nhif: payrolls.reduce((sum, p) => sum + Number(p.deductions.nhif), 0),
+                nssf: payrolls.reduce((sum, p) => sum + Number(p.deductions.nssf.amount), 0),
+                housingLevy: payrolls.reduce((sum, p) => sum + Number(p.deductions.housingLevy), 0)
+            },
+            employeeDetails: payrolls.map(p => ({
+                name: `${p.employee.firstName} ${p.employee.lastName}`,
+                position: p.employee.position,
+                grossSalary: p.grossSalary,
+                netSalary: p.netSalary,
+                deductions: p.deductions
+            })),
+            averageSalary: 0,
+            unprocessedEmployees: 0
+        };
+
+        summary.averageSalary = summary.totalGrossSalary / (payrolls.length || 1);
+        summary.unprocessedEmployees = summary.totalEmployees - summary.processedPayrolls;
+
+        return res.status(200).json({
+            status: 'success',
+            data: summary
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch department payroll summary',
+            error: error.message
+        });
+    }
+}
   // Download payslip
   async downloadPayslip (req, res) {
     try {
@@ -285,5 +451,7 @@ export class PayrollController {
     }
   }
 }
+
+
 
 export default PayrollController

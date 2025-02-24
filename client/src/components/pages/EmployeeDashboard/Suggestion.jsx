@@ -1,18 +1,28 @@
 import { useState } from "react";
 import { useCreateSuggestionMutation } from "../../../slices/suggestionsApiSlice";
 import { toast } from "react-toastify";
-
+import { useSelector } from "react-redux";
+import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 const Suggestion = () => {
+
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [createSuggestion, { isLoading }] = useCreateSuggestionMutation();
 
+
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
+  console.log(userInfo, "user info")
+const { data: orgEmpData } = useGetEmployeeQuery(id)
+  console.log(orgEmpData, "data needed")
+
+  const organisationId = orgEmpData?.data.employee.organisation.id
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
       const body = {
-        organisasionId: "",
+        organisationId,
         content,
         isAnonymous
       }

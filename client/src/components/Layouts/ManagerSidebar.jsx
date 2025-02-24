@@ -19,9 +19,9 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
       className={`bg-white shadow-lg p-4 transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} hidden md:block`}
     >
       <div className="flex justify-between items-center">
-        {!isCollapsed && <h2 className="text-lg font-bold text-gray-700">Manager Dashboard</h2>}
+        {!isCollapsed && <h2 className="text-lg font-bold text-gray-900">Manager Dashboard</h2>}
         <button
-          className="p-2 rounded focus:outline-none"
+          className="p-2 rounded focus:outline-none bg-purple-600 text-white hover:bg-purple-700"
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
           {isCollapsed ? <FaBars /> : <FaTimes />}
@@ -32,14 +32,15 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
           {sections.map((section) => (
             <li
               key={section.id}
-              className={`flex items-center p-2 rounded cursor-pointer transition-colors duration-200 ${currentSection === section.id
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-100"
-                }`}
+              className={`flex items-center p-2 rounded cursor-pointer transition-colors duration-200 ${
+                currentSection === section.id
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
+                  : "hover:bg-gray-50 text-gray-600"
+              }`}
               onClick={() => setCurrentSection(section.id)}
               title={isCollapsed ? section.name : ""}
             >
-              <span className="mr-2">{section.icon}</span>
+              <span className={`mr-2 ${currentSection === section.id ? "text-white" : "text-gray-500 group-hover:text-purple-600"}`}>{section.icon}</span>
               {!isCollapsed && <span>{section.name}</span>}
             </li>
           ))}

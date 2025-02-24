@@ -1,5 +1,5 @@
 // routes/timeAttendance.js
-import express from 'express'
+import { Router } from 'express'
 import {
   createAttendance,
   getAllAttendance,
@@ -9,7 +9,7 @@ import {
 } from '../controllers/timeAttendanceController.js'
 import { authenticated } from '../middleware/Authentication.js'
 
-
+const router = Router()
 
 
 // Clock-in endpoint
@@ -58,8 +58,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-module.exports = router;
-const router = express.Router()
 // Protect all routes
 router.use(authenticated)
 router.post('/create', createAttendance)
