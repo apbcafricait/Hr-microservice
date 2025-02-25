@@ -41,14 +41,11 @@ const ManagerDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar - Fixed Position */}
-      <div className="fixed top-0 left-0 w-64 h-full bg-white shadow-md z-10">
-        <ManagerSidebar
-          currentSection={currentSection}
-          setCurrentSection={setCurrentSection}
-        />
+      <div className="fixed top-0 left-0 h-screen bg-white shadow-md z-10">
+        <ManagerSidebar currentSection={currentSection} setCurrentSection={setCurrentSection} />
       </div>
 
-      {/* Main Content - Scrollable */}
+      {/* Main Content - Pushes Sidebar */}
       <main className="flex-1 ml-64 p-6 overflow-y-auto h-screen">
         {/* Header Section */}
         <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg sticky top-0 z-20">

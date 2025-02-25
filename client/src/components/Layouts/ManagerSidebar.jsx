@@ -16,8 +16,9 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
 
   return (
     <aside
-      className={`bg-white shadow-lg transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} hidden md:block h-full`}
-    >
+  className={`bg-white shadow-lg transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} h-screen fixed top-0 left-0`}
+>
+
       <div className="flex flex-col h-full">
         {/* Header Section */}
         <div className="flex justify-between items-center p-4 shrink-0">
