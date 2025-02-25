@@ -33,6 +33,9 @@ import {
 } from 'chart.js';
 
 import { useGetLeaveBalanceQuery } from '../../../slices/leaveBalancesApiSlice';
+import { useGetDepartmentsQuery } from '../../../slices/departmentsApiSlice';
+import { useGetAllLeaveRequestsQuery } from '../../../slices/leaveApiSlice'
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -56,16 +59,30 @@ const EmployeeDashboard = () => {
   const { data: employee, isLoading, error } = useGetEmployeeQuery(id);
 
   const organisationName = employee?.data.employee.organisation.name?.toUpperCase();
+  const organisationId = employee?.data.employee.organisation.id
   const employeeName = employee?.data.employee.firstName;
   const navigate = useNavigate();
   const employeeId = employee?.data.employee.id;
   const { data: attendanceData } = useGetAttedanceOfEmployeeQuery(employeeId);
  
 const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
-console.log(leavebalances, "leave balances data")
   const TotalLeaveBalances = leavebalances?.data?.leaveBalance?.annualLeave +
     leavebalances?.data?.leaveBalance?.sickLeave +
     leavebalances?.data?.leaveBalance?.compassionateLeave
+
+  const { data: orgDepartments } = useGetDepartmentsQuery(organisationId)
+  console.log(orgDepartments, "org departments")
+
+  const {data: leaveRequests} = useGetAllLeaveRequestsQuery(employeeId)
+  console.log(leaveRequests, 'leave Requests')
+
+
+  // Default to an empty array if leaveRequests or leaveRequests.data is undefined
+  const totalLeaveRequests = leaveRequests?.data?.leaveRequests?.filter(
+    (request) => request.employeeId === employeeId
+  );
+  console.log(totalLeaveRequests?.length, 'total leave Requests');
+
   const getLastCheckIn = (attendanceData) => {
     if (!attendanceData || attendanceData.length === 0) return null;
 
@@ -95,6 +112,24 @@ console.log(leavebalances, "leave balances data")
     console.log('Most recent check-in:', lastCheckIn.clockIn);
     console.log('Day:', lastCheckIn.dayName); // Will log "Wednesday" for 2025-02-12
   }
+
+
+  // Get current month (0-based: February = 1)
+  const currentMonth = new Date().getUTCMonth(); // Today: 1 (February)
+
+  // Calculate total hours for the current month
+  const totalWorkingHours = attendanceData
+    ?.filter(entry => {
+      const clockInDate = new Date(entry.clockIn);
+      return clockInDate.getUTCMonth() === currentMonth && entry.clockOut !== null;
+    })
+    .reduce((total, entry) => {
+      const clockIn = new Date(entry.clockIn);
+      const clockOut = new Date(entry.clockOut);
+      const hoursWorked = (clockOut - clockIn) / (1000 * 60 * 60); // Convert to hours
+      return total + hoursWorked;
+    }, 0)
+    .toFixed(2) || "0.00"; // Format to 2dp, fallback to "0.00"
 
   // Mock payment data (replace with real data if available)
   const paymentData = {
@@ -288,7 +323,7 @@ console.log(leavebalances, "leave balances data")
                       Pending
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold mb-2">2</h3>
+                  <h3 className="text-2xl font-bold mb-2">{totalLeaveRequests?.length}</h3>
                   <p className="text-purple-100">Leave Requests</p>
                 </div>
 
@@ -363,7 +398,7 @@ console.log(leavebalances, "leave balances data")
                       <ClockIcon className="w-8 h-8 text-blue-600" />
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-800">160</p>
+                      <p className="text-2xl font-bold text-gray-800">{totalWorkingHours}</p>
                       <p className="text-sm text-gray-500">Hours this month</p>
                     </div>
                   </div>
