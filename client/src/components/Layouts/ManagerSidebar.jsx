@@ -16,36 +16,47 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
 
   return (
     <aside
-      className={`bg-white shadow-lg p-4 transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} hidden md:block`}
+      className={`bg-white shadow-lg transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} hidden md:block h-full`}
     >
-      <div className="flex justify-between items-center">
-        {!isCollapsed && <h2 className="text-lg font-bold text-gray-900">Manager Dashboard</h2>}
-        <button
-          className="p-2 rounded focus:outline-none bg-purple-600 text-white hover:bg-purple-700"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          {isCollapsed ? <FaBars /> : <FaTimes />}
-        </button>
+      <div className="flex flex-col h-full">
+        {/* Header Section */}
+        <div className="flex justify-between items-center p-4 shrink-0">
+          {!isCollapsed && <h2 className="text-lg font-bold text-gray-900">Manager Dashboard</h2>}
+          <button
+            className="p-2 rounded focus:outline-none bg-purple-600 text-white hover:bg-purple-700"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            {isCollapsed ? <FaBars /> : <FaTimes />}
+          </button>
+        </div>
+
+        {/* Navigation - Fills remaining space */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2 h-full flex flex-col">
+            {sections.map((section) => (
+              <li
+                key={section.id}
+                className={`flex items-center p-2 rounded cursor-pointer transition-colors duration-200 ${
+                  currentSection === section.id
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
+                    : "hover:bg-gray-50 text-gray-600"
+                }`}
+                onClick={() => setCurrentSection(section.id)}
+                title={isCollapsed ? section.name : ""}
+              >
+                <span
+                  className={`mr-2 ${
+                    currentSection === section.id ? "text-white" : "text-gray-500 group-hover:text-purple-600"
+                  }`}
+                >
+                  {section.icon}
+                </span>
+                {!isCollapsed && <span>{section.name}</span>}
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-      <nav className="mt-4">
-        <ul className="space-y-2">
-          {sections.map((section) => (
-            <li
-              key={section.id}
-              className={`flex items-center p-2 rounded cursor-pointer transition-colors duration-200 ${
-                currentSection === section.id
-                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
-                  : "hover:bg-gray-50 text-gray-600"
-              }`}
-              onClick={() => setCurrentSection(section.id)}
-              title={isCollapsed ? section.name : ""}
-            >
-              <span className={`mr-2 ${currentSection === section.id ? "text-white" : "text-gray-500 group-hover:text-purple-600"}`}>{section.icon}</span>
-              {!isCollapsed && <span>{section.name}</span>}
-            </li>
-          ))}
-        </ul>
-      </nav>
     </aside>
   );
 };

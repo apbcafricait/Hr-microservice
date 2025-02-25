@@ -39,17 +39,19 @@ const ManagerDashboard = () => {
   }, [userInfo, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <ManagerSidebar
-        currentSection={currentSection}
-        setCurrentSection={setCurrentSection}
-      />
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar - Fixed Position */}
+      <div className="fixed top-0 left-0 w-64 h-full bg-white shadow-md z-10">
+        <ManagerSidebar
+          currentSection={currentSection}
+          setCurrentSection={setCurrentSection}
+        />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6">
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 ml-64 p-6 overflow-y-auto h-screen">
         {/* Header Section */}
-        <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
+        <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg sticky top-0 z-20">
           <div className="text-start flex-1">
             <h1 className="text-2xl font-semibold text-gray-700">
               {organisationName || "Unknown Organisation"}
