@@ -1,4 +1,4 @@
-
+import { Router } from 'express';
 import {
   createAttendance,
   getAllAttendance,
@@ -7,7 +7,7 @@ import {
   deleteAttendance,
 } from '../controllers/timeAttendanceController.js';
 import { authenticated } from '../middleware/Authentication.js';
-
+const router = Router();
 
 
 // Protect all routes
@@ -20,4 +20,4 @@ router.get('/:employeeId', getAttendanceByEmployee);
 router.put('/clock-out/:employeeId', clockOut);
 router.delete('/:id', deleteAttendance);
 
-
+export default router;

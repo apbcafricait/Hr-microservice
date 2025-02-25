@@ -5,7 +5,7 @@ import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
 import documentRoutes from './Routes/documentRoutes.js'
 import cookieParser from "cookie-parser"
-import timeAttendance from "./Routes/timeAttendanceRoutes.js"
+import timeAttendance from "./Routes/timeAttendance.js"
 import mpesaRoutes from "./Routes/mpesa_routes.js"
 import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
 import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'

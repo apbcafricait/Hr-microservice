@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 const EmployeeHeader = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
-  const employeeId = userInfo?.id;
-  const { data: orgEmpData } = useGetEmployeeQuery(employeeId);
+  const id = userInfo?.id;
+  const { data: orgEmpData } = useGetEmployeeQuery(id);
 
   const organisationName = orgEmpData?.data.employee.organisation.name?.toUpperCase();
   const employeeName = orgEmpData?.data.employee.firstName;
@@ -49,7 +49,7 @@ const EmployeeHeader = () => {
           onClick={toggleDropdown}
           className="flex items-center text-gray-700 focus:outline-none"
         >
-          <span className="mr-2">Hello, {employeeName || "Employee"}</span>
+          <span className="mr-2">Hello, {employeeName}</span>
           <svg
             className={`w-5 h-5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
             fill="none"
