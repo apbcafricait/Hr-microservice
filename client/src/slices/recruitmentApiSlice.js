@@ -9,12 +9,7 @@ export const recruitmentApiSlice = apiSlice.injectEndpoints({
         url: `${RECRUITMENT_URL}/candidates`,
         method: "GET",
       }),
-    }),
-    getCandidate: builder.query({
-      query: (id) => ({
-        url: `${RECRUITMENT_URL}/candidates/${id}`,
-        method: "GET",
-      }),
+      transformResponse: (response) => response.data || [],
     }),
     createCandidate: builder.mutation({
       query: (candidateData) => ({
@@ -24,7 +19,7 @@ export const recruitmentApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     updateCandidate: builder.mutation({
-      query: ({ id, ...candidateData }) => ({
+      query: ({ id, candidateData }) => ({
         url: `${RECRUITMENT_URL}/candidates/${id}`,
         method: "PUT",
         body: candidateData,
@@ -37,7 +32,7 @@ export const recruitmentApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Vacancies
+    // Vacancies (unchanged for this task)
     getAllVacancies: builder.query({
       query: () => ({
         url: `${RECRUITMENT_URL}/vacancies`,
@@ -75,7 +70,6 @@ export const recruitmentApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetAllCandidatesQuery,
-  useGetCandidateQuery,
   useCreateCandidateMutation,
   useUpdateCandidateMutation,
   useDeleteCandidateMutation,
