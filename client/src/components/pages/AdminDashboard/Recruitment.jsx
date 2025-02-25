@@ -91,11 +91,11 @@ const Recruitment = () => {
         vacancy: candidate.vacancy,
         candidateName: candidate.candidateName,
         hiringManager: candidate.hiringManager,
-        applicationDate: candidate.dateOfApplication.split("T")[0], // Convert ISO to YYYY-MM-DD
+        applicationDate: candidate.dateOfApplication.split("T")[0],
         status: candidate.status,
         email: candidate.email || "",
         contactNumber: candidate.contactNumber || "",
-        resume: null, // Resume not editable in this example
+        resume: null,
         keywords: candidate.keywords,
         methodOfApplication: candidate.methodOfApplication,
         notes: candidate.notes || "",
@@ -233,7 +233,6 @@ const Recruitment = () => {
   };
 
   const handleDownloadResume = (candidate) => {
-    // Assuming resumeUrl is returned from API; mock implementation here
     const resumeUrl = candidate.resumeUrl || "https://example.com/resume.pdf"; // Replace with actual logic
     window.open(resumeUrl, "_blank");
   };
@@ -496,7 +495,7 @@ const Recruitment = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <span
                             className={`px-2.5 py-1 inline-flex text-xs font-semibold rounded-full ${
-                              item.status=== "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                              item.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                             }`}
                           >
                             {item.status}
@@ -544,7 +543,7 @@ const Recruitment = () => {
         {/* Modal for Adding/Editing Candidate */}
         {isModalOpen && (
           <div
-            className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0"
             onClick={closeModal}
           >
             <motion.div
@@ -552,165 +551,170 @@ const Recruitment = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="bg-white rounded-lg shadow-2xl p-4 sm:p-6 w-full max-w-2xl mx-4 relative"
+              className="bg-white rounded-lg shadow-2xl p-4 sm:p-6 w-full sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto relative"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={closeModal}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700 p-2"
               >
                 <X className="h-5 w-5" />
               </button>
-              <h3 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 sm:mb-6 border-b border-gray-200 pb-2">
                 {isEditMode ? "Edit Candidate" : "Add New Candidate"}
               </h3>
               <form onSubmit={handleCandidateSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label htmlFor="candidateNameModal" className="block text-sm font-medium text-gray-700">
-                        Full Name *
-                      </label>
-                      <input
-                        id="candidateNameModal"
-                        type="text"
-                        value={newCandidate.candidateName}
-                        onChange={(e) => setNewCandidate({ ...newCandidate, candidateName: e.target.value })}
-                        className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
-                        placeholder="Enter candidate's full name"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Full Name */}
+                  <div className="space-y-2">
+                    <label htmlFor="candidateNameModal" className="block text-sm font-medium text-gray-700">
+                      Full Name *
+                    </label>
+                    <input
+                      id="candidateNameModal"
+                      type="text"
+                      value={newCandidate.candidateName}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, candidateName: e.target.value })}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
+                      placeholder="Enter candidate's full name"
+                      required
+                    />
+                  </div>
+
+                  {/* Job Title */}
+                  <div className="space-y-2">
+                    <label htmlFor="jobTitleModal" className="block text-sm font-medium text-gray-700">
+                      Job Title *
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="jobTitleModal"
+                        value={newCandidate.jobTitle}
+                        onChange={(e) => setNewCandidate({ ...newCandidate, jobTitle: e.target.value })}
+                        className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
                         required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="jobTitleModal" className="block text-sm font-medium text-gray-700">
-                        Job Title *
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="jobTitleModal"
-                          value={newCandidate.jobTitle}
-                          onChange={(e) => setNewCandidate({ ...newCandidate, jobTitle: e.target.value })}
-                          className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
-                          required
-                        >
-                          <option value="">-- Select Job Title --</option>
-                          <option value="Software Development">Software Development</option>
-                          <option value="QA">Senior QA Lead</option>
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="vacancyModal" className="block text-sm font-medium text-gray-700">
-                        Vacancy *
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="vacancyModal"
-                          value={newCandidate.vacancy}
-                          onChange={(e) => setNewCandidate({ ...newCandidate, vacancy: e.target.value })}
-                          className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
-                          required
-                        >
-                          <option value="">-- Select Vacancy --</option>
-                          <option value="senior Software developer">Senior Software Developer</option>
-                          <option value="senior-qa-lead">Senior QA Lead</option>
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="hiringManagerModal" className="block text-sm font-medium text-gray-700">
-                        Hiring Manager *
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="hiringManagerModal"
-                          value={newCandidate.hiringManager}
-                          onChange={(e) => setNewCandidate({ ...newCandidate, hiringManager: e.target.value })}
-                          className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
-                          required
-                        >
-                          <option value="">-- Select Manager --</option>
-                          <option value="HR">HR</option>
-                          <option value="manager2">Manager 2</option>
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                      </div>
+                      >
+                        <option value="">-- Select Job Title --</option>
+                        <option value="Software Development">Software Development</option>
+                        <option value="QA">Senior QA Lead</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label htmlFor="applicationDateModal" className="block text-sm font-medium text-gray-700">
-                        Application Date *
-                      </label>
-                      <input
-                        id="applicationDateModal"
-                        type="date"
-                        value={newCandidate.applicationDate}
-                        onChange={(e) => setNewCandidate({ ...newCandidate, applicationDate: e.target.value })}
-                        className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
+                  {/* Vacancy */}
+                  <div className="space-y-2">
+                    <label htmlFor="vacancyModal" className="block text-sm font-medium text-gray-700">
+                      Vacancy *
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="vacancyModal"
+                        value={newCandidate.vacancy}
+                        onChange={(e) => setNewCandidate({ ...newCandidate, vacancy: e.target.value })}
+                        className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
                         required
-                      />
+                      >
+                        <option value="">-- Select Vacancy --</option>
+                        <option value="senior Software developer">Senior Software Developer</option>
+                        <option value="senior-qa-lead">Senior QA Lead</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <label htmlFor="statusModal" className="block text-sm font-medium text-gray-700">
-                        Status *
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="statusModal"
-                          value={newCandidate.status}
-                          onChange={(e) => setNewCandidate({ ...newCandidate, status: e.target.value })}
-                          className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
-                          required
-                        >
-                          <option value="">-- Select Status --</option>
-                          <option value="Active">Active</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="emailModal" className="block text-sm font-medium text-gray-700">
-                        Email *
-                      </label>
-                      <input
-                        id="emailModal"
-                        type="email"
-                        value={newCandidate.email}
-                        onChange={(e) => setNewCandidate({ ...newCandidate, email: e.target.value })}
-                        className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
-                        placeholder="e.g., example@email.com"
+                  {/* Hiring Manager */}
+                  <div className="space-y-2">
+                    <label htmlFor="hiringManagerModal" className="block text-sm font-medium text-gray-700">
+                      Hiring Manager *
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="hiringManagerModal"
+                        value={newCandidate.hiringManager}
+                        onChange={(e) => setNewCandidate({ ...newCandidate, hiringManager: e.target.value })}
+                        className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
                         required
-                      />
+                      >
+                        <option value="">-- Select Manager --</option>
+                        <option value="HR">HR</option>
+                        <option value="manager2">Manager 2</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <label htmlFor="contactNumberModal" className="block text-sm font-medium text-gray-700">
-                        Contact Number *
-                      </label>
-                      <input
-                        id="contactNumberModal"
-                        type="tel"
-                        value={newCandidate.contactNumber}
-                        onChange={(e) => setNewCandidate({ ...newCandidate, contactNumber: e.target.value })}
-                        className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
-                        placeholder="e.g., 123-456-7890"
+                  {/* Application Date */}
+                  <div className="space-y-2">
+                    <label htmlFor="applicationDateModal" className="block text-sm font-medium text-gray-700">
+                      Application Date *
+                    </label>
+                    <input
+                      id="applicationDateModal"
+                      type="date"
+                      value={newCandidate.applicationDate}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, applicationDate: e.target.value })}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
+                      required
+                    />
+                  </div>
+
+                  {/* Status */}
+                  <div className="space-y-2">
+                    <label htmlFor="statusModal" className="block text-sm font-medium text-gray-700">
+                      Status *
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="statusModal"
+                        value={newCandidate.status}
+                        onChange={(e) => setNewCandidate({ ...newCandidate, status: e.target.value })}
+                        className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 appearance-none text-sm bg-white shadow-sm"
                         required
-                      />
+                      >
+                        <option value="">-- Select Status --</option>
+                        <option value="Active">Active</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                     </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <label htmlFor="emailModal" className="block text-sm font-medium text-gray-700">
+                      Email *
+                    </label>
+                    <input
+                      id="emailModal"
+                      type="email"
+                      value={newCandidate.email}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, email: e.target.value })}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
+                      placeholder="e.g., example@email.com"
+                      required
+                    />
+                  </div>
+
+                  {/* Contact Number */}
+                  <div className="space-y-2">
+                    <label htmlFor="contactNumberModal" className="block text-sm font-medium text-gray-700">
+                      Contact Number *
+                    </label>
+                    <input
+                      id="contactNumberModal"
+                      type="tel"
+                      value={newCandidate.contactNumber}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, contactNumber: e.target.value })}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
+                      placeholder="e.g., 123-456-7890"
+                      required
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* Method of Application */}
                   <div className="space-y-2">
                     <label htmlFor="methodOfApplicationModal" className="block text-sm font-medium text-gray-700">
                       Method of Application *
@@ -731,6 +735,7 @@ const Recruitment = () => {
                     </div>
                   </div>
 
+                  {/* Keywords */}
                   <div className="space-y-2">
                     <label htmlFor="keywordsModal" className="block text-sm font-medium text-gray-700">
                       Keywords
@@ -745,6 +750,7 @@ const Recruitment = () => {
                     />
                   </div>
 
+                  {/* Resume (Add Mode Only) */}
                   {!isEditMode && (
                     <div className="space-y-2">
                       <label htmlFor="resumeModal" className="block text-sm font-medium text-gray-700">
@@ -755,12 +761,13 @@ const Recruitment = () => {
                         type="file"
                         accept=".pdf,.doc,.docx,.txt"
                         onChange={(e) => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })}
-                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                       />
                       <p className="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, TXT (max 1MB)</p>
                     </div>
                   )}
 
+                  {/* Notes */}
                   <div className="space-y-2">
                     <label htmlFor="notesModal" className="block text-sm font-medium text-gray-700">
                       Notes
@@ -771,18 +778,19 @@ const Recruitment = () => {
                       onChange={(e) => setNewCandidate({ ...newCandidate, notes: e.target.value })}
                       className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
                       placeholder="Add any additional notes..."
-                      rows="3"
+                      rows="4"
                     />
                   </div>
                 </div>
 
+                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row sm:justify-end gap-4 mt-6">
                   <motion.button
                     whileHover={{ scale: 1.05, backgroundColor: "#E5E7EB" }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 font-medium text-sm shadow-sm"
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 font-medium text-sm shadow-sm w-full sm:w-auto"
                   >
                     Cancel
                   </motion.button>
@@ -791,7 +799,7 @@ const Recruitment = () => {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={isCreating || isUpdating}
-                    className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 font-medium text-sm shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 font-medium text-sm shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto"
                   >
                     {isCreating || isUpdating ? "Saving..." : isEditMode ? "Update Candidate" : "Save Candidate"}
                   </motion.button>
