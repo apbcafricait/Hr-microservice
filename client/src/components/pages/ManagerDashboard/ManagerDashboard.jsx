@@ -11,7 +11,7 @@ import { logout } from "../../../slices/AuthSlice";
 import { useNavigate } from "react-router-dom";
 
 const ManagerDashboard = () => {
-  const [currentSection, setCurrentSection] = useState("dashboard"); // Default to dashboard
+  const [currentSection, setCurrentSection] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -51,7 +51,6 @@ const ManagerDashboard = () => {
         {/* Header Section */}
         <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
           <div className="text-start flex-1">
-            {/* Organisation name is passed here */}
             <h1 className="text-2xl font-semibold text-gray-700">
               {organisationName || "Unknown Organisation"}
             </h1>
@@ -80,7 +79,7 @@ const ManagerDashboard = () => {
         </header>
 
         {/* Conditional Rendering Based on Section */}
-        {currentSection === "dashboard" && <Dashboard />} {/* Dashboard Section */}
+        {currentSection === "dashboard" && <Dashboard />}
 
         {currentSection === "employees" && (
           <>
@@ -91,11 +90,6 @@ const ManagerDashboard = () => {
               >
                 Add Employee
               </button>
-              <input
-                type="text"
-                placeholder="Search employees..."
-                className="p-2 border rounded w-64"
-              />
             </header>
 
             {showForm ? (
@@ -106,9 +100,9 @@ const ManagerDashboard = () => {
           </>
         )}
 
-        {currentSection === "leave" && <Leave />} {/* Leave Section */}
+        {currentSection === "leave" && <Leave />}
         {currentSection === "reports" && <p>Reports Section</p>}
-        {currentSection=== "payroll" && <Payroll />}
+        {currentSection === "payroll" && <Payroll />}
         {currentSection === "settings" && <p>Settings Section</p>}
       </main>
     </div>
