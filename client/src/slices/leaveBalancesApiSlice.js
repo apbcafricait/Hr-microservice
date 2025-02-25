@@ -5,7 +5,8 @@ export const leaveBalancesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Fetch leave balance for a specific employee
     getLeaveBalance: builder.query({
-      query: (employeeId) => `${LEAVE_BAL_URL}/${employeeId}`,
+      query: (employeeId) => `${LEAVE_BAL_URL}/employee/${employeeId}`,
+      method: "GET"
     }),
 
     // Create leave balance for an employee

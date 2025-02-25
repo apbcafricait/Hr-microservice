@@ -8,7 +8,7 @@ const router = Router()
 const leaveBalancesController = new LeaveBalancesController()
 
 // Protect all routes
-router.use(authenticated)
+
 
 // Employee-accessible routes
 router.get('/employee/:employeeId', leaveBalancesController.getLeaveBalance)
