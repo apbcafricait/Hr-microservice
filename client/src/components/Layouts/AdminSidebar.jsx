@@ -25,15 +25,14 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
  
   const menuItems = [
     { name: 'Dashboard', icon: Home },
-    // { name: 'Search', icon: Search },
     { name: 'Admin', icon: Shield },
     { name: 'PIM', icon: Users },
     { name: 'Leave', icon: Calendar },
     { name: 'Recruitment', icon: UserPlus },
     { name: 'Performance', icon: BarChart2 },
+    { name: "Payroll",  icon: BarChart2 },
     { name: 'Time', icon: Clock },
     { name: 'My Info', icon: User },
-  
     { name: 'Claims', icon: FileText },
     { name: 'Settings', icon: Settings },
   ];
@@ -138,33 +137,8 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
         </ul>
       </nav>
 
-      {/* Profile Section */}
-      {isExpanded && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute bottom-0 left-0 right-0 p-4"
-        >
-          <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                John Doe
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                Administrator
-              </p>
-            </div>
-            <button className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
-              <Settings className="w-4 h-4 text-gray-500" />
-            </button>
-          </div>
-        </motion.div>
-      )}
-
+      
+   
 
     </motion.div>
   );

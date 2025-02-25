@@ -41,7 +41,7 @@ const Recruitment = () => {
     vacancy: "",
     candidateName: "",
     hiringManager: "",
-    applicationDate: "",
+    dateOfApplication: "",
     status: "",
     email: "",
     contactNumber: "",
@@ -49,6 +49,8 @@ const Recruitment = () => {
     keywords: "",
     methodOfApplication: "",
     notes: "",
+    from: "", // Added to match JSON
+    to: "",   // Added to match JSON
   });
 
   const { data: candidates = [], isLoading, refetch, error: queryError } = useGetAllCandidatesQuery();
@@ -82,23 +84,42 @@ const Recruitment = () => {
     });
   };
 
+  const formatDateForInput = (dateStr) => {
+    // Convert DD-MM-YYYY or ISO (YYYY-MM-DD) to YYYY-MM-DD for input[type="date"]
+    if (!dateStr) return "";
+    if (dateStr.includes("T")) {
+      return dateStr.split("T")[0]; // ISO format
+    }
+    const [day, month, year] = dateStr.split("-");
+    return `${year}-${month}-${day}`; // Convert DD-MM-YYYY to YYYY-MM-DD
+  };
+
+  const formatDateForDisplay = (dateStr) => {
+    // Convert YYYY-MM-DD to DD-MM-YYYY for display
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}-${month}-${year}`;
+  };
+
   const openModal = (candidate = null) => {
     if (candidate) {
       setIsEditMode(true);
       setEditCandidateId(candidate.id);
       setNewCandidate({
-        jobTitle: candidate.jobTitle,
-        vacancy: candidate.vacancy,
-        candidateName: candidate.candidateName,
-        hiringManager: candidate.hiringManager,
-        applicationDate: candidate.dateOfApplication.split("T")[0],
-        status: candidate.status,
+        jobTitle: candidate.jobTitle || "",
+        vacancy: candidate.vacancy || "",
+        candidateName: candidate.candidateName || "",
+        hiringManager: candidate.hiringManager || "",
+        dateOfApplication: formatDateForInput(candidate.dateOfApplication),
+        status: candidate.status || "",
         email: candidate.email || "",
         contactNumber: candidate.contactNumber || "",
-        resume: null,
-        keywords: candidate.keywords,
-        methodOfApplication: candidate.methodOfApplication,
+        resume: null, // Not editable
+        keywords: candidate.keywords || "",
+        methodOfApplication: candidate.methodOfApplication || "",
         notes: candidate.notes || "",
+        from: formatDateForInput(candidate.from || ""),
+        to: formatDateForInput(candidate.to || ""),
       });
     } else {
       setIsEditMode(false);
@@ -108,7 +129,7 @@ const Recruitment = () => {
         vacancy: "",
         candidateName: "",
         hiringManager: "",
-        applicationDate: "",
+        dateOfApplication: "",
         status: "",
         email: "",
         contactNumber: "",
@@ -116,6 +137,8 @@ const Recruitment = () => {
         keywords: "",
         methodOfApplication: "",
         notes: "",
+        from: "",
+        to: "",
       });
     }
     setIsModalOpen(true);
@@ -130,7 +153,7 @@ const Recruitment = () => {
       vacancy: "",
       candidateName: "",
       hiringManager: "",
-      applicationDate: "",
+      dateOfApplication: "",
       status: "",
       email: "",
       contactNumber: "",
@@ -138,6 +161,8 @@ const Recruitment = () => {
       keywords: "",
       methodOfApplication: "",
       notes: "",
+      from: "",
+      to: "",
     });
   };
 
@@ -146,12 +171,14 @@ const Recruitment = () => {
       "candidateName",
       "vacancy",
       "email",
-      "applicationDate",
+      "dateOfApplication",
       "status",
       "contactNumber",
       "jobTitle",
       "hiringManager",
       "methodOfApplication",
+      "from",
+      "to",
     ];
     const missingFields = requiredFields.filter((field) => !newCandidate[field]);
     if (missingFields.length > 0) {
@@ -174,7 +201,7 @@ const Recruitment = () => {
     formData.append("vacancy", newCandidate.vacancy);
     formData.append("candidateName", newCandidate.candidateName);
     formData.append("hiringManager", newCandidate.hiringManager);
-    formData.append("dateOfApplication", newCandidate.applicationDate);
+    formData.append("dateOfApplication", formatDateForDisplay(newCandidate.dateOfApplication)); // DD-MM-YYYY
     formData.append("status", newCandidate.status);
     formData.append("email", newCandidate.email);
     formData.append("contactNumber", newCandidate.contactNumber);
@@ -182,17 +209,23 @@ const Recruitment = () => {
     formData.append("keywords", newCandidate.keywords);
     formData.append("methodOfApplication", newCandidate.methodOfApplication);
     formData.append("notes", newCandidate.notes);
+    formData.append("from", formatDateForDisplay(newCandidate.from)); // DD-MM-YYYY
+    formData.append("to", formatDateForDisplay(newCandidate.to));     // DD-MM-YYYY
 
     try {
       if (isEditMode) {
-        await updateCandidate({ id: editCandidateId, ...Object.fromEntries(formData) }).unwrap();
-        toast.success("Candidate updated successfully!", {
+        console.log(formData, "data being sent")
+      const response =  await updateCandidate({ id: editCandidateId, candidateData: newCandidate }).unwrap();
+      console.log(response, "response when updating")  
+      toast.success("Candidate updated successfully!", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
         });
       } else {
-        await createCandidate(formData).unwrap();
+        
+      const res =  await createCandidate(newCandidate).unwrap();
+      console.log(res, "response when creating")
         toast.success("Candidate created successfully!", {
           position: "top-right",
           autoClose: 3000,
@@ -490,7 +523,7 @@ const Recruitment = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.candidateName}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.hiringManager}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(item.dateOfApplication).toLocaleDateString()}
+                          {formatDateForDisplay(item.dateOfApplication.split("T")[0])}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <span
@@ -652,8 +685,8 @@ const Recruitment = () => {
                     <input
                       id="applicationDateModal"
                       type="date"
-                      value={newCandidate.applicationDate}
-                      onChange={(e) => setNewCandidate({ ...newCandidate, applicationDate: e.target.value })}
+                      value={newCandidate.dateOfApplication}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, dateOfApplication: e.target.value })}
                       className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
                       required
                     />
@@ -708,6 +741,36 @@ const Recruitment = () => {
                       onChange={(e) => setNewCandidate({ ...newCandidate, contactNumber: e.target.value })}
                       className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
                       placeholder="e.g., 123-456-7890"
+                      required
+                    />
+                  </div>
+
+                  {/* From Date */}
+                  <div className="space-y-2">
+                    <label htmlFor="fromModal" className="block text-sm font-medium text-gray-700">
+                      From Date *
+                    </label>
+                    <input
+                      id="fromModal"
+                      type="date"
+                      value={newCandidate.from}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, from: e.target.value })}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
+                      required
+                    />
+                  </div>
+
+                  {/* To Date */}
+                  <div className="space-y-2">
+                    <label htmlFor="toModal" className="block text-sm font-medium text-gray-700">
+                      To Date *
+                    </label>
+                    <input
+                      id="toModal"
+                      type="date"
+                      value={newCandidate.to}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, to: e.target.value })}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 text-sm bg-white shadow-sm"
                       required
                     />
                   </div>
