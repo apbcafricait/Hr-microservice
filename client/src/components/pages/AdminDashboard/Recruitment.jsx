@@ -9,6 +9,8 @@ import {
   RefreshCw,
   Plus,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -35,6 +37,9 @@ const Recruitment = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editCandidateId, setEditCandidateId] = useState(null);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
 
   const [newCandidate, setNewCandidate] = useState({
     jobTitle: "",
@@ -49,14 +54,20 @@ const Recruitment = () => {
     keywords: "",
     methodOfApplication: "",
     notes: "",
-    from: "", // Added to match JSON
-    to: "",   // Added to match JSON
+    from: "",
+    to: "",
   });
 
   const { data: candidates = [], isLoading, refetch, error: queryError } = useGetAllCandidatesQuery();
   const [createCandidate, { isLoading: isCreating, error: createError }] = useCreateCandidateMutation();
   const [updateCandidate, { isLoading: isUpdating, error: updateError }] = useUpdateCandidateMutation();
   const [deleteCandidate, { isLoading: isDeleting, error: deleteError }] = useDeleteCandidateMutation();
+
+  // Pagination calculations
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = candidates.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(candidates.length / recordsPerPage);
 
   const handleReset = () => {
     setSelectedJobTitle("");
@@ -68,6 +79,7 @@ const Recruitment = () => {
     setKeywords("");
     setCandidateName("");
     setMethodOfApplication("");
+    setCurrentPage(1); // Reset to first page
   };
 
   const handleSearch = () => {
@@ -82,20 +94,19 @@ const Recruitment = () => {
       candidateName,
       methodOfApplication,
     });
+    setCurrentPage(1); // Reset to first page on search
   };
 
   const formatDateForInput = (dateStr) => {
-    // Convert DD-MM-YYYY or ISO (YYYY-MM-DD) to YYYY-MM-DD for input[type="date"]
     if (!dateStr) return "";
     if (dateStr.includes("T")) {
-      return dateStr.split("T")[0]; // ISO format
+      return dateStr.split("T")[0];
     }
     const [day, month, year] = dateStr.split("-");
-    return `${year}-${month}-${day}`; // Convert DD-MM-YYYY to YYYY-MM-DD
+    return `${year}-${month}-${day}`;
   };
 
   const formatDateForDisplay = (dateStr) => {
-    // Convert YYYY-MM-DD to DD-MM-YYYY for display
     if (!dateStr) return "";
     const [year, month, day] = dateStr.split("-");
     return `${day}-${month}-${year}`;
@@ -114,7 +125,7 @@ const Recruitment = () => {
         status: candidate.status || "",
         email: candidate.email || "",
         contactNumber: candidate.contactNumber || "",
-        resume: null, // Not editable
+        resume: null,
         keywords: candidate.keywords || "",
         methodOfApplication: candidate.methodOfApplication || "",
         notes: candidate.notes || "",
@@ -201,7 +212,7 @@ const Recruitment = () => {
     formData.append("vacancy", newCandidate.vacancy);
     formData.append("candidateName", newCandidate.candidateName);
     formData.append("hiringManager", newCandidate.hiringManager);
-    formData.append("dateOfApplication", formatDateForDisplay(newCandidate.dateOfApplication)); // DD-MM-YYYY
+    formData.append("dateOfApplication", formatDateForDisplay(newCandidate.dateOfApplication));
     formData.append("status", newCandidate.status);
     formData.append("email", newCandidate.email);
     formData.append("contactNumber", newCandidate.contactNumber);
@@ -209,23 +220,19 @@ const Recruitment = () => {
     formData.append("keywords", newCandidate.keywords);
     formData.append("methodOfApplication", newCandidate.methodOfApplication);
     formData.append("notes", newCandidate.notes);
-    formData.append("from", formatDateForDisplay(newCandidate.from)); // DD-MM-YYYY
-    formData.append("to", formatDateForDisplay(newCandidate.to));     // DD-MM-YYYY
+    formData.append("from", formatDateForDisplay(newCandidate.from));
+    formData.append("to", formatDateForDisplay(newCandidate.to));
 
     try {
       if (isEditMode) {
-        console.log(formData, "data being sent")
-      const response =  await updateCandidate({ id: editCandidateId, candidateData: newCandidate }).unwrap();
-      console.log(response, "response when updating")  
-      toast.success("Candidate updated successfully!", {
+        await updateCandidate({ id: editCandidateId, candidateData: newCandidate }).unwrap();
+        toast.success("Candidate updated successfully!", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
         });
       } else {
-        
-      const res =  await createCandidate(newCandidate).unwrap();
-      console.log(res, "response when creating")
+        await createCandidate(newCandidate).unwrap();
         toast.success("Candidate created successfully!", {
           position: "top-right",
           autoClose: 3000,
@@ -233,6 +240,7 @@ const Recruitment = () => {
         });
       }
       refetch();
+      setCurrentPage(1); // Reset to first page after submission
       closeModal();
     } catch (err) {
       const errorMessage = err?.data?.message || "Failed to save candidate. Please try again.";
@@ -254,6 +262,10 @@ const Recruitment = () => {
           theme: "colored",
         });
         refetch();
+        // Adjust page if current page becomes empty
+        if (currentRecords.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
       } catch (err) {
         const errorMessage = err?.data?.message || "Failed to delete candidate. Please try again.";
         toast.error(errorMessage, {
@@ -266,8 +278,22 @@ const Recruitment = () => {
   };
 
   const handleDownloadResume = (candidate) => {
-    const resumeUrl = candidate.resumeUrl || "https://example.com/resume.pdf"; // Replace with actual logic
+    const resumeUrl = candidate.resumeUrl || "https://example.com/resume.pdf";
     window.open(resumeUrl, "_blank");
+  };
+
+  // Pagination handlers
+  const goToPreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handleRecordsPerPageChange = (e) => {
+    setRecordsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing records per page
   };
 
   useEffect(() => {
@@ -332,6 +358,7 @@ const Recruitment = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {/* ... Filter inputs remain unchanged ... */}
                   <div className="space-y-2">
                     <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700">Job Title</label>
                     <div className="relative">
@@ -484,88 +511,140 @@ const Recruitment = () => {
               </div>
 
               {/* Table Section */}
-              <div className="mt-8 overflow-x-auto rounded-lg border border-gray-200 shadow-md">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-blue-50">
-                    <tr>
-                      <th className="w-12 p-4">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                        />
-                      </th>
-                      {["Vacancy", "Candidate", "Hiring Manager", "Date of Application", "Status", "Actions"].map(
-                        (header) => (
-                          <th
-                            key={header}
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
-                          >
-                            {header}
-                          </th>
-                        )
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {candidates.map((item) => (
-                      <motion.tr
-                        key={item.id}
-                        whileHover={{ backgroundColor: "#F9FAFB", scale: 1.01 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <td className="w-12 p-4">
+              <div className="mt-8">
+                {/* Records per page selector */}
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="recordsPerPage" className="text-sm text-gray-700">
+                      Records per page:
+                    </label>
+                    <select
+                      id="recordsPerPage"
+                      value={recordsPerPage}
+                      onChange={handleRecordsPerPageChange}
+                      className="rounded-md border border-gray-300 py-1 px-2 text-gray-700 text-sm"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Showing {indexOfFirstRecord + 1} - {Math.min(indexOfLastRecord, candidates.length)} of {candidates.length}
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-md">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-blue-50">
+                      <tr>
+                        <th className="w-12 p-4">
                           <input
                             type="checkbox"
                             className="rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
                           />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.vacancy}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.candidateName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.hiringManager}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatDateForDisplay(item.dateOfApplication.split("T")[0])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span
-                            className={`px-2.5 py-1 inline-flex text-xs font-semibold rounded-full ${
-                              item.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <div className="flex gap-3">
-                            <motion.button
-                              whileHover={{ scale: 1.1, color: "#2563EB" }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => openModal(item)}
-                              className="text-blue-600 hover:text-blue-800"
+                        </th>
+                        {["Vacancy", "Candidate", "Hiring Manager", "Date of Application", "Status", "Actions"].map(
+                          (header) => (
+                            <th
+                              key={header}
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                             >
-                              <Eye className="h-4 w-4" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1, color: "#DC2626" }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => handleDeleteCandidate(item.id)}
-                              className="text-red-600 hover:text-red-800"
+                              {header}
+                            </th>
+                          )
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {currentRecords.map((item) => (
+                        <motion.tr
+                          key={item.id}
+                          whileHover={{ backgroundColor: "#F9FAFB", scale: 1.01 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <td className="w-12 p-4">
+                            <input
+                              type="checkbox"
+                              className="rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                            />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.vacancy}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.candidateName}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.hiringManager}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {formatDateForDisplay(item.dateOfApplication.split("T")[0])}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`px-2.5 py-1 inline-flex text-xs font-semibold rounded-full ${
+                                item.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                              }`}
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1, color: "#4A5568" }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => handleDownloadResume(item)}
-                              className="text-gray-600 hover:text-gray-800"
-                            >
-                              <Download className="h-4 w-4" />
-                            </motion.button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div className="flex gap-3">
+                              <motion.button
+                                whileHover={{ scale: 1.1, color: "#2563EB" }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => openModal(item)}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1, color: "#DC2626" }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleDeleteCandidate(item.id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1, color: "#4A5568" }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleDownloadResume(item)}
+                                className="text-gray-600 hover:text-gray-800"
+                              >
+                                <Download className="h-4 w-4" />
+                              </motion.button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex justify-between items-center mt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </motion.button>
+                  <div className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </motion.button>
+                </div>
               </div>
             </>
           ) : (
@@ -573,7 +652,7 @@ const Recruitment = () => {
           )}
         </motion.div>
 
-        {/* Modal for Adding/Editing Candidate */}
+        {/* Modal for Adding/Editing Candidate - Remains unchanged */}
         {isModalOpen && (
           <div
             className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 px-2 sm:px-0"
@@ -598,7 +677,6 @@ const Recruitment = () => {
               </h3>
               <form onSubmit={handleCandidateSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Full Name */}
                   <div className="space-y-2">
                     <label htmlFor="candidateNameModal" className="block text-sm font-medium text-gray-700">
                       Full Name *
@@ -614,7 +692,6 @@ const Recruitment = () => {
                     />
                   </div>
 
-                  {/* Job Title */}
                   <div className="space-y-2">
                     <label htmlFor="jobTitleModal" className="block text-sm font-medium text-gray-700">
                       Job Title *
@@ -635,7 +712,6 @@ const Recruitment = () => {
                     </div>
                   </div>
 
-                  {/* Vacancy */}
                   <div className="space-y-2">
                     <label htmlFor="vacancyModal" className="block text-sm font-medium text-gray-700">
                       Vacancy *
@@ -656,7 +732,6 @@ const Recruitment = () => {
                     </div>
                   </div>
 
-                  {/* Hiring Manager */}
                   <div className="space-y-2">
                     <label htmlFor="hiringManagerModal" className="block text-sm font-medium text-gray-700">
                       Hiring Manager *
@@ -677,7 +752,6 @@ const Recruitment = () => {
                     </div>
                   </div>
 
-                  {/* Application Date */}
                   <div className="space-y-2">
                     <label htmlFor="applicationDateModal" className="block text-sm font-medium text-gray-700">
                       Application Date *
@@ -692,7 +766,6 @@ const Recruitment = () => {
                     />
                   </div>
 
-                  {/* Status */}
                   <div className="space-y-2">
                     <label htmlFor="statusModal" className="block text-sm font-medium text-gray-700">
                       Status *
@@ -713,7 +786,6 @@ const Recruitment = () => {
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div className="space-y-2">
                     <label htmlFor="emailModal" className="block text-sm font-medium text-gray-700">
                       Email *
@@ -729,7 +801,6 @@ const Recruitment = () => {
                     />
                   </div>
 
-                  {/* Contact Number */}
                   <div className="space-y-2">
                     <label htmlFor="contactNumberModal" className="block text-sm font-medium text-gray-700">
                       Contact Number *
@@ -745,7 +816,6 @@ const Recruitment = () => {
                     />
                   </div>
 
-                  {/* From Date */}
                   <div className="space-y-2">
                     <label htmlFor="fromModal" className="block text-sm font-medium text-gray-700">
                       From Date *
@@ -760,7 +830,6 @@ const Recruitment = () => {
                     />
                   </div>
 
-                  {/* To Date */}
                   <div className="space-y-2">
                     <label htmlFor="toModal" className="block text-sm font-medium text-gray-700">
                       To Date *
@@ -777,7 +846,6 @@ const Recruitment = () => {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Method of Application */}
                   <div className="space-y-2">
                     <label htmlFor="methodOfApplicationModal" className="block text-sm font-medium text-gray-700">
                       Method of Application *
@@ -798,7 +866,6 @@ const Recruitment = () => {
                     </div>
                   </div>
 
-                  {/* Keywords */}
                   <div className="space-y-2">
                     <label htmlFor="keywordsModal" className="block text-sm font-medium text-gray-700">
                       Keywords
@@ -813,7 +880,6 @@ const Recruitment = () => {
                     />
                   </div>
 
-                  {/* Resume (Add Mode Only) */}
                   {!isEditMode && (
                     <div className="space-y-2">
                       <label htmlFor="resumeModal" className="block text-sm font-medium text-gray-700">
@@ -830,7 +896,6 @@ const Recruitment = () => {
                     </div>
                   )}
 
-                  {/* Notes */}
                   <div className="space-y-2">
                     <label htmlFor="notesModal" className="block text-sm font-medium text-gray-700">
                       Notes
@@ -846,7 +911,6 @@ const Recruitment = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row sm:justify-end gap-4 mt-6">
                   <motion.button
                     whileHover={{ scale: 1.05, backgroundColor: "#E5E7EB" }}
