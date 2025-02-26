@@ -8,5 +8,6 @@ export const PAYROLL_URL = "/api/payroll"
 export const SUGGESTIONS_URL="/api/suggestions"
 export const PERFORMANCE_URL="/api/performance"
 export const RECRUITMENT_URL = "/api/recruitment";
+export const CLAIM_URL = "/api/claims"
 
 
