@@ -156,19 +156,22 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={handleAddEmployeeClick}
-            className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
           >
             Add Employee
           </button>
           <button
             onClick={handleApproveLeaveClick}
-            className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
           >
             Approve Leave
           </button>
-          <button className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105">
+          <button
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
+          >
             Start Recruitment
           </button>
+
         </div>
       </section>
 

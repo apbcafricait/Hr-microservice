@@ -86,11 +86,12 @@ const ManagerDashboard = () => {
           <>
             <header className="flex justify-between items-center mb-6">
               <button
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded"
                 onClick={() => setShowForm(true)}
               >
                 Add Employee
               </button>
+
             </header>
 
             {showForm ? (

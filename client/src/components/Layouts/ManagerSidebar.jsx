@@ -16,13 +16,12 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
 
   return (
     <aside
-  className={`bg-white shadow-lg transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} h-screen fixed top-0 left-0`}
->
-
+      className={`bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} h-screen fixed top-0 left-0`}
+    >
       <div className="flex flex-col h-full">
         {/* Header Section */}
         <div className="flex justify-between items-center p-4 shrink-0">
-          {!isCollapsed && <h2 className="text-lg font-bold text-gray-900">Manager Dashboard</h2>}
+          {!isCollapsed && <h2 className="text-lg font-bold text-white">Manager Dashboard</h2>}
           <button
             className="p-2 rounded focus:outline-none bg-purple-600 text-white hover:bg-purple-700"
             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -40,14 +39,14 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
                 className={`flex items-center p-2 rounded cursor-pointer transition-colors duration-200 ${
                   currentSection === section.id
                     ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
-                    : "hover:bg-gray-50 text-gray-600"
+                    : "hover:bg-gray-50 text-white"
                 }`}
                 onClick={() => setCurrentSection(section.id)}
                 title={isCollapsed ? section.name : ""}
               >
                 <span
                   className={`mr-2 ${
-                    currentSection === section.id ? "text-white" : "text-gray-500 group-hover:text-purple-600"
+                    currentSection === section.id ? "text-white" : "text-gray-300 group-hover:text-purple-600"
                   }`}
                 >
                   {section.icon}
