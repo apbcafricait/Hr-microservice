@@ -73,7 +73,8 @@ export class SuggestionsController {
   // POST: Create a new suggestion
   async createSuggestion (req, res) {
     try {
-      const { organisationId, content, isAnonymous } = req.body
+      const { organisationId,employeeId
+, content, isAnonymous } = req.body
       if (!organisationId || !content) {
         return res
           .status(400)
@@ -85,6 +86,7 @@ export class SuggestionsController {
       const suggestion = await prisma.suggestion.create({
         data: {
           organisationId: parseInt(organisationId),
+          employeeId: parseInt(employeeId),
           content,
           isAnonymous:
             isAnonymous !== undefined ? Boolean(isAnonymous) : undefined // use provided value or default

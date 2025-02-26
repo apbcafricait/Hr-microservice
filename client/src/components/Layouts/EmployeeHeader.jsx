@@ -38,7 +38,8 @@ const EmployeeHeader = () => {
   };
 
   return (
-    <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
+    <header className="fixed top-0 left-0 w-full flex justify-between items-center p-4 bg-white shadow-md z-50">
+
       <div className="text-start flex-1">
         <h1 className="text-2xl font-semibold text-gray-700">
           {organisationName || "Unknown Organisation"}

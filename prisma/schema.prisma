@@ -54,6 +54,7 @@ model Employee {
   PerformanceReview PerformanceReview[]
    claims              Claim[]
   assignedClaims      Claim[]           @relation("AssignedClaims")
+  Suggestion Suggestion[]
 }
 
 
@@ -153,10 +154,10 @@ model Suggestion {
   content        String
   isAnonymous    Boolean      @default(true) @map("is_anonymous")
   createdAt      DateTime     @default(now()) @map("created_at")
-  
+  employeeId Int @map("employee_id")
   // Define relation: assumes Organisation model exists.
   organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-
+  employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade) 
   @@map("suggestions")
 }
 model Department {
