@@ -1,5 +1,4 @@
 import { useState } from 'react';
-
 import { 
   HomeIcon, 
   ClockIcon, 
@@ -19,7 +18,7 @@ const EmployeeSidebar = ({ setActiveComponent }) => {
     { name: 'Dashboard', icon: HomeIcon, component: 'EmployeeDashboard' },
     { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
     { name: 'Leave Approval', icon: ShieldCheckIcon, component: 'LeaveApproval' },
-    { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
+    // { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
     { name: 'Qualifications', icon: AcademicCapIcon, component: 'Qualifications' },
     // { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
@@ -53,16 +52,7 @@ const EmployeeSidebar = ({ setActiveComponent }) => {
         </nav>
       </div>
       {/* User Profile and Settings Icons */}
-      <div className="p-6">
-        <div className="flex items-center mb-4">
-          <UserIcon className="w-6 h-6 text-white" />
-          <span className="ml-2">User Profile</span>
-        </div>
-        <button className="flex items-center mt-2 p-2 rounded-lg hover:bg-gray-700">
-          <CogIcon className="w-6 h-6 text-white" />
-          <span className="ml-2">Settings</span>
-        </button>
-      </div>
+      
     </div>
   );
 };

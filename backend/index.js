@@ -5,7 +5,7 @@ import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
 import documentRoutes from './Routes/documentRoutes.js'
 import cookieParser from "cookie-parser"
-import timeAttendance from "./Routes/timeAttendanceRoutes.js"
+import timeAttendance from "./Routes/timeAttendance.js"
 import mpesaRoutes from "./Routes/mpesa_routes.js"
 import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
 import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
@@ -15,7 +15,7 @@ import suggestionsRoutes from './Routes/suggestionsRoutes.js'
 import departmentRoutes from './Routes/departmentRoutes.js'
 import payrollRoutes from './Routes/payrollRoutes.js'
 import PerformanceReviewsRoutes from './Routes/PerformanceReviewsRoutes.js'
-
+import recruitmentRoutes from './Routes/recruitmentRoutes.js'
 const app = express()
 
 dotenv.config()
@@ -50,7 +50,7 @@ app.use('/api/performance', PerformanceReviewsRoutes)
 @params Payment routes
 */
 app.use("/api/mpesa", mpesaRoutes)
-
+app.use("/api/recruitment", recruitmentRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)

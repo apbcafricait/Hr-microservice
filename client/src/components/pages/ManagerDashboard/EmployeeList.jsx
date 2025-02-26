@@ -1,18 +1,31 @@
 import React, { useState } from "react";
-import AddEmployee from "./AddEmployee"; // Import the AddEmployee component
+import AddEmployee from "./AddEmployee";
 import { useGetAllEmployeesQuery } from "../../../slices/employeeSlice";
 
 const EmployeeList = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit] = useState(10); // Items per page
-  const [showForm, setShowForm] = useState(false); // State to show/hide the form
-  const [selectedEmployee, setSelectedEmployee] = useState(null); // State for selected employee
-  const [deleteEmployee, setDeleteEmployee] = useState(null); // State for employee to delete
+  const [limit] = useState(10);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [deleteEmployee, setDeleteEmployee] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: employees, error, isLoading } = useGetAllEmployeesQuery({
+  const { data: employees, error, isLoading, refetch } = useGetAllEmployeesQuery({
     page: currentPage,
     limit,
   });
+
+  // Filter employees locally
+  const filteredEmployees = Array.isArray(employees?.data?.employees)
+    ? employees.data.employees.filter(employee =>
+        `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page
+  };
 
   if (isLoading) return <p>Loading...</p>;
   if (error) {
@@ -20,37 +33,44 @@ const EmployeeList = () => {
     return (
       <p className="text-red-500">
         Error fetching employees.{" "}
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <button onClick={() => refetch()}>Retry</button>
       </p>
     );
   }
 
-  const employeeList = Array.isArray(employees?.data?.employees)
-    ? employees.data.employees
-    : [];
   const totalPages = employees?.data?.totalPages || 1;
 
   const handleEditClick = (employee) => {
-    setSelectedEmployee(employee); // Set the employee to edit
-    setShowForm(true); // Show the AddEmployee form
+    setSelectedEmployee(employee);
+    setShowForm(true);
   };
 
   const handleCloseForm = () => {
-    setSelectedEmployee(null); // Clear the selected employee
-    setShowForm(false); // Hide the form
+    setSelectedEmployee(null);
+    setShowForm(false);
   };
 
   const handleDeleteClick = (employee) => {
-    setDeleteEmployee(employee); // Set the employee to delete
+    setDeleteEmployee(employee);
   };
 
   const confirmDelete = () => {
     console.log("Deleting employee:", deleteEmployee.id);
-    setDeleteEmployee(null); // Close modal after deleting
+    setDeleteEmployee(null);
   };
 
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <div className="p-4">
+        <input
+          type="text"
+          placeholder="Search employees..."
+          className="p-2 border rounded w-full max-w-sm"
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
+      </div>
+
       <table className="w-full text-left border-collapse">
         <thead className="bg-gray-200 text-gray-600 uppercase text-sm">
           <tr>
@@ -61,17 +81,17 @@ const EmployeeList = () => {
           </tr>
         </thead>
         <tbody>
-          {employeeList.length === 0 ? (
+          {filteredEmployees.length === 0 ? (
             <tr>
               <td colSpan="4" className="p-3 text-center text-gray-500">
                 No employees found.
               </td>
             </tr>
           ) : (
-            employeeList.map((employee, index) => (
+            filteredEmployees.map((employee, index) => (
               <tr
                 key={employee.id}
-                className={`border-b ${index % 2 === 0 ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-200`}
+                className={`border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"} hover:bg-gray-200`}
               >
                 <td className="p-3">{`${employee.firstName} ${employee.lastName}`}</td>
                 <td className="p-3">{employee.position || "N/A"}</td>
@@ -96,8 +116,7 @@ const EmployeeList = () => {
         </tbody>
       </table>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center mt-4 p-4">
         <button
           className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -117,7 +136,6 @@ const EmployeeList = () => {
         </button>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteEmployee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
@@ -142,13 +160,12 @@ const EmployeeList = () => {
         </div>
       )}
 
-      {/* AddEmployee Form as a Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <AddEmployee
-              employee={selectedEmployee} // Pass the employee to edit
-              onClose={handleCloseForm} // Close the form
+              employee={selectedEmployee}
+              onClose={handleCloseForm}
             />
           </div>
         </div>

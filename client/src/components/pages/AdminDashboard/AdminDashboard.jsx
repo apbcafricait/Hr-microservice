@@ -16,6 +16,7 @@ import Time from '../AdminDashboard/Time'
 import MyInfo from './MyInfo';
 import Claims from './Claims';
 import LeaveApply from './Leave Dashboard/LeaveApply'
+import Payroll from '../ManagerDashboard/Payroll';
 
 const componentMap = {
   Dashboard: Dashboard,
@@ -26,7 +27,8 @@ const componentMap = {
   Time: Time,
   "My Info": MyInfo,
   Claims: Claims,
-  Leave:LeaveApply
+  Leave:LeaveApply,
+  Payroll:Payroll
 };
 
 const AdminDashboard = () => {

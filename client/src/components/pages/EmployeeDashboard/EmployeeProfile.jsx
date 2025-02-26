@@ -5,10 +5,16 @@ import Qualifications from "./Qualifications";
 import ReportTo from "./ReportTo";
 import Dependents from "./Dependents";
 import { FaUser, FaPhone, FaUsers, FaRegListAlt, FaGraduationCap } from "react-icons/fa";
-
+import { useSelector } from "react-redux";
+import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState("Contact Details"); // State to track active tab
+  const { userInfo } = useSelector((state) => state.auth);
+  console.log(userInfo)
+  const id = userInfo?.id;
+  const { data: employee, isLoading, error } = useGetEmployeeQuery(id);
 
+  const UserNames = employee?.data.employee.firstName + " " + employee?.data.employee.lastName;
   const tabs = [
     { name: "Personal Details", icon: <FaUser /> },
     { name: "Contact Details", icon: <FaPhone /> },
@@ -29,7 +35,7 @@ const EmployeeProfile = () => {
               alt="User"
               className="rounded-full mx-auto"
             />
-            <h2 className="text-lg font-semibold mt-2">Vincensher</h2>
+            <h2 className="text-lg font-semibold mt-2">{UserNames}</h2>
           </div>
           <ul className="space-y-2">
             {tabs.map((tab) => (

@@ -11,7 +11,7 @@ import { logout } from "../../../slices/AuthSlice";
 import { useNavigate } from "react-router-dom";
 
 const ManagerDashboard = () => {
-  const [currentSection, setCurrentSection] = useState("dashboard"); // Default to dashboard
+  const [currentSection, setCurrentSection] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -39,19 +39,17 @@ const ManagerDashboard = () => {
   }, [userInfo, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <ManagerSidebar
-        currentSection={currentSection}
-        setCurrentSection={setCurrentSection}
-      />
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar - Fixed Position */}
+      <div className="fixed top-0 left-0 h-screen bg-white shadow-md z-10">
+        <ManagerSidebar currentSection={currentSection} setCurrentSection={setCurrentSection} />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6">
+      {/* Main Content - Pushes Sidebar */}
+      <main className="flex-1 ml-64 p-6 overflow-y-auto h-screen">
         {/* Header Section */}
-        <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
+        <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg sticky top-0 z-20">
           <div className="text-start flex-1">
-            {/* Organisation name is passed here */}
             <h1 className="text-2xl font-semibold text-gray-700">
               {organisationName || "Unknown Organisation"}
             </h1>
@@ -80,7 +78,7 @@ const ManagerDashboard = () => {
         </header>
 
         {/* Conditional Rendering Based on Section */}
-        {currentSection === "dashboard" && <Dashboard />} {/* Dashboard Section */}
+        {currentSection === "dashboard" && <Dashboard />}
 
         {currentSection === "employees" && (
           <>
@@ -91,11 +89,6 @@ const ManagerDashboard = () => {
               >
                 Add Employee
               </button>
-              <input
-                type="text"
-                placeholder="Search employees..."
-                className="p-2 border rounded w-64"
-              />
             </header>
 
             {showForm ? (
@@ -106,9 +99,9 @@ const ManagerDashboard = () => {
           </>
         )}
 
-        {currentSection === "leave" && <Leave />} {/* Leave Section */}
+        {currentSection === "leave" && <Leave />}
         {currentSection === "reports" && <p>Reports Section</p>}
-        {currentSection=== "payroll" && <Payroll />}
+        {currentSection === "payroll" && <Payroll />}
         {currentSection === "settings" && <p>Settings Section</p>}
       </main>
     </div>
