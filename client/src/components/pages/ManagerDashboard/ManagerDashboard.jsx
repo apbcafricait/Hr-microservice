@@ -6,6 +6,8 @@ import EmployeeList from "./EmployeeList";
 import Dashboard from "./Dashboard";
 import Leave from "./Leave";
 import Payroll from "./Payroll";
+import ManageReview from "../AdminDashboard/Peformance/ManageReview"; // Import ManageReview component
+import Recruitment from "../AdminDashboard/Recruitment"; // Import Recruitment component
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../../slices/AuthSlice";
 import { useNavigate } from "react-router-dom";
@@ -103,6 +105,8 @@ const ManagerDashboard = () => {
         {currentSection === "reports" && <p>Reports Section</p>}
         {currentSection === "payroll" && <Payroll />}
         {currentSection === "settings" && <p>Settings Section</p>}
+        {currentSection === "performance" && <ManageReview />} {/* Render ManageReview for performance section */}
+        {currentSection === "recruitment" && <Recruitment />} {/* Render Recruitment for recruitment section */}
       </main>
     </div>
   );
