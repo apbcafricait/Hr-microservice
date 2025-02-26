@@ -10,10 +10,9 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       }),
     }),
     clockOut: builder.mutation({
-      query: (data) => ({
-        url: 'api/time-attendance/clock-out/3',
+      query: (attendanceId) => ({
+        url: `api/time-attendance/clock-out/${attendanceId}`,
         method: 'PUT',
-        body: data,
       }),
     }),
     getAttendanceRecords: builder.query({
