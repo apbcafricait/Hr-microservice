@@ -19,7 +19,7 @@ import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useGetAttedanceOfEmployeeQuery } from '../../../slices/attendanceSlice'
-import { Line, Bar } from 'react-chartjs-2';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,7 +35,7 @@ import {
 import { useGetLeaveBalanceQuery } from '../../../slices/leaveBalancesApiSlice';
 import { useGetDepartmentsQuery } from '../../../slices/departmentsApiSlice';
 import { useGetAllLeaveRequestsQuery } from '../../../slices/leaveApiSlice'
-
+import Dashboard from './Dashboard';
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -200,247 +200,35 @@ const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
   ];
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  const handleMenuClick = (option) => {
-    setIsDropdownOpen(false); // Close dropdown after selection
-    switch (option) {
-      case 'Profile':
-        setActiveSubComponent('EmployeeProfile'); // Switch to EmployeeProfile component
-        break;
-      case 'Settings':
-        navigate('/settings'); // Replace with your settings route
-        break;
-      case 'About':
-        navigate('/about'); // Replace with your about route
-        break;
-      case 'Change Password':
-        navigate('/change-password'); // Replace with your change password route
-        break;
-      default:
-        break;
-    }
-  };
-
   const renderSubComponent = () => {
-    const renderHeader = () => (
-      <header className="flex justify-between items-center mb-6 p-4 bg-white shadow rounded-lg">
-        <div className="text-start flex-1">
-          <h1 className="text-2xl font-semibold text-gray-700">
-            {organisationName || 'Unknown Organisation'}
-          </h1>
-        </div>
-        <div className="relative">
-          <button
-            onClick={toggleDropdown}
-            className="flex items-center text-gray-700 focus:outline-none"
-          >
-            <span className="mr-2">Hello, {employeeName }</span>
-            <svg
-              className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="3"
-                d="M19 9 l-7 7 l-7 -7"
-              />
-            </svg>
-          </button>
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
-              <ul className="py-1">
-                {['Profile', 'Settings', 'About', 'Change Password'].map((option) => (
-                  <li key={option}>
-                    <button
-                      onClick={() => handleMenuClick(option)}
-                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      {option}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </header>
-    );
+  
 
     switch (activeSubComponent) {
       // In the Dashboard case of renderSubComponent:
 
       case 'Dashboard':
-        return (
-          <div className="min-h-screen bg-gray-100 flex flex-col">
-            {renderHeader()}
-            <div className="p-6 flex-1">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Dashboard Overview</h2>
-                <p className="text-gray-600">Welcome back, {employeeName}!</p>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-blue-400 bg-opacity-30 rounded-lg">
-                      <ClockIcon className="w-8 h-8" />
-                    </div>
-                    <span className="text-xs font-semibold bg-blue-400 bg-opacity-30 px-2 py-1 rounded-full">
-                      {lastCheckIn?.dayName}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">  {new Date(lastCheckIn?.clockIn).toLocaleString()}</h3>
-                  <p className="text-blue-100">Last Check-in</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-green-400 bg-opacity-30 rounded-lg">
-                      <CalendarIcon className="w-8 h-8" />
-                    </div>
-                    <span className="text-xs font-semibold bg-green-400 bg-opacity-30 px-2 py-1 rounded-full">
-                      Available
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">{TotalLeaveBalances} Days</h3>
-                  <p className="text-green-100">Leave Balance</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-purple-400 bg-opacity-30 rounded-lg">
-                      <DocumentTextIcon className="w-8 h-8" />
-                    </div>
-                    <span className="text-xs font-semibold bg-purple-400 bg-opacity-30 px-2 py-1 rounded-full">
-                      Pending
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">{totalLeaveRequests?.length}</h3>
-                  <p className="text-purple-100">Leave Requests</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-orange-400 bg-opacity-30 rounded-lg">
-                      <UserGroupIcon className="w-8 h-8" />
-                    </div>
-                    <span className="text-xs font-semibold bg-orange-400 bg-opacity-30 px-2 py-1 rounded-full">
-                      Team
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">12</h3>
-                  <p className="text-orange-100">Department Members</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {/* Attendance Trend Line Chart */}
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Attendance Trend</h3>
-                  <div className="relative h-64">
-                    <Line
-                      data={attendanceTrendData(attendanceData)}
-                      options={{ ...chartOptions, plugins: { ...chartOptions.plugins, title: { ...chartOptions.plugins.title, text: 'Clock-In Patterns' } } }}
-                      className="w-full h-full"
-                    />
-                  </div>
-                  {lastCheckIn && (
-                    <div className="mt-4 flex items-center p-3 bg-gray-50 rounded-lg">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                        <ClockIcon className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">
-                          Last Check-in: {new Date(lastCheckIn.clockIn).toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-500">{lastCheckIn.dayName}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Payment Distribution Bar Chart */}
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Payment Overview</h3>
-                  <div className="relative h-64">
-                    <Bar
-                      data={paymentData}
-                      options={{ ...chartOptions, plugins: { ...chartOptions.plugins, title: { ...chartOptions.plugins.title, text: 'Monthly Payments' } } }}
-                      className="w-full h-full"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4">
-                      <CalendarIcon className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">Next Payroll</p>
-                      <p className="text-xs text-gray-500">March 1, 2025</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Working Hours</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                      <ClockIcon className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-800">{totalWorkingHours}</p>
-                      <p className="text-sm text-gray-500">Hours this month</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Leave Status</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                      <CalendarIcon className="w-8 h-8 text-green-600" />
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-800">5/20</p>
-                      <p className="text-sm text-gray-500">Days taken</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Suggestions</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                      <DocumentTextIcon className="w-8 h-8 text-purple-600" />
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-800">3</p>
-                      <p className="text-sm text-gray-500">Submitted</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+      return <Dashboard hideHeader={false}
+      
+      employeeName={employeeName}
+        ClockIcon={ClockIcon}
+        lastCheckIn={lastCheckIn}
+        TotalLeaveBalances={TotalLeaveBalances}
+        totalLeaveRequests={totalLeaveRequests}
+        attendanceTrendData={attendanceTrendData}
+        attendanceData={attendanceData}
+        chartOptions={chartOptions}
+        paymentData={paymentData}
+        totalWorkingHours={totalWorkingHours}
+      
+      />
       case 'ApplyLeave':
-        return <ApplyLeave hideHeader={true} />; // Pass hideHeader to avoid duplication
+        return <ApplyLeave  hideHeader={false} />; // Pass hideHeader to avoid duplication
       case 'EmployeeProfile':
         return <EmployeeProfile />;
       case 'TimeAtWork':
-        return <TimeAtWork hideHeader={true} />; // Pass hideHeader to avoid duplication
+        return <TimeAtWork hideHeader={false} />; // Pass hideHeader to avoid duplication
       case 'Suggestion':
-        return <Suggestion hideHeader={true} />; // Pass hideHeader to avoid duplication
+        return <Suggestion hideHeader={false} />; // Pass hideHeader to avoid duplication
       default:
         return (
           <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -459,7 +247,7 @@ const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
     <div className="flex">
       {/* Sidebar */}
       <div
-        className={`h-screen bg-gray-200 text-gray-800 flex flex-col transition-all duration-300 ${isSidebarExpanded ? 'w-64' : 'w-16'
+        className={`fixed left-0 top-16 h-[93vh] bg-white shadow-md z-100 text-gray-800 flex flex-col transition-all duration-300 ${isSidebarExpanded ? 'w-64' : 'w-16'
           }`}
       >
         <div className="flex items-center justify-between p-4">
@@ -514,7 +302,13 @@ const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
           </ul>
         </div>
       </div>
-      <div className="flex-1">{renderSubComponent()}</div>
+
+      {/* Main Content */}
+      <div className={`flex-1 ml-${isSidebarExpanded ? '64' : '16'} transition-all duration-300 mt-16`}>
+        {renderSubComponent()}
+      </div>
+
+      {/* Profile Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 z-50 overflow-auto bg-gray-500 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white rounded-lg p-6 w-96">
@@ -552,6 +346,7 @@ const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
       )}
     </div>
   );
+
 };
 
 
