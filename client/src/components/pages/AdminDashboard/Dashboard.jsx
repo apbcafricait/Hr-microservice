@@ -15,16 +15,23 @@ import {
   useClockOutMutation, 
   useGetAttedanceOfEmployeeQuery 
 } from '../../../slices/attendanceSlice';
+import { useSelector } from "react-redux";
+import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 
 const Dashboard = () => {
   const [isPunchedIn, setIsPunchedIn] = useState(false);
   const [punchTime, setPunchTime] = useState(null);
   const [currentAttendanceId, setCurrentAttendanceId] = useState(null);
-
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
+  const { data: employee, isLoading, error } = useGetEmployeeQuery(id);
+  const employeeId = employee?.data.employee.id;
+  console.log(employeeId)
   // API hooks
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation();
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation();
-  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(15); // Assuming employeeId 15
+  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId); 
+ 
 
   // Sample data for the pie chart
   const distributionData = [
@@ -97,7 +104,7 @@ const Dashboard = () => {
       const currentTime = new Date();
       if (!isPunchedIn) {
         const response = await clockIn({
-          employeeId: 15,
+          employeeId,
           location: "Office"
         }).unwrap();
         setIsPunchedIn(true);
