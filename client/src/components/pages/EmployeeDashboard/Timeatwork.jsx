@@ -17,9 +17,7 @@ const Timeatwork = () => {
   // Mutations and Queries from attendanceSlice with loading and error states
   const [clockIn, { isLoading: isClockingIn, error: clockInError, isSuccess: clockInSuccess }] = useClockInMutation();
   const [clockOut, { isLoading: isClockingOut, error: clockOutError, isSuccess: clockOutSuccess }] = useClockOutMutation();
-  const { data: attendanceRecords, refetch, isLoading: isFetchingRecords, error: fetchError } = useGetAttedanceOfEmployeeQuery(employeeId, {
-    skip: !employeeId, // Skip if no employeeId
-  });
+  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
 
   // Update time every second
   useEffect(() => {
@@ -188,8 +186,8 @@ const Timeatwork = () => {
                 <tbody>
                   {paginatedRecords.length > 0 ? (
                     paginatedRecords.map((record) => {
-                      const { time: clockInTime, day, date } = formatIsoDate(record.clockInTime);
-                      const clockOutTime = record.clockOutTime ? formatIsoDate(record.clockOutTime).time : "Not clocked out";
+                      const { time: clockInTime, day, date } = formatIsoDate(record.clockIn);
+                      const clockOutTime = record.clockOut ? formatIsoDate(record.clockOut).time : "Not clocked out";
                       return (
                         <tr key={record.id} className="border-b hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4 text-gray-600">{clockInTime}</td>
