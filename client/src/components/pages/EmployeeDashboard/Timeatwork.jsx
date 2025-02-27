@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import EmployeeHeader from "../../Layouts/EmployeeHeader";
 import { useClockInMutation, useClockOutMutation, useGetAttedanceOfEmployeeQuery } from "../../../slices/attendanceSlice";
 import { useSelector } from "react-redux"; // For accessing user info from Redux
-
 const Timeatwork = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isClockInOn, setIsClockInOn] = useState(false); // State for Clock In toggle
