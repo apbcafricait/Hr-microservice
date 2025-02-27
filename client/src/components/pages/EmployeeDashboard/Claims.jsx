@@ -7,6 +7,7 @@ import {
 import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import EmployeeHeader from "../../Layouts/EmployeeHeader";
 
 const Claims = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -17,14 +18,14 @@ const Claims = () => {
 
   const { data: claimsData, isLoading: claimsLoading, refetch } =
     useGetMyClaimsQuery();
-    console.log(claimsData?.data?.claims, "claims")
+  console.log(claimsData?.data?.claims, "claims");
 
   const [submitClaim] = useSubmitClaimMutation();
 
   const [formData, setFormData] = useState({
     eventName: "",
     description: "",
-    currency: "KES", 
+    currency: "KES",
     amount: "",
     fromDate: "",
     toDate: "",
@@ -58,7 +59,9 @@ const Claims = () => {
       });
       refetch();
     } catch (error) {
-      toast.error("Failed to submit claim: " + (error?.data?.message || error.message));
+      toast.error(
+        "Failed to submit claim: " + (error?.data?.message || error.message)
+      );
     }
   };
 
@@ -68,7 +71,10 @@ const Claims = () => {
     <div className="container mx-auto p-6 max-w-5xl">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Header */}
+      {/* Employee Header */}
+      <EmployeeHeader /> {/* Added EmployeeHeader component */}
+
+      {/* Existing Header */}
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-lg shadow-md">
           Claims
@@ -227,7 +233,7 @@ const Claims = () => {
                     <td className="px-4 py-2 text-sm text-gray-600">
                       {claim.amount?.toLocaleString("en-US", {
                         style: "currency",
-                        currency: claim.currency || formData.currency, // Use claim currency if available
+                        currency: claim.currency || formData.currency,
                       })}
                     </td>
                     <td className="px-4 py-2 text-sm">
