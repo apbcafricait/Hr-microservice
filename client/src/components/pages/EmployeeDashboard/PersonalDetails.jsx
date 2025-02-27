@@ -13,7 +13,7 @@ const PersonalDetails = () => {
     isLoading: isFetchingEmployee,
     isError,
     error 
-  } = useGetEmployeeQuery(id, { skip: !id }); 
+  } = useGetEmployeeQuery(id); 
   
   console.log(employeeResponse, 'employee data');
 

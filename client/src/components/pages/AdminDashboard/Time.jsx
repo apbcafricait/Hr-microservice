@@ -7,12 +7,19 @@ import {
 } from '../../../slices/attendanceSlice';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useSelector } from 'react-redux';
+import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
 const AttendanceSystem = () => {
   const [activeTab, setActiveTab] = useState('attendance');
   const [activeSection, setActiveSection] = useState('records');
   const [projectView, setProjectView] = useState('projects');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const { userInfo } = useSelector((state) => state.auth);
+  console.log(userInfo)
+  const id = userInfo?.id;
+  const { data: employee, isLoading, error } = useGetEmployeeQuery(id);
+  const employeeId = employee?.data.employee.id;
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const [note, setNote] = useState('');
   const [isClockedIn, setIsClockedIn] = useState(false);
@@ -24,7 +31,7 @@ const AttendanceSystem = () => {
   // API hooks
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation();
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation();
-  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(15);
+  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
 
   // Example static data
   const [customers] = useState([
@@ -47,7 +54,7 @@ const AttendanceSystem = () => {
     try {
       if (!isClockedIn) {
         const response = await clockIn({
-          employeeId: 15,
+          employeeId,
           location: "Office"
         }).unwrap();
         setIsClockedIn(true);
