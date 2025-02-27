@@ -5,7 +5,6 @@ import {
   CalendarIcon,
   UserIcon,
   DocumentTextIcon,
-  UserGroupIcon,
   CogIcon,
   XMarkIcon,
   ChevronLeftIcon,
@@ -15,6 +14,7 @@ import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
 import TimeAtWork from './Timeatwork';
 import Suggestion from './Suggestion';
+import Claims from './Claims';
 import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -198,6 +198,8 @@ const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
     { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
     { name: 'Suggestion', icon: DocumentTextIcon, component: 'Suggestion' },
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
+    { name: 'Claims', icon: DocumentTextIcon, component: 'Claims' },
+
   ];
 
   const renderSubComponent = () => {
@@ -222,14 +224,17 @@ const {data: leavebalances} = useGetLeaveBalanceQuery(employeeId)
       
       />
       case 'ApplyLeave':
-        return <ApplyLeave  hideHeader={false} />; // Pass hideHeader to avoid duplication
+        return <ApplyLeave  hideHeader={false} />; 
       case 'EmployeeProfile':
         return <EmployeeProfile />;
       case 'TimeAtWork':
-        return <TimeAtWork hideHeader={false} />; // Pass hideHeader to avoid duplication
+        return <TimeAtWork hideHeader={false} />; 
       case 'Suggestion':
-        return <Suggestion hideHeader={false} />; // Pass hideHeader to avoid duplication
+        return <Suggestion hideHeader={false} />; 
+        case 'Claims':
+          return <Claims hideHeader={false} />;
       default:
+        
         return (
           <div className="min-h-screen bg-gray-100 flex flex-col">
             {renderHeader()}
