@@ -24,22 +24,10 @@ const authenticated = (req, res, next) => {
 
 const admin = async (req, res, next) => {
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'User not authenticated' })
-    }
-
     const id = req.user.id
-    console.log('Admin middleware - User ID:', id) // Debug
-
     const user = await prisma.users.findUnique({
       where: { id }
     })
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    console.log('User from DB:', user) // Debug
     const isAdmin = user.role === 'admin'
     if (!isAdmin) {
       return res.status(403).json({ message: 'Not authorized as Admin' })
@@ -61,8 +49,6 @@ const manager = async (req, res, next) => {
     }
 
     const id = req.user.id
-    console.log('Manager middleware - User ID:', id) // Debug
-
     const user = await prisma.users.findUnique({
       where: { id }
     })
