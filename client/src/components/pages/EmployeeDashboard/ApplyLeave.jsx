@@ -17,7 +17,7 @@ const ApplyLeave = () => {
   const employeeId = orgEmpData?.data.employee.id;
   const organisationId = orgEmpData?.data.employee.organisation.id;
 
-  const { data: leaveRequests } = useGetAllLeaveRequestsQuery(employeeId);
+  const { data: leaveRequests, refetch } = useGetAllLeaveRequestsQuery(employeeId);
 
   // Default to an empty array if leaveRequests or leaveRequests.data is undefined
   const totalLeaveRequests = leaveRequests?.data?.leaveRequests?.filter(
@@ -43,6 +43,7 @@ const ApplyLeave = () => {
       setLeaveType("");
       setStartDate("");
       setEndDate("");
+      refetch()
     } catch (error) {
       console.error("Failed to submit leave request:", error);
     }
