@@ -73,12 +73,14 @@ const AddEmployee = ({ employee, onClose }) => {
   };
 
   return (
+    
     <div className="bg-white p-6 shadow-md rounded-lg">
       <h2 className="text-xl font-semibold mb-4">
         {employee ? "Edit Employee" : "Add Employee"}
       </h2>
 
       {/* Display validation errors */}
+
       {Object.keys(formErrors).length > 0 && (
         <div className="text-red-500 mb-4">
           {Object.values(formErrors).map((error, index) => (
@@ -138,13 +140,15 @@ const AddEmployee = ({ employee, onClose }) => {
         </div>
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isUpdating}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
-        >
-          {employee ? "Update Employee" : "Save Employee"}
-        </button>
+        <div className="flex justify-center col-span-1 md:col-span-2">
+  <button
+    type="submit"
+    disabled={isUpdating}
+    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded"
+  >
+    {employee ? "Update Employee" : "Save Employee"}
+  </button>
+</div>
       </form>
     </div>
   );
