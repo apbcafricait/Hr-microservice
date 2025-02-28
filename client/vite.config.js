@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/nexus/',
+  base: '/hr-microservice/',
   server: {
     proxy: {
       '/api': 'http://localhost:8100'
