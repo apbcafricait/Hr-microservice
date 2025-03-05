@@ -30,7 +30,7 @@ const LeaveApplication = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: orgEmpData } = useGetEmployeeQuery(id);
-  const employeeId = orgEmpData?.data.employee.id || 10;
+  const employeeId = orgEmpData?.data.employee.id;
 
   useEffect(() => {
     const dummyLeaveTypes = [
