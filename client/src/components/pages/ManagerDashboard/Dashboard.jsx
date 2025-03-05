@@ -66,12 +66,16 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-700">Manager Dashboard</h1>
+      <header className="mb-6 sticky top-0 z-20">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow rounded-lg p-4 inline-block">
+          <h1 className="text-2xl font-semibold text-white">Manager Dashboard</h1>
+        </div>
       </header>
 
+
+
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white shadow-md p-4 rounded-lg flex items-center">
+        <div className="bg-white shadow-md p-4 rounded-lg flex items-center transform transition-transform duration-300 hover:scale-105">
           <HiUsers className="text-3xl text-blue-500 mr-4" />
           <div>
             <h2 className="text-lg font-medium text-gray-600">Total Employees</h2>
@@ -81,7 +85,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow-md p-4 rounded-lg flex items-center">
+        <div className="bg-white shadow-md p-4 rounded-lg flex items-center transform transition-transform duration-300 hover:scale-105">
           <HiOutlineCash className="text-3xl text-green-500 mr-4" />
           <div>
             <h2 className="text-lg font-medium text-gray-600">Total Salary</h2>
@@ -91,7 +95,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow-md p-4 rounded-lg flex items-center">
+        <div className="bg-white shadow-md p-4 rounded-lg flex items-center transform transition-transform duration-300 hover:scale-105">
           <HiOutlineClipboardList className="text-3xl text-yellow-500 mr-4" />
           <div>
             <h2 className="text-lg font-medium text-gray-600">Total Leave Requests</h2>
@@ -101,7 +105,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow-md p-4 rounded-lg flex items-center">
+        <div className="bg-white shadow-md p-4 rounded-lg flex items-center transform transition-transform duration-300 hover:scale-105">
           <HiOutlineClipboardList className="text-3xl text-purple-500 mr-4" />
           <div>
             <h2 className="text-lg font-medium text-gray-600">Departments</h2>
