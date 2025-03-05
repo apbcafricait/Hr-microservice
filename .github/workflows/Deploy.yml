@@ -22,3 +22,6 @@ jobs:
         run: cd client && npm run build
       - name: Deploy to DigitalOcean (placeholder)
         run: echo "Deploy step to be configured"
+
+
+
