@@ -14,7 +14,7 @@ const leaveBalancesController = new LeaveBalancesController()
 router.get('/employee/:employeeId', leaveBalancesController.getLeaveBalance)
 
 // Admin-only routes
-router.use(admin)
+// router.use(admin)
 router.post('/employee/:employeeId', leaveBalancesController.createLeaveBalance)
 router.put('/employee/:employeeId', leaveBalancesController.updateLeaveBalance)
 router.post('/employee/:employeeId/deduct', leaveBalancesController.deductLeave)
