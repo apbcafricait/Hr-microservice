@@ -79,13 +79,13 @@ const Header = () => {
             <div className="flex items-center space-x-4">
               
               <motion.button
-                onClick={() => navigate("/register")}
+                onClick={() => navigate("/login")}
                 className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-200 text-sm md:text-base flex items-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <LogIn className="h-5 w-5" />
-                <span>Sign Up</span>
+                <span>Sign In</span>
               </motion.button>
             </div>
           </div>

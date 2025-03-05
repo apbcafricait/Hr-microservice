@@ -5,7 +5,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     // Authentication endpoints
     registerUser: builder.mutation({
       query: (credentials) => ({
-        url: '/api/users/register',
+        url: '/api/users/register', 
         method: 'POST',
         body: credentials,
       }),
@@ -24,7 +24,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (params) => ({
         url: '/api/users',
         method: 'GET',
-        params: params, // Include search, filters, pagination params
+        params: params,
       }),
       providesTags: ['Users'],
     }),
@@ -81,10 +81,8 @@ export const userApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
-  // Auth hooks
   useRegisterUserMutation,
   useLoginUserMutation,
-  // User management hooks
   useGetUsersQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
