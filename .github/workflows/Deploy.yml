@@ -3,25 +3,44 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Add this line
+  workflow_dispatch:
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Install root dependencies
         run: npm install
+
       - name: Install client dependencies
         run: cd client && npm install
+
       - name: Build client
         run: cd client && npm run build
-      - name: Deploy to DigitalOcean (placeholder)
-        run: echo "Deploy step to be configured"
 
-
-
+      - name: Deploy to DigitalOcean
+        env:
+          DROPLET_IP: ${{ secrets.DROPLET_IP }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          echo "$SSH_KEY" > ssh_key.pem
+          chmod 600 ssh_key.pem
+          # Copy dist folder and update server
+          scp -i ssh_key.pem -r client/dist/* $SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $SSH_USER@$DROPLET_IP << 'EOF'
+            cd /var/www/hr-microservice
+            git pull origin main
+            sudo chown -R www-data:www-data /var/www/hr-microservice-html
+            pm2 restart hr-backend
+            sudo systemctl reload nginx
+          EOF
+          rm ssh_key.pem
