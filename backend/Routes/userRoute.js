@@ -4,18 +4,7 @@ import { authenticated, admin, manager } from "../middleware/Authentication.js";
 
 const router = express.Router();
 
-router.get(
-  '/',
-  authenticated,
-  (req, res, next) => {
-    if (admin(req) || manager(req)) {
-      next()
-    } else {
-      res.status(403).json({ error: 'Access denied' })
-    }
-  },
-  getAllUsers
-)
+router.get('/', getAllUsers)
 
 router.post("/", RegisterUser);
 router.post("/login", loginUser);
