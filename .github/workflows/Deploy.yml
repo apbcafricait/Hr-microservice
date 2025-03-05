@@ -34,18 +34,22 @@ jobs:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          echo "$SSH_KEY" > ssh_key.pem
+          # Create SSH key file
+          echo "$SSH_KEY" | tr -d '\r' > ssh_key.pem
           chmod 600 ssh_key.pem
           
-          # Add the server to known hosts to prevent host verification failure
+          # Ensure known hosts to avoid manual confirmation
           mkdir -p ~/.ssh
-          ssh-keyscan -H $DROPLET_IP >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$DROPLET_IP" >> ~/.ssh/known_hosts
 
-          # Copy dist folder to the server
-          scp -i ssh_key.pem -r client/dist/* $SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/
+          # Test SSH connection (debugging step)
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no "$SSH_USER@$DROPLET_IP" "echo SSH connection successful"
 
-          # SSH into the server and restart the services
-          ssh -i ssh_key.pem $SSH_USER@$DROPLET_IP << 'EOF'
+          # Copy built client files to the server
+          scp -i ssh_key.pem -r client/dist/* "$SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/"
+
+          # SSH into server and update backend services
+          ssh -i ssh_key.pem "$SSH_USER@$DROPLET_IP" << 'EOF'
             cd /var/www/hr-microservice
             git pull origin main
             sudo chown -R www-data:www-data /var/www/hr-microservice-html
@@ -53,5 +57,5 @@ jobs:
             sudo systemctl reload nginx
           EOF
 
-          # Remove the SSH key after deployment
+          # Clean up SSH key
           rm -f ssh_key.pem
