@@ -1,4 +1,5 @@
 name: Build and Deploy
+
 on:
   push:
     branches:
@@ -8,6 +9,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,15 +34,28 @@ jobs:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          echo "$SSH_KEY" > ssh_key.pem
+          # Create SSH key file
+          echo "$SSH_KEY" | tr -d '\r' > ssh_key.pem
           chmod 600 ssh_key.pem
-          # Copy dist folder and update server
-          scp -i ssh_key.pem -r client/dist/* $SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/
-          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $SSH_USER@$DROPLET_IP << 'EOF'
+          
+          # Ensure known hosts to avoid manual confirmation
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$DROPLET_IP" >> ~/.ssh/known_hosts
+
+          # Test SSH connection (debugging step)
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no "$SSH_USER@$DROPLET_IP" "echo SSH connection successful"
+
+          # Copy built client files to the server
+          scp -i ssh_key.pem -r client/dist/* "$SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/"
+
+          # SSH into server and update backend services
+          ssh -i ssh_key.pem "$SSH_USER@$DROPLET_IP" << 'EOF'
             cd /var/www/hr-microservice
             git pull origin main
             sudo chown -R www-data:www-data /var/www/hr-microservice-html
             pm2 restart hr-backend
             sudo systemctl reload nginx
           EOF
-          rm ssh_key.pem
+
+          # Clean up SSH key
+          rm -f ssh_key.pem
