@@ -91,7 +91,7 @@ const Payroll = () => {
     };
     const baseUrl = window.location.hostname === "localhost"
         ? "http://localhost:8100"
-        : "https://nexus.apbcafrica.com:8100";
+        : "https://nexus.apbcafrica.com";
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
