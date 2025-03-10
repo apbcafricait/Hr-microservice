@@ -1,27 +1,61 @@
 name: Build and Deploy
+
 on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Add this line
+  workflow_dispatch:
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Install root dependencies
         run: npm install
+
       - name: Install client dependencies
         run: cd client && npm install
+
       - name: Build client
         run: cd client && npm run build
-      - name: Deploy to DigitalOcean (placeholder)
-        run: echo "Deploy step to be configured"
 
+      - name: Deploy to DigitalOcean
+        env:
+          DROPLET_IP: ${{ secrets.DROPLET_IP }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          # Create SSH key file
+          echo "$SSH_KEY" | tr -d '\r' > ssh_key.pem
+          chmod 600 ssh_key.pem
+          
+          # Ensure known hosts to avoid manual confirmation
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$DROPLET_IP" >> ~/.ssh/known_hosts
 
+          # Test SSH connection (debugging step)
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no "$SSH_USER@$DROPLET_IP" "echo SSH connection successful"
 
+          # Copy built client files to the server
+          scp -i ssh_key.pem -r client/dist/* "$SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/"
+
+          # SSH into server and update backend services
+          ssh -i ssh_key.pem "$SSH_USER@$DROPLET_IP" << 'EOF'
+            cd /var/www/hr-microservice
+            git pull origin main
+            sudo chown -R www-data:www-data /var/www/hr-microservice-html
+            pm2 restart hr-backend
+            sudo systemctl reload nginx
+          EOF
+
+          # Clean up SSH key
+          rm -f ssh_key.pem

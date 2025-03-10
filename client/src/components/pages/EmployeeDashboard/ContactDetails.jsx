@@ -1,72 +1,94 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { useCreateEmployeeContactMutation } from "../../../slices/ContactSlice";
 import { useSelector } from "react-redux";
+import {  useGetEmployeeQuery } from "../../../slices/employeeSlice";
+
 const ContactDetails = () => {
   const { userInfo } = useSelector((state) => state.auth);
-  const id = userInfo?.id;
-  console.log(id, 'id')
+  const id = userInfo?.id; // Ensure this matches the backend's expectations
+  console.log(id, "id");
+  const { data: orgEmpData } = useGetEmployeeQuery(id);
+  const employeeId = orgEmpData?.data.employee.id;
 
   const [contact, setContact] = useState({
-    employeeId: id,
+    employeeId: employeeId, // Ensure it matches the "employee_id" field in Prisma
     phone: "",
     email: "",
     emergencyContactName: "",
     emergencyContactPhone: "",
   });
+
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("Contact Details");
 
-  // Use the createEmployeeContact mutation from the API slice
   const [createEmployeeContact, { isLoading }] = useCreateEmployeeContactMutation();
 
-  // Handle input changes
   const handleChange = (e) => {
     setContact({ ...contact, [e.target.name]: e.target.value });
   };
 
-  // Toggle edit mode
   const toggleEdit = () => setIsEditing(!isEditing);
 
-  // Handle form submission for creating a new contact
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!contact.employeeId) {
-      alert("Employee ID is required!");
-      return;
+
+    // Validate employeeId
+    if (!contact.employeeId || isNaN(contact.employeeId)) {
+        alert("Valid Employee ID is required!");
+        return;
     }
 
-    try {
-     const res= await createEmployeeContact(contact).unwrap(); // Trigger the mutation
-     console.log(res);
-      alert("Contact created successfully!");
-      setContact({
-        employeeId: "",
-        phone: "",
-        email: "",
-        emergencyContactName: "",
-        emergencyContactPhone: "",
-      }); // Reset the form
-      setIsEditing(false); // Exit edit mode
-    } catch (err) {
-      console.error("Error creating contact:", err);
-      alert("Failed to create contact. Please try again.");
+    // Validate required fields (phone and email, if applicable)
+    if (!contact.email.trim()) {
+        alert("Email is required!");
+        return;
     }
-  };
+
+    // Convert employeeId to integer
+    const employeeId = parseInt(contact.employeeId, 10);
+
+    try {
+        // Send data to the backend
+        const res = await createEmployeeContact({
+            ...contact,
+            employeeId, // Ensures employeeId is sent as an integer
+        }).unwrap();
+
+        console.log("API Response:", res);
+        alert("Contact created successfully!");
+
+        // Reset form state
+        setContact({
+            employeeId: id || "", // Default to current user's ID
+            phone: "",
+            email: "",
+            emergencyContactName: "",
+            emergencyContactPhone: "",
+        });
+        setIsEditing(false); // Exit edit mode
+    } catch (err) {
+        console.error("Error creating contact:", err);
+
+        // Handle specific API error responses if available
+        if (err?.data?.message) {
+            alert(`Error: ${err.data.message}`);
+        } else {
+            alert("Failed to create contact. Please try again.");
+        }
+    }
+};
+
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
-      {/* Main Content */}
       <div className="flex-1 bg-gray-100 p-6 flex justify-center items-center">
         {activeTab === "Contact Details" && (
           <div className="bg-white p-6 rounded-md shadow-md w-full max-w-3xl">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">Contact Details</h2>
-            {/* Form for creating or editing contact details */}
             <form onSubmit={handleSubmit}>
-              {/* Employee ID Section */}
               <div className="mb-4">
                 <input
-                  type="text"
+                  type="number"
                   name="employeeId"
                   value={contact.employeeId}
                   onChange={handleChange}
@@ -77,7 +99,6 @@ const ContactDetails = () => {
                 />
               </div>
 
-              {/* Emergency Contact Section */}
               <div className="mb-4">
                 <input
                   type="text"
@@ -101,7 +122,6 @@ const ContactDetails = () => {
                 />
               </div>
 
-              {/* Phone Numbers Section */}
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Phone Number</h3>
               <div className="mb-4">
                 <input
@@ -115,7 +135,6 @@ const ContactDetails = () => {
                 />
               </div>
 
-              {/* Email Section */}
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Email</h3>
               <div className="mb-4">
                 <input
@@ -130,7 +149,6 @@ const ContactDetails = () => {
                 />
               </div>
 
-              {/* Buttons */}
               <div className="flex justify-end space-x-4">
                 {isEditing ? (
                   <button
