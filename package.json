@@ -5,13 +5,13 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "start": "nodemon backend/index.js",
-  "dev:backend": "nodemon backend/index.js",
-  "dev:frontend": "cd client && npm run dev",
-  "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-  "build": "cd client && npm run build"
-},
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon backend/index.js",
+    "dev:backend": "nodemon backend/index.js",
+    "dev:frontend": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "cd client && npm run build"
+  },
   "author": "APBC devs",
   "license": "ISC",
   "dependencies": {
