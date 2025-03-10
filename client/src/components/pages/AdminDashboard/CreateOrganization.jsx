@@ -1,323 +1,336 @@
-import React, { useState, useRef, useEffect } from 'react'; // Import useRef and useEffect
-import { useNavigate } from 'react-router-dom';
-import { useCreateOrganizationMutation, useGetOrganizationsQuery } from '../../../slices/organizationSlice';
-import { ToastContainer, toast } from 'react-toastify';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Building2, AtSign, Phone, Globe, MapPin, Users,
-  Briefcase, Calendar, DollarSign, FileText, Link,
-  User, Mail, Check
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useCreateOrganizationMutation } from '../../../slices/organizationSlice';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Building2, AtSign, Phone, CheckCircle, UserCircle, Award } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
 
-const CreateOrganization = () => {
-  const navigate = useNavigate();
-  const [createOrganization, { isLoading }] = useCreateOrganizationMutation();
-  const { data: organizations, isLoading: isLoadingOrgs } = useGetOrganizationsQuery();
-
-  const initialFormData = {
+const CreateOrganizationForm = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  
+  const [formData, setFormData] = useState({
     name: '',
     subdomain: '',
     mpesaPhone: '',
-    managerEmail: '',
-    address: '',
-    employeeCount: '',
-    industry: '',
-    foundingDate: '',
-    annualRevenue: '',
-    registrationNumber: '',
-    website: '',
-    taxId: '',
-    primaryContactName: '',
-    primaryContactEmail: '',
-    description: ''
-  };
+    subscriptionStatus: '', // Changed from 'trial' to empty string
+  });
 
-  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // useRef for automatically focusing the first input field
-  const firstInputRef = useRef(null);
+  const [createOrganization, { isLoading, isSuccess, error, data }] = useCreateOrganizationMutation();
+  const [showSuccessCard, setShowSuccessCard] = useState(false);
+  const [createdOrg, setCreatedOrg] = useState(null);
 
   useEffect(() => {
-    // Focus the first input field when the component mounts
-    if (firstInputRef.current) {
-      firstInputRef.current.focus();
+    if (isSuccess && data) {
+      setCreatedOrg(data.organisation);
+      setShowSuccessCard(true);
+      
+      setFormData({
+        name: '',
+        subdomain: '',
+        mpesaPhone: '',
+        subscriptionStatus: '', // Changed from 'trial' to empty string
+      });
+      
+      const timer = setTimeout(() => {
+        setShowSuccessCard(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isSuccess, data]);
 
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'name':
-        if (!value.trim()) return 'Organization name is required';
-        if (value.length < 3) return 'Name must be at least 3 characters';
-        return '';
-
-      case 'subdomain':
-        if (!value.trim()) return 'Subdomain is required';
-        if (!/^[a-z0-9-]+$/.test(value)) return 'Only lowercase letters, numbers, and hyphens allowed';
-        return '';
-
-      case 'mpesaPhone':
-        if (!value.trim()) return 'Phone number is required';
-        if (!/^\+254[0-9]{9}$/.test(value)) return 'Invalid phone format (+254XXXXXXXXX)';
-        return '';
-
-      case 'managerEmail':
-        if (!value.trim()) return 'Email is required';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format';
-        return '';
-
-      case 'employeeCount':
-        if (value && isNaN(value)) return 'Must be a number';
-        return '';
-
-      default:
-        return '';
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) newErrors.name = 'Organization name is required';
+    if (!formData.subdomain.trim()) {
+      newErrors.subdomain = 'Subdomain is required';
+    } else if (!/^[a-z0-9-]+$/.test(formData.subdomain)) {
+      newErrors.subdomain = 'Subdomain can only contain lowercase letters, numbers, and hyphens';
     }
+    if (!formData.mpesaPhone.trim()) {
+      newErrors.mpesaPhone = 'M-Pesa phone number is required';
+    } else if (!/^(?:\+254|0)[17]\d{8}$/.test(formData.mpesaPhone)) {
+      newErrors.mpesaPhone = 'Please enter a valid Kenyan phone number';
+    }
+    if (!formData.subscriptionStatus) {
+      newErrors.subscriptionStatus = 'Please select a subscription status';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    const error = validateField(name, value);
-    setErrors(prev => ({ ...prev, [name]: error }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const newErrors = {};
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error('Please fix the form errors');
+    
+    if (!userInfo || !userInfo.id) {
+      toast.error('You must be logged in to create an organization');
       return;
     }
-
+    
+    if (!validateForm()) {
+      toast.error('Please correct the errors in the form');
+      return;
+    }
+    
     try {
-      await createOrganization(formData).unwrap();
-      setShowSuccessModal(true);
-
-      // Redirect after 1.5 seconds
-      setTimeout(() => {
-        navigate('/admin');
-      }, 1500);
-
+      const organizationData = {
+        ...formData,
+        createdBy: userInfo.id
+      };
+      
+      console.log('Sending organization data:', organizationData);
+      const result = await createOrganization(organizationData).unwrap();
+      toast.success('Organization created successfully!');
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to create organization');
+      console.error('Failed to create organization:', err);
+      const errorMessage = err?.data?.message || err?.message || 'Failed to create organization';
+      toast.error(errorMessage);
     }
   };
 
-  const InputField = ({ name, label, type = 'text', icon: Icon, placeholder, required = false, inputRef }) => (
-    <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-        {label} {required && '*'}
-      </label>
-      <div className="relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Icon className="h-5 w-5 text-gray-400" />
-        </div>
-        <input
-          type={type}
-          name={name}
-          value={formData[name]}
-          onChange={handleChange}
-          className={`block w-full pl-10 pr-3 py-2 border ${errors[name] ? 'border-red-300' : 'border-gray-300'
-            } rounded-md shadow-sm dark:bg-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-          placeholder={placeholder}
-          ref={inputRef} // Apply the ref to the input
-        />
-      </div>
-      {errors[name] && (
-        <p className="mt-1 text-sm text-red-600">{errors[name]}</p>
-      )}
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4 sm:px-6 lg:px-8">
-      <ToastContainer />
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-950 py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer position="top-right" autoClose={3000} />
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto"
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl mx-auto"
       >
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-indigo-600 px-6 py-4">
-            <h2 className="text-2xl font-bold text-white text-center">Create New Organization</h2> {/* Centered header */}
-            <p className="mt-1 text-indigo-100 text-center">Fill in the organization details below</p> {/* Centered subheader */}
+        {showSuccessCard && createdOrg && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-8 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-5 shadow-md"
+          >
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-green-800 dark:text-green-300">Organization Created Successfully!</h3>
+                <div className="mt-2 text-sm text-green-700 dark:text-green-400">
+                  <p><span className="font-semibold">Name:</span> {createdOrg.name}</p>
+                  <p><span className="font-semibold">Subdomain:</span> {createdOrg.subdomain}</p>
+                  <p><span className="font-semibold">Created At:</span> {new Date(createdOrg.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="ml-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowSuccessCard(false)}
+                  className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
+                >
+                  <span className="sr-only">Dismiss</span>
+                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-700 dark:to-indigo-800 py-6 px-8">
+            <h1 className="text-2xl font-bold text-white flex items-center">
+              <Building2 className="mr-2" size={24} />
+              Create New Organization
+            </h1>
+            <p className="text-blue-100 mt-1">Enter your organization details to get started</p>
           </div>
-
-          <form onSubmit={handleSubmit} className="px-6 py-8">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Required Fields Section */}
-              <InputField
-                name="name"
-                label="Organization Name"
-                icon={Building2}
-                placeholder="Enter organization name"
-                required
-                inputRef={firstInputRef} // Apply the ref to the first input
-              />
-              <InputField
-                name="subdomain"
-                label="Subdomain"
-                icon={Globe}
-                placeholder="your-subdomain"
-                required
-              />
-              <InputField
-                name="mpesaPhone"
-                label="M-Pesa Phone"
-                icon={Phone}
-                placeholder="+254XXXXXXXXX"
-                required
-              />
-              <InputField
-                name="managerEmail"
-                label="Manager Email"
-                icon={AtSign}
-                type="email"
-                placeholder="manager@example.com"
-                required
-              />
-
-              {/* Additional Details */}
-              <InputField
-                name="address"
-                label="Physical Address"
-                icon={MapPin}
-                placeholder="Organization address"
-              />
-              <InputField
-                name="employeeCount"
-                label="Number of Employees"
-                icon={Users}
-                type="number"
-                placeholder="100"
-              />
-              <InputField
-                name="industry"
-                label="Industry"
-                icon={Briefcase}
-                placeholder="e.g. Technology"
-              />
-              <InputField
-                name="foundingDate"
-                label="Founding Date"
-                icon={Calendar}
-                type="date"
-              />
-              <InputField
-                name="annualRevenue"
-                label="Annual Revenue (USD)"
-                icon={DollarSign}
-                placeholder="Annual revenue"
-              />
-              <InputField
-                name="registrationNumber"
-                label="Registration Number"
-                icon={FileText}
-                placeholder="Business registration number"
-              />
-              <InputField
-                name="website"
-                label="Website"
-                icon={Link}
-                placeholder="https://example.com"
-              />
-              <InputField
-                name="taxId"
-                label="Tax ID"
-                icon={FileText}
-                placeholder="Tax identification number"
-              />
-              <InputField
-                name="primaryContactName"
-                label="Primary Contact Name"
-                icon={User}
-                placeholder="Contact person name"
-              />
-              <InputField
-                name="primaryContactEmail"
-                label="Primary Contact Email"
-                icon={Mail}
-                type="email"
-                placeholder="contact@example.com"
-              />
-
-              {/* Description Field - Full Width */}
-              <div className="sm:col-span-2 lg:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Description
+          
+          {userInfo ? (
+            <div className="bg-blue-50 dark:bg-blue-900/30 m-6 p-4 rounded-md">
+              <p className="text-sm text-blue-800 dark:text-blue-300 flex items-center">
+                <UserCircle className="mr-2 h-5 w-5" />
+                Creating organization as: <span className="font-medium ml-1">{userInfo.email}</span>
+              </p>
+            </div>
+          ) : (
+            <div className="bg-red-50 dark:bg-red-900/30 m-6 p-4 rounded-md">
+              <p className="text-sm text-red-800 dark:text-red-300 flex items-center">
+                <UserCircle className="mr-2 h-5 w-5" />
+                Warning: You are not logged in. Please log in to create an organization.
+              </p>
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="py-8 px-8">
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Organization Name
                 </label>
-                <textarea
-                  name="description"
-                  rows={3}
-                  className="block w-full border border-gray-300 rounded-md shadow-sm dark:bg-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Brief description of the organization"
-                  value={formData.description}
-                  onChange={handleChange}
-                />
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Building2 className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`block w-full pl-10 pr-3 py-3 border ${errors.name ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm`}
+                    placeholder="Acme Corporation"
+                  />
+                </div>
+                {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="subdomain" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Subdomain
+                </label>
+                <div className="mt-1 flex rounded-md shadow-sm">
+                  <div className="relative flex items-stretch flex-grow">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <AtSign className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                    </div>
+                    <input
+                      type="text"
+                      name="subdomain"
+                      id="subdomain"
+                      value={formData.subdomain}
+                      onChange={handleChange}
+                      className={`block w-full pl-10 pr-3 py-3 border ${errors.subdomain ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-l-md shadow-sm focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm`}
+                      placeholder="acme"
+                    />
+                  </div>
+                  <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300 sm:text-sm">
+                    .yourdomain.com
+                  </span>
+                </div>
+                {errors.subdomain && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.subdomain}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="mpesaPhone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  M-Pesa Phone Number
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Phone className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <input
+                    type="text"
+                    name="mpesaPhone"
+                    id="mpesaPhone"
+                    value={formData.mpesaPhone}
+                    onChange={handleChange}
+                    className={`block w-full pl-10 pr-3 py-3 border ${errors.mpesaPhone ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm`}
+                    placeholder="+254712345678"
+                  />
+                </div>
+                {errors.mpesaPhone && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.mpesaPhone}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="subscriptionStatus" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Subscription Status
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Award className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <select
+                    name="subscriptionStatus"
+                    id="subscriptionStatus"
+                    value={formData.subscriptionStatus}
+                    onChange={handleChange}
+                    className={`block w-full pl-10 pr-3 py-3 border ${errors.subscriptionStatus ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm`}
+                  >
+                    <option value="">Select Status</option>
+                    <option value="trial">Trial</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </div>
+                {errors.subscriptionStatus && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.subscriptionStatus}</p>}
               </div>
             </div>
 
             <div className="mt-8 flex justify-end">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="submit"
-                disabled={isLoading}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                disabled={isLoading || !userInfo}
+                className="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     Creating...
                   </>
                 ) : (
                   'Create Organization'
                 )}
-              </button>
+              </motion.button>
             </div>
           </form>
         </div>
-      </motion.div>
 
-      <AnimatePresence>
-        {showSuccessModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full text-center"
-            >
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                <Check className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-                Organization Created Successfully
+        <div className="mt-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                <UserCircle className="mr-2 text-blue-500" size={20} />
+                Recently Created Organizations
               </h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Redirecting to dashboard...
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Organizations you've created will appear here
               </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700">
+              {createdOrg ? (
+                <div className="px-6 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{createdOrg.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Created on {new Date(createdOrg.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                    {createdOrg.subscriptionStatus}
+                  </span>
+                </div>
+              ) : (
+                <div className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No organizations created yet
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Need help? Contact our support team at <span className="text-blue-600 dark:text-blue-400">apbcafricait@gmail.com</span>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 };
 
-export default CreateOrganization;
+export default CreateOrganizationForm;
