@@ -72,8 +72,6 @@ const Dashboard = () => {
         </div>
       </header>
 
-
-
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="bg-white shadow-md p-4 rounded-lg flex items-center transform transition-transform duration-300 hover:scale-105">
           <HiUsers className="text-3xl text-blue-500 mr-4" />
