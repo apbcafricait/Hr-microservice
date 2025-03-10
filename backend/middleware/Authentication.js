@@ -51,29 +51,6 @@ const admin = () => {
       console.error('Error verifying user role:', error)
       return res.status(500).json({ message: 'Server error' })
     }
-<<<<<<< HEAD
-=======
-
-    const id = req.user.id
-    console.log('Admin middleware - User ID:', id) // Debug
-
-    const user = await prisma.users.findUnique({
-      where: { id }
-    })
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-    const isAdmin = user.role === 'admin'
-    if (!isAdmin) {
-      return res.status(403).json({ message: 'Not authorized as Admin' })
-    }
-
-    next()
-  } catch (error) {
-    console.error('Error verifying user role:', error)
-    // return res.status(500).json({ message: 'Server error' })
->>>>>>> c3c03d64abb599b1f1a8df311cbe6ae6869855b5
   }
 }
 
