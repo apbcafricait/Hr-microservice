@@ -50,7 +50,7 @@ model Employee {
     managedDepartment Department? @relation("DepartmentManager")
   Payroll Payroll[]
   Qualification Qualification[]
-  Dependents Dependent[]
+  Dependent Dependent[]
   PerformanceReview PerformanceReview[]
    claims              Claim[]
   assignedClaims      Claim[]           @relation("AssignedClaims")
@@ -270,16 +270,6 @@ model Language {
   @@map("languages")
 }
 
-model Dependent {
-  id           Int      @id @default(autoincrement())
-  name         String   @db.VarChar(255)
-  relationship String   @db.VarChar(100)
-  dob          DateTime
-  employeeId   Int
-  Employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
 
 model PerformanceReview {
   id             Int       @id @default(autoincrement())
@@ -337,9 +327,7 @@ model Claim {
   toDate        DateTime @db.Date
   submittedDate DateTime @default(now())
   status        String   @default("SUBMITTED")
-  comment       String?  @db.Text // New comment field directly in Claim
-  
-  // Relations
+  comment       String?  @db.Text
   employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   assignedToId  Int?       
   assignedTo    Employee? @relation("AssignedClaims", fields: [assignedToId], references: [id])
@@ -348,4 +336,20 @@ model Claim {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("claims")
+}
+
+// prisma/schema.prisma additions
+// Add this model to your existing schema.prisma file
+
+model Dependent {
+  id           String    @id @default(uuid())
+  employeeId   Int
+  name         String
+  relationship String
+  dateOfBirth  DateTime
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  employee     Employee  @relation(fields: [employeeId], references: [id])
 }

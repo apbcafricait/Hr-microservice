@@ -17,6 +17,7 @@ import payrollRoutes from './Routes/payrollRoutes.js'
 import PerformanceReviewsRoutes from './Routes/PerformanceReviewsRoutes.js'
 import recruitmentRoutes from './Routes/recruitmentRoutes.js'
 import claimRoutes from './Routes/claimRoutes.js'
+import dependentsRoutes from './Routes/dependentRoutes.js'
 const app = express()
 
 dotenv.config()
@@ -46,6 +47,7 @@ app.use('/api/suggestions', suggestionsRoutes)
 app.use('/api/departments', departmentRoutes)
 app.use('/api/payroll', payrollRoutes)
 app.use('/api/performance', PerformanceReviewsRoutes)
+app.use('/api/dependents', dependentsRoutes)
 
 /* 
 @params Payment routes
