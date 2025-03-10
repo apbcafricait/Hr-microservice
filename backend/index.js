@@ -18,6 +18,7 @@ import PerformanceReviewsRoutes from './Routes/PerformanceReviewsRoutes.js'
 import recruitmentRoutes from './Routes/recruitmentRoutes.js'
 import claimRoutes from './Routes/claimRoutes.js'
 import dependentsRoutes from './Routes/dependentRoutes.js'
+import leaveTypeRoutes from './Routes/leaveTypeRoutes.js'
 const app = express()
 
 dotenv.config()
@@ -54,7 +55,7 @@ app.use('/api/dependents', dependentsRoutes)
 */
 app.use("/api/mpesa", mpesaRoutes)
 app.use("/api/recruitment", recruitmentRoutes)
-
+app.use("/api/leaveTypes", leaveTypeRoutes)
 // Claim routes
 app.use('/api/claims', claimRoutes)
 
