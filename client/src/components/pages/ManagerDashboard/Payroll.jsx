@@ -89,7 +89,9 @@ const Payroll = () => {
             throw error;
         }
     };
-
+    const baseUrl = window.location.hostname === "localhost"
+        ? "http://localhost:8100"
+        : "https://nexus.apbcafrica.com";
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -205,7 +207,7 @@ const Payroll = () => {
             <PDFViewer
                 isOpen={showPDFViewer}
                 onClose={() => setShowPDFViewer(false)}
-                pdfUrl={`http://localhost:8100/uploads/payslips/${currentPayslip?.payslipPath.split('/').pop()}`}
+                pdfUrl={`${baseUrl}/uploads/payslips/${currentPayslip?.payslipPath.split('/').pop()}`}
             />
         </div>
     );
