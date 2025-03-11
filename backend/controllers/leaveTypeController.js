@@ -11,8 +11,8 @@ export const createLeaveType = async (req, res) => {
     const leaveType = await prisma.leaveType.create({
       data: {
         name,
-        duration,
-        start_date,
+        duration: parseInt(duration),
+        start_date: new Date(start_date),
         organisationId: parseInt(organisationId)
       }
     })
