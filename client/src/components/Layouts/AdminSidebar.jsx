@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-
 import {
   Settings,
   Users,
@@ -16,13 +15,10 @@ import {
   Shield
 } from 'lucide-react';
 
-
-
-const Sidebar = ({ activeLink, setActiveLink }) => {
+const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is received
   const [isExpanded, setIsExpanded] = useState(true);
-  
   const [hoveredLink, setHoveredLink] = useState(null);
- 
+
   const menuItems = [
     { name: 'Dashboard', icon: Home },
     { name: 'Admin', icon: Shield },
@@ -36,8 +32,6 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
     { name: 'Claims', icon: FileText },
     { name: 'Settings', icon: Settings },
   ];
-
-
 
   return (
     <motion.div
@@ -89,9 +83,8 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setActiveLink(item.name);
+                    setActiveLink(item.name); // Correctly updates state
                   }}
-                  
                   onMouseEnter={() => setHoveredLink(item.name)}
                   onMouseLeave={() => setHoveredLink(null)}
                   className={`relative flex items-center px-3 py-3 rounded-lg transition-all duration-200 group
@@ -105,7 +98,6 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
                       activeLink === item.name ? 'text-white' : 'text-gray-500 group-hover:text-purple-600'
                     }`}
                   />
-                  
                   {isExpanded && (
                     <motion.span
                       initial={{ opacity: 0, x: -10 }}
@@ -116,30 +108,12 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
                       {item.name}
                     </motion.span>
                   )}
-
-                  {/* Hover Effect */}
-                  {hoveredLink === item.name && !activeLink === item.name && (
-                    <motion.div
-                      layoutId="hoverBackground"
-                      className="absolute inset-0 bg-gray-50 rounded-lg -z-10"
-                      initial={false}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30
-                      }}
-                    />
-                  )}
                 </a>
               </motion.li>
             );
           })}
         </ul>
       </nav>
-
-      
-   
-
     </motion.div>
   );
 };
