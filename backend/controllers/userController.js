@@ -35,7 +35,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
       organisationName,
       organisationSubdomain,
       mpesaPhone,
-      position = 'CEO', // Default position for the admin
+      position,
       employmentDate = new Date(), // Default to today
       salary = 0.0 // Default salary (can be updated later)
     } = req.body
