@@ -4,14 +4,15 @@ const prisma = new PrismaClient()
 
 export const createLeaveType = async (req, res) => {
   try {
-    const { name, description, organisationId } = req.body
+    const { name, duration,start_date, organisationId } = req.body
 
 
 
     const leaveType = await prisma.leaveType.create({
       data: {
         name,
-        description,
+        duration,
+        start_date,
         organisationId: parseInt(organisationId)
       }
     })
