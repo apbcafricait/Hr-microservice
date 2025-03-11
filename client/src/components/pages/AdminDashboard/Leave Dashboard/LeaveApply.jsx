@@ -8,12 +8,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import AssignLeave from "../../../pages/AdminDashboard/Leave Dashboard/AssignLeave";
 import LeaveList from "./LeaveList";
 import MyLeave from "../../AdminDashboard/Leave Dashboard/MyLeave";
-import {
-  useGetAllLeaveRequestsQuery,
-  useCreateLeaveRequestMutation,
-} from "../../../../slices/leaveApiSlice";
+import { useGetAllLeaveRequestsQuery, useCreateLeaveRequestMutation, } from "../../../../slices/leaveApiSlice";
 import { useSelector } from "react-redux";
 import { useGetEmployeeQuery } from "../../../../slices/employeeSlice";
+import { useGetLeaveTypesQuery, } from "../../../../slices/LeaveTypesApiSlice"
+
 
 const LeaveApplication = () => {
   const [selectedLeaveType, setSelectedLeaveType] = useState("");
@@ -25,23 +24,31 @@ const LeaveApplication = () => {
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLeaveType, setNewLeaveType] = useState({ type: "", balance: 0 });
-
-  const { data: leaveRequests, isLoading, refetch } = useGetAllLeaveRequestsQuery();
-  const [createLeaveRequest, { isLoading: isCreateLoading, error: createError }] =
-    useCreateLeaveRequestMutation();
+  const { data: leaveRequests, isLoading: leaves, refetch } = useGetAllLeaveRequestsQuery();
+  const [createLeaveRequest, { isLoading: isCreateLoading, error: createError }] = useCreateLeaveRequestMutation();
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: orgEmpData } = useGetEmployeeQuery(id);
-  const employeeId = orgEmpData?.data.employee.id;
+  const organisationId = orgEmpData?.data.employee.organisation.id;
 
-  useEffect(() => {
-    const dummyLeaveTypes = [
-      { id: 1, type: "Annual Leave", balance: 21 },
-      { id: 2, type: "Sick Leave", balance: 7 },
-      { id: 3, type: "Personal Leave", balance: 5 },
-    ];
-    setLeaveTypes(dummyLeaveTypes);
-  }, []);
+  // Fetch leave types using organisationId
+  const { data: leaveTypesData, error, isLoading } = useGetLeaveTypesQuery(
+    { organisationId },
+    { skip: !organisationId } // Skip query if organisationId is not available
+  );
+
+  // Destructure leave types from response
+  const leave_Types = leaveTypesData || [];
+
+  console.log("This is the employee data", userInfo)
+  console.log("this is the organisationId:", id)
+  console.log("this is the orgEmpData:", orgEmpData)
+  console.log("Fetched Leave Types:", leaveTypesData);
+  console.log("Fetched Leave_Types:", leave_Types);
+
+
+
+
 
   // Function to get leave balance based on the selected type
   const getLeaveBalance = () => {
@@ -150,21 +157,24 @@ const LeaveApplication = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Leave Type <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      className="w-full rounded-lg border border-gray-300 py-3 px-4 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm appearance-none"
-                      value={selectedLeaveType}
-                      onChange={(e) => setSelectedLeaveType(e.target.value)}
-                    >
-                      <option value="">Select Leave Type</option>
-                      {leaveTypes.map((leave) => (
-                        <option key={leave.id} value={leave.type}>
-                          {leave.type}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                  </div>
+                 <div className="relative">
+  <select
+    className="w-full rounded-lg border border-gray-400 py-3 px-4 text-black font-semibold bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-md appearance-none"
+    value={selectedLeaveType}
+    onChange={(e) => setSelectedLeaveType(e.target.value)}
+  >
+    <option value="" className="text-gray-500">Select Leave Type</option>
+    {leave_Types.map((leave) => (
+      <option key={leave.id} value={leave.type}>
+        {leave.type}
+      </option>
+    ))}
+  </select>
+  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600 pointer-events-none" />
+</div>
+
+
+
                   {/* + Button to Open Modal */}
                   <button
                     onClick={() => setIsModalOpen(true)}
