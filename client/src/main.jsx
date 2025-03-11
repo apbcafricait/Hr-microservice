@@ -1,65 +1,127 @@
 import React from 'react';
 import './index.css';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store.js';
 import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Import all pages and components
 import App from './App.jsx';
 import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import NotAuthorized from './components/common/NotAuthorized'; // Create this component for unauthorized access
 
-//import admin dashboard components
+// Admin dashboard components
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
 import CreateOrganization from './components/pages/AdminDashboard/CreateOrganization.jsx';
 import ViewOrganization from './components/pages/AdminDashboard/ViewOrganizations.jsx';
-// import User from './components/pages/AdminDashboard/User.jsx';
 
-// Import all manager dashboard components
+// Manager dashboard components
 import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboard.jsx';
-// import AddEmployee from './components/pages/ManagerDashboard/AddEmployee.jsx';
-// import EmployeeList from './components/pages/ManagerDashboard/EmployeeList.jsx';
 
-// Import all  employee dashboard components
+// Employee dashboard components
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
-// import ApplyLeave from './components/pages/EmployeeDashboard/ApplyLeave.jsx';
-import  EmployeeProfile  from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
+import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { userInfo } = store.getState().auth;
+  console.log(userInfo, "Logged in user")
 
-// import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
+ 
 
+
+  if (!userInfo) {
+    return <Navigate to="/login" />;
+  }
+
+  const userRole = userInfo.role;
+
+  if (!allowedRoles.includes(userRole)) {
+    return <Navigate to="/not-authorized" />;
+  }
+
+  return children;
+};
+
+// Router Configuration
 const routes = createBrowserRouter(
   createRoutesFromElements(
-    <>
-      {/* The root route is the Landing Page */}
-      <Route path="/" element={<App />}>
-        <Route index element={<LandingPage />} /> {/* Default landing page route */}
+    <Route path="/" element={<App />}>
+      {/* Public Routes */}
+      <Route index element={<LandingPage />} />
+      <Route path="login" element={<Login />} />
+      <Route path="register" element={<Register />} />
+      <Route path="not-authorized" element={<NotAuthorized />} />
 
-        {/* Auth routes */}
-        <Route path="login" element={<Login />} />
+      {/* Admin Routes */}
+      <Route
+        path="admin"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="admin/create-organization"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <CreateOrganization />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="admin/view-organization"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ViewOrganization />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route path="register" element={<Register />} />
+      {/* Manager Routes */}
+      <Route
+        path="manager"
+        element={
+          <ProtectedRoute allowedRoles={['manager']}>
+            <ManagerDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-        {/* AdminDashboard routes */}
-        <Route path="admin" element={<AdminDashboard />} />
-        <Route path="/admin/create-organization" element={<CreateOrganization />} />
-        <Route path="/admin/view-organization" element={<ViewOrganization />} />
-        {/* <Route path="/admin/users" element={<User />} /> */}
+      {/* Employee Routes */}
+      <Route
+        path="employee"
+        element={
+          <ProtectedRoute allowedRoles={['employee']}>
+            <EmployeeDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="employee-profile"
+        element={
+          <ProtectedRoute allowedRoles={['employee']}>
+            <EmployeeProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="personal-details"
+        element={
+          <ProtectedRoute allowedRoles={['employee']}>
+            <PersonalDetails />
+          </ProtectedRoute>
+        }
+      />
 
-        {/* ManagerDashboard Routes */}
-
-        <Route path="manager" element={<ManagerDashboard />} />
-
-        {/* EmployeeDashboard Routes */}
-
-        <Route path="employee" element={<EmployeeDashboard />} />
-        <Route path="employee-profile" element={<EmployeeProfile />} />
-       <Route pathe="personal-details" elements={<PersonalDetails />} />
-      </Route>
-    </>
+      {/* Catch all route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Route>
   )
 );
 
@@ -68,7 +130,17 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <RouterProvider router={routes} />
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </Provider>
   </React.StrictMode>
 );
