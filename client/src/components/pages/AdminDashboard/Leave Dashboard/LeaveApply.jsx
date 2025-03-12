@@ -8,10 +8,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import AssignLeave from "../../../pages/AdminDashboard/Leave Dashboard/AssignLeave";
 import LeaveList from "./LeaveList";
 import MyLeave from "../../AdminDashboard/Leave Dashboard/MyLeave";
-import { useGetAllLeaveRequestsQuery, useCreateLeaveRequestMutation, } from "../../../../slices/leaveApiSlice";
+import { useCreateLeaveRequestMutation, } from "../../../../slices/leaveApiSlice";
 import { useSelector } from "react-redux";
 import { useGetEmployeeQuery } from "../../../../slices/employeeSlice";
-import { useGetLeaveTypesQuery, } from "../../../../slices/LeaveTypesApiSlice"
+import { useGetLeaveTypesQuery, useCreateLeaveTypeMutation } from "../../../../slices/LeaveTypesApiSlice"
 
 
 const LeaveApplication = () => {
@@ -23,16 +23,22 @@ const LeaveApplication = () => {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newLeaveType, setNewLeaveType] = useState({ type: "", balance: 0 });
-  const { data: leaveRequests, isLoading: leaves, refetch } = useGetAllLeaveRequestsQuery();
-  const [createLeaveRequest, { isLoading: isCreateLoading, error: createError }] = useCreateLeaveRequestMutation();
+  const [newLeaveType, setNewLeaveType] = useState({ name: "", duration: 0 });
+  //const { data: leaveRequests, isLoading: leaves, refetch } = useGetAllLeaveRequestsQuery();
+  const [createLeaveRequest, { isCreateLeaveType: isCreateLoading, error: createError }] = useCreateLeaveRequestMutation();
+  const [createLeaveType, { isCreateLeaveType: isCreateLeaveType, error: isError }] = useCreateLeaveTypeMutation();
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: orgEmpData } = useGetEmployeeQuery(id);
   const organisationId = orgEmpData?.data.employee.organisation.id;
+  //employee id
+  const employeeId = orgEmpData?.data.employee.id;
+  console.log("this is the employe id->",employeeId)
+
+  
 
   // Fetch leave types using organisationId
-  const { data: leaveTypesData, error, isLoading } = useGetLeaveTypesQuery(
+  const { data: leaveTypesData } = useGetLeaveTypesQuery(
     { organisationId },
     { skip: !organisationId } // Skip query if organisationId is not available
   );
@@ -47,12 +53,9 @@ const LeaveApplication = () => {
   console.log("Fetched Leave_Types:", leave_Types);
 
 
-
-
-
   // Function to get leave balance based on the selected type
   const getLeaveBalance = () => {
-    return leaveTypes.find((leave) => leave.type === selectedLeaveType)?.balance || 0;
+    return leaveTypesData?.find((leave) => leave.name === selectedLeaveType)?.duration || 0;
   };
 
   useEffect(() => {
@@ -66,14 +69,24 @@ const LeaveApplication = () => {
     }
   }, [fromDate, selectedLeaveType]);
 
-  const handleAddLeaveType = () => {
-    const newId = leaveTypes.length + 1; // New id based on the current number of leave types
-    setLeaveTypes([
-      ...leaveTypes,
-      { id: newId, type: newLeaveType.type, balance: newLeaveType.balance },
-    ]);
-    setNewLeaveType({ type: "", balance: 0 }); // Reset input fields
-    setIsModalOpen(false); // Close the modal
+  // Function to add a new leave type
+
+  const handleAddLeaveType = async () => {
+    if (!newLeaveType.name || newLeaveType.duration <= 0) {
+      alert("Please enter valid leave type details");
+      return;
+    }
+
+    try {
+      await createLeaveType({
+        name: newLeaveType.name,
+        duration: parseInt(newLeaveType.duration),
+      }).unwrap(); // Call the mutation
+      setNewLeaveType({ name: "", duration: 0 }); // Reset input fields
+      setIsModalOpen(false); // Close the modal
+    } catch (error) {
+      console.error("Failed to add leave type:", error);
+    }
   };
 
   const calculateDuration = () => {
@@ -157,23 +170,21 @@ const LeaveApplication = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Leave Type <span className="text-red-500">*</span>
                   </label>
-                 <div className="relative">
-  <select
-    className="w-full rounded-lg border border-gray-400 py-3 px-4 text-black font-semibold bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-md appearance-none"
-    value={selectedLeaveType}
-    onChange={(e) => setSelectedLeaveType(e.target.value)}
-  >
-    <option value="" className="text-gray-500">Select Leave Type</option>
-    {leave_Types.map((leave) => (
-      <option key={leave.id} value={leave.type}>
-        {leave.type}
-      </option>
-    ))}
-  </select>
-  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600 pointer-events-none" />
-</div>
-
-
+                  <div className="relative">
+                    <select
+                      className="w-full rounded-lg border border-gray-400 py-3 px-4 text-black font-semibold bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-md appearance-none"
+                      value={selectedLeaveType}
+                      onChange={(e) => setSelectedLeaveType(e.target.value)}
+                    >
+                      <option className="text-black" value="">Select Leave Type</option>
+                      {leave_Types.map((leave) => (
+                        <option key={leave.id} value={leave.name} >
+                          {leave.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-600 pointer-events-none" />
+                  </div>
 
                   {/* + Button to Open Modal */}
                   <button
@@ -184,38 +195,35 @@ const LeaveApplication = () => {
                   </button>
 
                   {/* Modal for Adding Leave Type */}
+
                   {isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75">
                       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                         <h3 className="text-xl font-semibold mb-4">Add New Leave Type</h3>
                         <div className="mb-4">
-                          <label htmlFor="leaveType" className="block text-gray-700">
-                            Leave Type
+                          <label htmlFor="leaveName" className="block text-gray-700">
+                            Leave Name
                           </label>
                           <input
                             type="text"
-                            id="leaveType"
-                            value={newLeaveType.type}
-                            onChange={(e) =>
-                              setNewLeaveType({ ...newLeaveType, type: e.target.value })
-                            }
+                            id="leaveName"
+                            value={newLeaveType.name}
+                            onChange={(e) => setNewLeaveType({ ...newLeaveType, name: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                           />
                         </div>
                         <div className="mb-4">
-                          <label htmlFor="balance" className="block text-gray-700">
-                            Leave Balance
+                          <label htmlFor="duration" className="block text-gray-700">
+                            Duration (Days)
                           </label>
                           <input
                             type="number"
-                            id="balance"
-                            value={newLeaveType.balance}
-                            onChange={(e) =>
-                              setNewLeaveType({
-                                ...newLeaveType,
-                                balance: parseInt(e.target.value),
-                              })
-                            }
+                            id="duration"
+                            value={newLeaveType.duration}
+                            onChange={(e) => setNewLeaveType({
+                              ...newLeaveType,
+                              duration: parseInt(e.target.value),
+                            })}
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                           />
                         </div>
@@ -223,8 +231,9 @@ const LeaveApplication = () => {
                           <button
                             onClick={handleAddLeaveType}
                             className="p-2 bg-indigo-600 text-white rounded mr-2"
+                            disabled={isCreateLeaveType}
                           >
-                            Add Leave Type
+                            {isCreateLeaveType ? "Adding..." : "Add Leave Type"} 
                           </button>
                           <button
                             onClick={() => setIsModalOpen(false)}
@@ -233,10 +242,10 @@ const LeaveApplication = () => {
                             Cancel
                           </button>
                         </div>
+                        {isError && <p className="text-red-500 mt-2">Failed to add leave type.</p>}
                       </div>
                     </div>
                   )}
-
                 </div>
 
                 <div>
@@ -387,7 +396,7 @@ const LeaveApplication = () => {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading ? (
+        {isCreateLeaveType ? (
           <div className="text-center text-gray-600 text-lg animate-pulse">
             Loading your leave information...
           </div>
