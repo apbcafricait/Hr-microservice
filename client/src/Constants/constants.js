@@ -9,5 +9,6 @@ export const SUGGESTIONS_URL="/api/suggestions"
 export const PERFORMANCE_URL="/api/performance"
 export const RECRUITMENT_URL = "/api/recruitment";
 export const CLAIM_URL = "/api/claims"
+export const DEPENDENTS_URL = "/api/dependents"
 
 
