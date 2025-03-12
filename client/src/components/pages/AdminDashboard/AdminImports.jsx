@@ -1,235 +1,178 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users,
-  Building,
   Users2,
+  Building,
   Network,
   Plus,
-  ChevronDown,
-  ChevronRight,
   Search,
-  Home,
+  ChevronRight,
+  Settings,
+  Shield,
 } from "lucide-react";
 import User from "./User";
 import CreateOrganization from "./CreateOrganization";
 import ViewOrganization from "./ViewOrganizations";
 
 const AdminImports = () => {
-  const [activeCard, setActiveCard] = useState(null);
-  const [showUser, setShowUser] = useState(false);
-  const [showCreateOrg, setShowCreateOrg] = useState(false);
-  const [showViewOrg, setShowViewOrg] = useState(false);
+  const [activeSection, setActiveSection] = useState("manage-users");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleUserClick = () => {
-    setShowUser(!showUser);
-    setShowCreateOrg(false);
-    setShowViewOrg(false);
-  };
-
-  const handleCreateOrgClick = () => {
-    setShowCreateOrg(!showCreateOrg);
-    setShowUser(false);
-    setShowViewOrg(false);
-  };
-
-  const handleViewOrgClick = () => {
-    setShowViewOrg(!showViewOrg);
-    setShowUser(false);
-    setShowCreateOrg(false);
-  };
-
-  const cards = [
+  const navigationItems = [
     {
-      icon: Users,
-      title: "User Management",
-      description: "Manage system users, roles, permissions, and access controls.",
-      color: "indigo",
-      gradient: "from-indigo-50 to-blue-50",
-      textColor: "text-indigo-600",
-      bgColor: "bg-indigo-50",
-      borderColor: "border-indigo-100",
-      hoverColor: "hover:bg-indigo-100",
-      subItems: [
-        { icon: Users2, title: "Manage Users", onClick: handleUserClick },
-      ],
+      icon: Users2,
+      title: "Manage Users",
+      id: "manage-users",
+      component: User,
+    },
+    {
+      icon: Plus,
+      title: "Create Organization",
+      id: "create-org",
+      component: CreateOrganization,
     },
     {
       icon: Building,
-      title: "Organization",
-      description: "Configure and manage organizational structure and departments.",
-      color: "purple",
-      gradient: "from-purple-50 to-indigo-50",
-      textColor: "text-purple-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-100",
-      hoverColor: "hover:bg-purple-100",
-      subItems: [
-        { icon: Plus, title: "Create Organization", onClick: handleCreateOrgClick },
-        { icon: Building, title: "View Organizations", onClick: handleViewOrgClick },
-        { icon: Network, title: "Departments", onClick: () => {} },
-        { icon: Users, title: "Employees", onClick: () => {} },
-      ],
+      title: "View Organizations",
+      id: "view-org",
+      component: ViewOrganization,
+    },
+    {
+      icon: Network,
+      title: "Departments",
+      id: "departments",
+      component: () => (
+        <div className="text-slate-600">Departments Component (Under Development)</div>
+      ),
     },
   ];
 
-  const filteredCards = cards.filter((card) =>
-    card.title.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter navigation items based on search query
+  const filteredItems = navigationItems.filter((item) =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const ActiveComponent = navigationItems.find(
+    (item) => item.id === activeSection
+  )?.component;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 font-sans antialiased"
     >
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="mb-8">
-          <div className="flex justify-between items-center">
-            <motion.h1
+      {/* Header and Navigation */}
+      <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          {/* Top Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+            <motion.div
               initial={{ y: -20 }}
               animate={{ y: 0 }}
-              className="text-3xl md:text-4xl font-semibold text-gray-800"
+              className="flex items-center"
             >
-              Admin 
-            </motion.h1>
-            <div className="relative w-full max-w-xs">
+              <Shield className="h-8 w-8 text-indigo-600 mr-3" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+                Admin Portal
+              </h1>
+            </motion.div>
+            <div className="relative w-full sm:w-80">
               <input
                 type="text"
                 placeholder="Search modules..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-slate-700 placeholder-slate-400"
+                aria-label="Search modules"
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             </div>
           </div>
+
+          {/* Navigation Tabs */}
+          <nav className="flex flex-wrap gap-2 pb-1">
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <motion.button
+                  key={item.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
+                    activeSection === item.id
+                      ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                  aria-label={`Navigate to ${item.title}`}
+                >
+                  <item.icon className="w-4 h-4 flex-shrink-0" />
+                  <span>{item.title}</span>
+                </motion.button>
+              ))
+            ) : (
+              <div className="text-slate-500 py-2.5 px-4 bg-slate-50 rounded-lg border border-slate-200">
+                No modules match your search
+              </div>
+            )}
+          </nav>
 
           {/* Breadcrumb */}
-          <div className="mt-4 flex items-center text-sm text-gray-600">
-            <Home className="h-4 w-4 mr-2" />
-            <span>Dashboard</span>
-            <ChevronRight className="h-4 w-4 mx-2" />
+          <div className="mt-4 flex items-center text-sm text-slate-500">
             <span className="font-medium text-indigo-600">Admin</span>
+            <ChevronRight className="h-3.5 w-3.5 mx-1.5 text-slate-400" />
+            <span className="font-medium text-slate-700">
+              {navigationItems.find((item) => item.id === activeSection)?.title || "Module"}
+            </span>
           </div>
-        </header>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-          {filteredCards.length > 0 ? (
-            filteredCards.map((card, index) => (
-              <motion.div
-                key={index}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: index * 0.1 }}
-                className={`rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-300 border ${card.borderColor}`}
-              >
-                <div
-                  className="p-6 cursor-pointer"
-                  onClick={() => setActiveCard(activeCard === index ? null : index)}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div
-                      className={`p-3 rounded-lg ${card.bgColor} ${card.textColor}`}
-                    >
-                      <card.icon className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-800">
-                        {card.title}
-                      </h3>
-                    </div>
-                    <motion.div
-                      animate={{ rotate: activeCard === index ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className={`w-5 h-5 ${card.textColor}`} />
-                    </motion.div>
-                  </div>
-                  <p className="text-gray-600 text-sm">{card.description}</p>
-                </div>
-
-                <AnimatePresence>
-                  {activeCard === index && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="px-6 pb-6 space-y-3"
-                    >
-                      {card.subItems.map((item, itemIndex) => (
-                        <motion.button
-                          key={itemIndex}
-                          whileHover={{ x: 5, backgroundColor: card.hoverColor }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={item.onClick}
-                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-gray-700 transition-colors duration-200`}
-                        >
-                          <item.icon className="w-5 h-5 text-gray-500" />
-                          <span className="font-medium">{item.title}</span>
-                          <ChevronRight className="w-4 h-4 ml-auto text-gray-400" />
-                        </motion.button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500 py-8">
-              No modules found matching your search.
-            </div>
-          )}
         </div>
+      </header>
 
-        {/* Dynamic Content */}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AnimatePresence mode="wait">
-          {showUser && (
-            <motion.div
-              key="user"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="mt-8 bg-white rounded-xl shadow-md p-6 md:p-8"
-            >
-              <User />
-            </motion.div>
-          )}
-          {showCreateOrg && (
-            <motion.div
-              key="createOrg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="mt-8 bg-white rounded-xl shadow-md p-6 md:p-8"
-            >
-              <CreateOrganization />
-            </motion.div>
-          )}
-          {showViewOrg && (
-            <motion.div
-              key="viewOrg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="mt-8 bg-white rounded-xl shadow-md p-6 md:p-8"
-            >
-              <ViewOrganization />
-            </motion.div>
-          )}
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-xl shadow-md border border-slate-100 p-6 sm:p-8"
+          >
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+              <h2 className="text-xl font-semibold text-slate-800">
+                {navigationItems.find((item) => item.id === activeSection)?.title || "Module"}
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="h-5 w-5" />
+              </motion.button>
+            </div>
+
+            {/* Active Component */}
+            {ActiveComponent ? (
+              <ActiveComponent />
+            ) : (
+              <div className="text-slate-500 text-center py-10 px-4">
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100"
+                >
+                  <Search className="h-8 w-8 text-slate-400" />
+                </motion.div>
+                <p className="text-lg">Select a module to view content</p>
+              </div>
+            )}
+          </motion.div>
         </AnimatePresence>
-      </div>
+      </main>
     </motion.div>
   );
 };

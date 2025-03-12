@@ -74,6 +74,7 @@ model Organisation {
   @@map("organisations")
   Suggestion Suggestion[]
   Department Department[]
+  LeaveType LeaveType[]
 }
 
 
@@ -125,12 +126,26 @@ model LeaveRequest {
   status       String   @default("pending") @map("status")
   requestedAt  DateTime @default(now()) @map("requested_at")
   approvedBy   Int?     @map("approved_by")
-
-  // Relations (assuming Employee and User models exist)
-  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+   typeId       Int?      @map("type_id")
+  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   approver     users?    @relation(fields: [approvedBy], references: [id])
-
+leaveType    LeaveType?  @relation(fields: [typeId], references: [id])
   @@map("leave_requests")
+
+}
+
+model LeaveType {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  duration Int?
+  start_date DateTime?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  leaveRequests LeaveRequest[] // One-to-many relation
+  organisationId Int
+  // relation with organisation
+  
+  Organisation Organisation @relation(fields: [organisationId], references: [id])
+  @@map("leave_types")
 }
 
 model EmployeeContact {
