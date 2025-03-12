@@ -131,15 +131,18 @@ export class LeaveRequestsController {
       }
       const leaveRequest = await prisma.leaveRequest.create({
         data: {
-          employeeId: parseInt(employeeId),
           startDate: new Date(startDate),
           endDate: new Date(endDate),
-          type
-          // 'status' defaults to 'pending' and 'requestedAt' defaults to NOW
+          type,
+           employee: {
+      connect: { id: parseInt(employeeId) } // Correct way to reference the employee
+    }
+
         }
       })
       return res.status(201).json({ status: 'success', data: leaveRequest })
     } catch (error) {
+     console.log(error)
       return res
         .status(500)
         .json({
