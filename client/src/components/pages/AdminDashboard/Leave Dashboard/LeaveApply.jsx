@@ -23,7 +23,11 @@ const LeaveApplication = () => {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newLeaveType, setNewLeaveType] = useState({ name: "", duration: 0 });
+  const [newLeaveType, setNewLeaveType] = useState({
+    name: "",
+    duration: 0,
+    start_date: "",
+  });
   //const { data: leaveRequests, isLoading: leaves, refetch } = useGetAllLeaveRequestsQuery();
   const [createLeaveRequest, { isCreateLeaveType: isCreateLoading, error: createError }] = useCreateLeaveRequestMutation();
   const [createLeaveType, { isCreateLeaveType: isCreateLeaveType, error: isError }] = useCreateLeaveTypeMutation();
@@ -33,9 +37,9 @@ const LeaveApplication = () => {
   const organisationId = orgEmpData?.data.employee.organisation.id;
   //employee id
   const employeeId = orgEmpData?.data.employee.id;
-  console.log("this is the employe id->",employeeId)
+  console.log("this is the employe id->", employeeId)
 
-  
+
 
   // Fetch leave types using organisationId
   const { data: leaveTypesData } = useGetLeaveTypesQuery(
@@ -70,10 +74,14 @@ const LeaveApplication = () => {
   }, [fromDate, selectedLeaveType]);
 
   // Function to add a new leave type
-
   const handleAddLeaveType = async () => {
-    if (!newLeaveType.name || newLeaveType.duration <= 0) {
+    if (!newLeaveType.name || newLeaveType.duration <= 0 || !newLeaveType.start_date) {
       alert("Please enter valid leave type details");
+      return;
+    }
+
+    if (!organisationId) {
+      alert("Organisation ID is required to create a leave type.");
       return;
     }
 
@@ -81,9 +89,13 @@ const LeaveApplication = () => {
       await createLeaveType({
         name: newLeaveType.name,
         duration: parseInt(newLeaveType.duration),
-      }).unwrap(); // Call the mutation
-      setNewLeaveType({ name: "", duration: 0 }); // Reset input fields
-      setIsModalOpen(false); // Close the modal
+        start_date: newLeaveType.start_date,
+        organisationId: organisationId, // Include organisationId
+      }).unwrap();
+
+      // Reset input fields
+      setNewLeaveType({ name: "", duration: 0, start_date: "" });
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Failed to add leave type:", error);
     }
@@ -200,6 +212,8 @@ const LeaveApplication = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75">
                       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                         <h3 className="text-xl font-semibold mb-4">Add New Leave Type</h3>
+
+                        {/* Leave Name */}
                         <div className="mb-4">
                           <label htmlFor="leaveName" className="block text-gray-700">
                             Leave Name
@@ -212,6 +226,8 @@ const LeaveApplication = () => {
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                           />
                         </div>
+
+                        {/* Duration */}
                         <div className="mb-4">
                           <label htmlFor="duration" className="block text-gray-700">
                             Duration (Days)
@@ -227,13 +243,32 @@ const LeaveApplication = () => {
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                           />
                         </div>
+
+                        {/* Start Date */}
+                        <div className="mb-4">
+                          <label htmlFor="startDate" className="block text-gray-700">
+                            Start Date
+                          </label>
+                          <input
+                            type="date"
+                            id="startDate"
+                            value={newLeaveType.start_date}
+                            onChange={(e) => setNewLeaveType({
+                              ...newLeaveType,
+                              start_date: e.target.value,
+                            })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                          />
+                        </div>
+
+                        {/* Buttons */}
                         <div className="flex justify-end">
                           <button
                             onClick={handleAddLeaveType}
-                            className="p-2 bg-indigo-600 text-white rounded mr-2"
-                            disabled={isCreateLeaveType}
+                            className="p-2 bg-indigo-600 text-white rounded mr-2 disabled:opacity-50"
+                            disabled={isCreateLeaveType || !organisationId} // Disable if loading or missing orgId
                           >
-                            {isCreateLeaveType ? "Adding..." : "Add Leave Type"} 
+                            {isCreateLeaveType ? "Adding..." : "Add Leave Type"}
                           </button>
                           <button
                             onClick={() => setIsModalOpen(false)}
@@ -242,6 +277,8 @@ const LeaveApplication = () => {
                             Cancel
                           </button>
                         </div>
+
+                        {/* Error Message */}
                         {isError && <p className="text-red-500 mt-2">Failed to add leave type.</p>}
                       </div>
                     </div>
