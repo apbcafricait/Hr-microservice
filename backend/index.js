@@ -19,6 +19,7 @@ import recruitmentRoutes from './Routes/recruitmentRoutes.js'
 import claimRoutes from './Routes/claimRoutes.js'
 import dependentsRoutes from './Routes/dependentRoutes.js'
 import leaveTypeRoutes from './Routes/leaveTypeRoutes.js'
+import Reports from './Routes/reportRoutes.js'
 const app = express()
 
 dotenv.config()
@@ -58,6 +59,8 @@ app.use("/api/recruitment", recruitmentRoutes)
 app.use("/api/leaveTypes", leaveTypeRoutes)
 // Claim routes
 app.use('/api/claims', claimRoutes)
+
+app.use('/api/reports', Reports)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
