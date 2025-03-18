@@ -56,17 +56,15 @@ const UserManagement = () => {
   const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
 
-  // Apply search and filter with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(searchTerm);
       setRoleFilter(filters.role);
       setOrgFilter(filters.organization);
     }, 500);
-
+  
     return () => clearTimeout(timer);
   }, [searchTerm, filters.role, filters.organization]);
-
   // Calculate total pages for pagination
   const totalRecords = employeesData?.total || 0;
   const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
@@ -177,12 +175,10 @@ const UserManagement = () => {
     setFilters({ role: '', organization: '' });
     setSearchTerm('');
     setPage(1);
-    // Immediately apply filter reset
     setSearchQuery('');
     setRoleFilter('');
     setOrgFilter('');
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -381,7 +377,7 @@ const UserManagement = () => {
         </div>
 
         {/* Records Count */}
-        {/* <div className="bg-white rounded-t-xl shadow-md px-4 sm:px-6 py-3 flex justify-between items-center border-b border-gray-200">
+        <div className="bg-white rounded-t-xl shadow-md px-4 sm:px-6 py-3 flex justify-between items-center border-b border-gray-200">
           <div className="text-sm text-gray-700 font-medium">
             {isFetching ? (
               <span className="flex items-center">
@@ -394,7 +390,7 @@ const UserManagement = () => {
               </span>
             )}
           </div>
-        </div> */}
+        </div>
 
         {/* Error State */}
         {isError && (
@@ -498,25 +494,25 @@ const UserManagement = () => {
         {!isLoading && !isError && employeesData && totalPages > 0 && (
           <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
             <span className="text-sm text-gray-700 order-2 sm:order-1">
-              Page {page} of {totalPages}
+              Page {page} of {totalPages} ({totalRecords} total employees)
             </span>
             <div className="flex items-center gap-3 order-1 sm:order-2">
-              <button
-                disabled={page === 1 || isFetching}
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                <ChevronDown className="w-4 h-4 transform rotate-90 mr-1" />
-                Previous
-              </button>
-              <button
-                disabled={page >= totalPages || isFetching}
-                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                className="px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                Next
-                <ChevronDown className="w-4 h-4 transform -rotate-90 ml-1" />
-              </button>
+            <button
+  disabled={page === 1 || isFetching}
+  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+  className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+>
+  <ChevronDown className="w-4 h-4 transform rotate-90 mr-1" />
+  Previous
+</button>
+<button
+  disabled={page >= totalPages || isFetching}
+  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+  className="px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+>
+  Next
+  <ChevronDown className="w-4 h-4 transform -rotate-90 ml-1" />
+</button>
             </div>
           </div>
         )}
