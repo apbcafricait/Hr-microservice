@@ -1,5 +1,5 @@
 // authSlice.js
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   userInfo: localStorage.getItem('userInfo')
@@ -7,28 +7,29 @@ const initialState = {
     : null,
   user: null,
   status: 'idle',
-  error: null
-}
+  error: null,
+};
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      state.userInfo = action.payload
-      localStorage.setItem('userInfo', JSON.stringify(action.payload))
+      state.userInfo = action.payload;
+      localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
-    logout: (state, action) => {
-      state.userInfo = null
-      localStorage.removeItem('userInfo')
-    }
-  }
-})
+    logout: (state) => {
+      state.userInfo = null; // Clear user info
+      localStorage.removeItem('userInfo'); // Remove from local storage
+    },
+  },
+});
 
-export const { setCredentials, logout } = authSlice.actions
+// Export actions
+export const { setCredentials, logout } = authSlice.actions;
 
-export default authSlice.reducer
+// Selectors
+export const selectCurrentUser = (state) => state.auth.userInfo; // Updated to reference userInfo
+export const selectCurrentToken = (state) => state.auth.userInfo?.token; // Assuming token is part of userInfo
 
-
-export const selectCurrentUser = (state) => state.auth.user;
-export const selectCurrentToken = (state) => state.auth.token;
+export default authSlice.reducer;
