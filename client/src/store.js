@@ -1,25 +1,15 @@
 // src/store/store.js
-import { configureStore } from '@reduxjs/toolkit';
-import { apiSlice } from '../../client/src/slices/apiSlice';
-import authSliceReducer from '../src/slices/AuthSlice';
-import { organizationSlice } from '../src/slices/organizationSlice';
-import reportToReducer from '../../client/src/slices/ReportSlice';
-import { qualificationSlice } from '../../client/src/slices/qualificationSlice'; 
+import { configureStore } from "@reduxjs/toolkit";
+import { apiSlice } from "../../client/src/slices/apiSlice";
+import authSliceReducer from "../src/slices/AuthSlice";
 
 const store = configureStore({
   reducer: {
-    reportTo: reportToReducer, 
-    [apiSlice.reducerPath]: apiSlice.reducer, 
     auth: authSliceReducer,
-    [organizationSlice.reducerPath]: organizationSlice.reducer, 
-    [qualificationSlice.reducerPath]: qualificationSlice.reducer,
+    [apiSlice.reducerPath]: apiSlice.reducer, // Integrate the apiSlice reducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
-      .concat(apiSlice.middleware) 
-      .concat(organizationSlice.middleware) 
-      .concat(qualificationSlice.middleware),
-  devTools: true,
+    getDefaultMiddleware().concat(apiSlice.middleware), // Include apiSlice middleware
 });
 
 export default store;
