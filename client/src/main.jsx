@@ -7,6 +7,14 @@ import store from './store.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
+// Import leave from admin dashboard
+import AssignLeave from './components/pages/AdminDashboard/Leave Dashboard/AssignLeave.jsx';
+import LeaveList from './components/pages/AdminDashboard/Leave Dashboard/LeaveList.jsx';
+import LeaveApply from './components/pages/AdminDashboard/Leave Dashboard/LeaveApply.jsx';
+import MyLeave from './components/pages/AdminDashboard/Leave Dashboard/MyLeave.jsx';
+import Time from './components/pages/AdminDashboard/Time.jsx';
+
 // Import all pages and components
 import App from './App.jsx';
 import LandingPage from './components/pages/Landing/Landing.jsx';
