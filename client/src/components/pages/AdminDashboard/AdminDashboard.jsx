@@ -10,35 +10,37 @@ import AdminSidebar from '../../Layouts/AdminSidebar';
 import Dashboard from './Dashboard';
 import EmployeList from './PIM/EmployeeList';
 import Recruitment from './Recruitment';
-import ManageReview from './Peformance/ManageReview'
+import ManageReview from './Peformance/ManageReview';
 import AdminImports from './AdminImports';
-import Time from '../AdminDashboard/Time'
+import Time from '../AdminDashboard/Time';
 import MyInfo from './MyInfo';
 import Claims from './Claims';
-import LeaveApply from './Leave Dashboard/LeaveApply'
+import LeaveApply from './Leave Dashboard/LeaveApply';
 import Payroll from '../ManagerDashboard/Payroll';
 
+// Mapping of sidebar links to their components
 const componentMap = {
   Dashboard: Dashboard,
   PIM: EmployeList,
   Recruitment: Recruitment,
   Performance: ManageReview,
-  Admin:AdminImports,
+  Admin: AdminImports,
   Time: Time,
   "My Info": MyInfo,
   Claims: Claims,
-  Leave:LeaveApply,
-  Payroll:Payroll
+  Leave: LeaveApply,
+  Payroll: Payroll,
 };
 
 const AdminDashboard = () => {
   const [theme, setTheme] = useState('light');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState("Dashboard");
+  const [activeLink, setActiveLink] = useState('Dashboard');
 
   const ActiveComponent = componentMap[activeLink];
 
+  // Handle scroll effect for sticky header
   useEffect(() => {
     const handleScroll = () => {
       const mainContent = document.getElementById('main-content');
@@ -46,24 +48,33 @@ const AdminDashboard = () => {
     };
 
     const mainContent = document.getElementById('main-content');
-    mainContent.addEventListener('scroll', handleScroll);
-    return () => mainContent.removeEventListener('scroll', handleScroll);
+    if (mainContent) {
+      mainContent.addEventListener('scroll', handleScroll);
+      return () => mainContent.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
+  // Toggle between light and dark themes
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
+  // Toggle sidebar visibility on mobile
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
     <div className={`h-screen flex overflow-hidden ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-900'}`}>
-      {/* Static Sidebar */}
+      {/* Static Sidebar for Desktop */}
       <div className="hidden md:flex md:flex-shrink-0">
         <div className="w-64">
-          <AdminSidebar isOpen={true} onClose={() => {}} activeLink={activeLink} setActiveLink={setActiveLink} />
+          <AdminSidebar
+            isOpen={true}
+            onClose={() => {}}
+            activeLink={activeLink}
+            setActiveLink={setActiveLink}
+          />
         </div>
       </div>
 
@@ -71,9 +82,17 @@ const AdminDashboard = () => {
       <div className="md:hidden">
         {isSidebarOpen && (
           <div className="fixed inset-0 z-50">
-            <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={toggleSidebar}></div>
-            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-              <AdminSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
+            <div
+              className="absolute inset-0 bg-gray-600 opacity-75"
+              onClick={toggleSidebar}
+            ></div>
+            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800">
+              <AdminSidebar
+                isOpen={isSidebarOpen}
+                onClose={toggleSidebar}
+                activeLink={activeLink}
+                setActiveLink={setActiveLink}
+              />
             </div>
           </div>
         )}
@@ -101,12 +120,15 @@ const AdminDashboard = () => {
                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
                   <span className="text-white font-bold">A</span>
                 </div>
-                <h1 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>
+                <h1
+                  className={`text-xl font-bold ${
+                    theme === 'light' ? 'text-gray-800' : 'text-white'
+                  }`}
+                >
                   Admin Dashboard
                 </h1>
               </div>
 
-              {/* Adjusted positioning for theme toggle and profile menu */}
               <div className="flex-1 flex justify-end items-center gap-4 md:gap-6">
                 <button
                   onClick={toggleTheme}
@@ -121,31 +143,79 @@ const AdminDashboard = () => {
 
                 <Menu as="div" className="relative">
                   <Menu.Button className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <UserCircle className={`w-6 h-6 ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`} />
-                    <span className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} hidden sm:block`}>Admin</span>
+                    <UserCircle
+                      className={`w-6 h-6 ${
+                        theme === 'light' ? 'text-gray-600' : 'text-gray-300'
+                      }`}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`${
+                          theme === 'light' ? 'text-gray-700' : 'text-gray-300'
+                        } hidden sm:block`}
+                      >
+                        John Doe
+                      </span>
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    </div>
                     <ChevronDown className="w-4 h-4" />
                   </Menu.Button>
                   <Menu.Items className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       {[
-                        { icon: Settings, text: 'Settings', desc: 'Manage your preferences' },
-                        { icon: HelpCircle, text: 'Support', desc: 'Get help' },
-                        { icon: Lock, text: 'Security', desc: 'Update password' },
-                        { icon: LogOut, text: 'Logout', desc: 'Sign out of account' },
+                        {
+                          icon: Settings,
+                          text: 'Settings',
+                          desc: 'Manage your preferences',
+                          onClick: () => console.log('Navigating to Settings'),
+                        },
+                        {
+                          icon: HelpCircle,
+                          text: 'Support',
+                          desc: 'Get help',
+                          onClick: () => console.log('Opening Support'),
+                        },
+                        {
+                          icon: Lock,
+                          text: 'Security',
+                          desc: 'Update password',
+                          onClick: () => console.log('Opening Security'),
+                        },
+                        {
+                          icon: LogOut,
+                          text: 'Logout',
+                          desc: 'Sign out of account',
+                          onClick: () => console.log('Logging out'),
+                        },
                       ].map((item, index) => (
                         <Menu.Item key={index}>
                           {({ active }) => (
                             <button
+                              onClick={item.onClick}
                               className={`${
                                 active ? 'bg-gray-50 dark:bg-gray-700' : ''
                               } flex items-center w-full px-4 py-3 transition-colors`}
                             >
-                              <item.icon className={`w-5 h-5 mr-3 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`} />
+                              <item.icon
+                                className={`w-5 h-5 mr-3 ${
+                                  theme === 'light'
+                                    ? 'text-gray-600'
+                                    : 'text-gray-400'
+                                }`}
+                              />
                               <div className="text-left">
-                                <div className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-200'}`}>
+                                <div
+                                  className={`text-sm font-medium ${
+                                    theme === 'light'
+                                      ? 'text-gray-700'
+                                      : 'text-gray-200'
+                                  }`}
+                                >
                                   {item.text}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">{item.desc}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  {item.desc}
+                                </div>
                               </div>
                             </button>
                           )}
@@ -160,11 +230,18 @@ const AdminDashboard = () => {
         </nav>
 
         {/* Scrollable Content Area */}
-        <div 
-          id="main-content"
-          className="flex-1 overflow-y-auto"
-        >
-          {activeLink === "Admin" ? <AdminImports /> : <ActiveComponent />}
+        <div id="main-content" className="flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeLink}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ActiveComponent />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
