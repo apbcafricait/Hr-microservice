@@ -12,6 +12,8 @@ const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
     { name: "Performance", id: "performance", icon: <FaChartBar className="text-red-500" /> },
     { name: "Payroll", id: "payroll", icon: <FaMoneyBillWave className="text-indigo-500" /> },
     { name: "Settings", id: "settings", icon: <FaCog className="text-gray-500" /> },
+    { name: "Claims", id: "claims", icon: <FaClipboardList className="text-orange-500" /> },
+
   ];
 
   return (

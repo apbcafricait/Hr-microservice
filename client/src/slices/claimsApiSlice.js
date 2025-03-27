@@ -45,9 +45,12 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: statusData,
       }),
-    }),
+
   }),
+})
 });
+
+
 
 export const {
   useGetAllClaimsQuery,

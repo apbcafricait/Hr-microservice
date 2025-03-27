@@ -1,4 +1,3 @@
-// TimeAtWork.jsx
 import React, { useState, useEffect } from "react";
 import EmployeeHeader from "../../Layouts/EmployeeHeader";
 import {
@@ -8,21 +7,17 @@ import {
 } from "../../../slices/attendanceSlice";
 import { useSelector } from "react-redux";
 
-const Timeatwork = () => {
+const TimeAtWork = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isClockInOn, setIsClockInOn] = useState(false);
-  const [isClockOutOn, setIsClockOutOn] = useState(false);
   const [activeAttendanceId, setActiveAttendanceId] = useState(null);
   const [clockOutMessage, setClockOutMessage] = useState(""); // Added for better feedback
 
   const { userInfo } = useSelector((state) => state.auth);
   const employeeId = userInfo?.id;
 
-  const [clockIn, { isLoading: isClockingIn, error: clockInError, isSuccess: clockInSuccess }] =
-    useClockInMutation();
-  const [clockOut, { isLoading: isClockingOut, error: clockOutError, isSuccess: clockOutSuccess }] =
-    useClockOutMutation();
-  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
+  const [clockIn, { isLoading: isClockingIn, error: clockInError }] = useClockInMutation();
+  const [clockOut, { isLoading: isClockingOut, error: clockOutError }] = useClockOutMutation();
+  const { data: attendanceRecords } = useGetAttedanceOfEmployeeQuery(employeeId);
 
   // Sync state with backend on load
   useEffect(() => {
@@ -38,48 +33,50 @@ const Timeatwork = () => {
 
   // Update current time every second
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    if (attendanceRecords) {
+      const sortedRecords = [...attendanceRecords].sort(
+        (a, b) => new Date(b.clockIn) - new Date(a.clockIn)
+      );
+      const latestRecord = sortedRecords[0];
+      setActiveAttendanceId(latestRecord?.clockOut ? null : latestRecord?.id);
+    }
     return () => clearInterval(timer);
-  }, []);
+  }, [attendanceRecords]);
 
   const toggleClockIn = async () => {
-    if (!isClockInOn && !isClockOutOn) {
+    if (!activeAttendanceId) {
       if (!employeeId) {
-        console.error("No employee ID found in userInfo");
         alert("Please log in to clock in.");
         return;
       }
-      console.log("Attempting to clock in with employeeId:", employeeId, "at time:", currentTime.toISOString());
       try {
         const response = await clockIn({
           employeeId: Number(employeeId),
-          clockInTime: currentTime.toISOString(),
+          clockInTime: new Date().toISOString(),
           location: "Office A",
         }).unwrap();
-        console.log("Clock in successful, response:", response);
-        setIsClockInOn(true);
-        setIsClockOutOn(false);
         setActiveAttendanceId(response.id);
-        refetch();
         alert("Clocked in successfully!");
       } catch (error) {
-        console.error("Failed to clock in:", error);
         alert(`Failed to clock in: ${error.data?.message || "Unknown error"}`);
       }
-    } else {
-      console.log("Clock In already active or Clock Out is active, cannot clock in. States:", {
-        isClockInOn,
-        isClockOutOn,
-      });
     }
   };
 
   const toggleClockOut = async () => {
-    if (isClockInOn && !isClockOutOn && activeAttendanceId) {
-      console.log("Attempting to clock out with attendanceId:", activeAttendanceId, "at time:", currentTime.toISOString());
+    if (activeAttendanceId) {
       try {
+
+        await clockOut(activeAttendanceId).unwrap();
+        setActiveAttendanceId(null);
+        alert("Clocked out successfully!");
+      } catch (error) {
+        alert(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
+      }
+    } else {
+      alert("You must be clocked in to clock out.");
+
         const response = await clockOut({
           id: activeAttendanceId,
           clockOutTime: currentTime.toISOString(), // Added clockOutTime
@@ -103,6 +100,7 @@ const Timeatwork = () => {
         isClockOutOn,
         activeAttendanceId,
       });
+
     }
   };
 
@@ -137,27 +135,25 @@ const Timeatwork = () => {
       <EmployeeHeader />
       <main className="flex-1 max-w-6xl mx-auto w-full p-6">
         <div className="bg-white rounded-2xl shadow-lg p-6 w-full flex flex-col items-center">
-          {/* Header with Current Time and Date */}
           <div className="text-center mb-6">
             <h1 className="text-4xl font-bold text-blue-600">{formatTime(currentTime)}</h1>
             <p className="text-gray-500">{formatDate(currentTime)}</p>
           </div>
 
-          {/* Time Slots with Animated Toggles */}
           <div className="w-full space-y-4 mb-6">
             <div className="bg-white rounded-lg shadow-md p-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-700">Clock In</span>
                 <button
                   onClick={toggleClockIn}
-                  disabled={isClockOutOn || isClockingIn || isClockingOut}
+                  disabled={!!activeAttendanceId || isClockingIn || isClockingOut}
                   className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ease-in-out ${
-                    isClockInOn ? "bg-blue-500" : "bg-gray-300"
-                  } ${(isClockOutOn || isClockingIn || isClockingOut) ? "cursor-not-allowed opacity-50" : ""}`}
+                    activeAttendanceId ? "bg-blue-500" : "bg-gray-300"
+                  } ${(!!activeAttendanceId || isClockingIn || isClockingOut) ? "cursor-not-allowed opacity-50" : ""}`}
                 >
                   <span
                     className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
-                      isClockInOn ? "translate-x-6" : "translate-x-0"
+                      activeAttendanceId ? "translate-x-6" : "translate-x-0"
                     }`}
                   ></span>
                 </button>
@@ -167,23 +163,20 @@ const Timeatwork = () => {
                   Error: {clockInError.data?.message || "Failed to clock in"}
                 </p>
               )}
-              {clockInSuccess && (
-                <p className="text-green-500 text-sm mt-2">Clocked in successfully!</p>
-              )}
             </div>
             <div className="bg-white rounded-lg shadow-md p-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-700">Clock Out</span>
                 <button
                   onClick={toggleClockOut}
-                  disabled={!isClockInOn || isClockOutOn || isClockingIn || isClockingOut}
+                  disabled={!activeAttendanceId || isClockingIn || isClockingOut}
                   className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ease-in-out ${
-                    isClockOutOn ? "bg-blue-500" : "bg-gray-300"
-                  } ${(!isClockInOn || isClockOutOn || isClockingIn || isClockingOut) ? "cursor-not-allowed opacity-50" : ""}`}
+                    !activeAttendanceId ? "bg-gray-300" : "bg-blue-500"
+                  } ${(!activeAttendanceId || isClockingIn || isClockingOut) ? "cursor-not-allowed opacity-50" : ""}`}
                 >
                   <span
                     className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
-                      isClockOutOn ? "translate-x-6" : "translate-x-0"
+                      !activeAttendanceId ? "translate-x-0" : "translate-x-6"
                     }`}
                   ></span>
                 </button>
@@ -193,16 +186,17 @@ const Timeatwork = () => {
                   Error: {clockOutError.data?.message || "Failed to clock out"}
                 </p>
               )}
+
               {clockOutSuccess && (
                 <p className="text-green-500 text-sm mt-2">Clocked out successfully!</p>
               )}
               {clockOutMessage && (
                 <p className="text-red-500 text-sm mt-2">{clockOutMessage}</p>
               )}
+n
             </div>
           </div>
 
-          {/* Paginated Attendance Records Table */}
           <div className="w-full bg-white rounded-xl shadow-md p-8">
             <h2 className="text-2xl font-semibold text-blue-600 mb-6">Attendance Records</h2>
             <div className="overflow-x-auto">
@@ -241,7 +235,6 @@ const Timeatwork = () => {
                 </tbody>
               </table>
             </div>
-            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="mt-6 flex justify-between items-center">
                 <button
@@ -282,4 +275,4 @@ const Timeatwork = () => {
   );
 };
 
-export default Timeatwork;
+export default TimeAtWork;
