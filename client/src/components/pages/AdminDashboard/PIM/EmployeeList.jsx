@@ -10,61 +10,34 @@ import {
   Trash2,
   Eye,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useGetAllEmployeesQuery } from "../../../../slices/employeeSlice";
-import { useGetUsersQuery, useDeleteUserMutation } from "../../../../slices/UserApiSlice";
+import { useDeleteUserMutation } from "../../../../slices/UserApiSlice";
 import AddEmployee from "../../AdminDashboard/PIM/AddEmployee";
-
+import { useGetEmployeeQuery } from "../../../../slices/employeeSlice";
+import { useGetOrganisationEmployeesQuery } from "../../../../slices/employeeSlice";
+import { useSelector } from "react-redux";
 const EmployeeList = () => {
-  const [formData, setFormData] = useState({
-    userName: "",
-    userId: "",
-    role: "",
-  });
 
-  const [activeTab, setActiveTab] = useState("System Users");
-  const [isFormVisible, setIsFormVisible] = useState(true);
+  const [activeTab, setActiveTab] = useState("Organisation Employee List");
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-
+    const { userInfo } = useSelector((state) => state.auth);
+    const id = userInfo?.id;
+    const { data: employee } = useGetEmployeeQuery(id);
+  const organisationId = employee?.data.employee.organisationId;
   // Fetch system users
-  const { data: usersData, isLoading: isLoadingUsers, isError: isErrorUsers, refetch: refetchUsers } = useGetUsersQuery({
-    page,
-    search: searchQuery || undefined,
-  });
+  const { data: usersData, isLoading: isLoadingUsers, isError: isErrorUsers, refetch: refetchUsers } = useGetOrganisationEmployeesQuery(organisationId);
 
   // Fetch employees (optional, if you want to keep this tab)
-  const { data: employeesData, isLoading: isLoadingEmployees, refetch: refetchEmployees } = useGetAllEmployeesQuery({
-    page,
-    search: searchQuery || undefined,
-  });
-
+  const { data: employeesData,  refetch: refetchEmployees } = useGetOrganisationEmployeesQuery(organisationId);
+  console.log(employeesData)
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
-  const users = Array.isArray(usersData) ? usersData : [];
+  const users = usersData?.data.employees;
   const totalPages = usersData?.totalPages || Math.ceil(users.length / 10); // Adjust if backend provides totalPages
   const totalCount = usersData?.totalCount || users.length;
 
-  const handleSearch = () => {
-    setSearchQuery(formData.userName || formData.userId || formData.role);
-    setPage(1);
-    if (activeTab === "System Users") refetchUsers();
-    else refetchEmployees();
-  };
-
-  const handleReset = () => {
-    setFormData({
-      userName: "",
-      userId: "",
-      role: "",
-    });
-    setSearchQuery("");
-    setPage(1);
-    if (activeTab === "System Users") refetchUsers();
-    else refetchEmployees();
-  };
 
   const handlePagination = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -124,7 +97,7 @@ const EmployeeList = () => {
       <div className="bg-white border-b border-indigo-100 shadow-md sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-3 py-4">
-            {["System Users", "Employee List", "Add Employee"].map((tab) => (
+            {["Organisation Employee List",  "Add Employee"].map((tab) => (
               <motion.button
                 key={tab}
                 whileHover={{ scale: 1.05 }}
@@ -145,118 +118,14 @@ const EmployeeList = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === "System Users" ? (
+        {activeTab === "Organisation Employee List" ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100"
           >
-            {/* User Information Section */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl md:text-2xl font-bold text-indigo-900 tracking-tight">
-                  System User Information
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsFormVisible(!isFormVisible)}
-                  className="text-indigo-500 hover:text-indigo-700"
-                >
-                  {isFormVisible ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-                </motion.button>
-              </div>
-
-              <AnimatePresence>
-                {isFormVisible && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                  >
-                    {/* User Name */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-indigo-900">
-                        User Name/Email
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Search by email..."
-                        className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm"
-                        value={formData.userName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, userName: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    {/* User ID */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-indigo-900">
-                        User ID
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Search by ID..."
-                        className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm"
-                        value={formData.userId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, userId: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    {/* Role */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-indigo-900">
-                        Role
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={formData.role}
-                          onChange={(e) =>
-                            setFormData({ ...formData, role: e.target.value })
-                          }
-                          className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm appearance-none"
-                        >
-                          <option value="">All Roles</option>
-                          <option value="admin">Admin</option>
-                          <option value="manager">Manager</option>
-                          <option value="employee">Employee</option>
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-indigo-400 pointer-events-none" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end space-x-0 sm:space-x-4 gap-4 mb-8">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 border-2 border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all duration-200 shadow-md flex items-center justify-center gap-2 font-semibold"
-                onClick={handleReset}
-              >
-                <RotateCcw className="h-4 w-4" />
-                Reset
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg flex items-center justify-center gap-2 font-semibold"
-                onClick={handleSearch}
-              >
-                <Search className="h-4 w-4" />
-                Search
-              </motion.button>
-            </div>
-
+            
             {/* Table Section */}
             <div className="overflow-x-auto rounded-lg border border-indigo-100 shadow-sm">
               {isLoadingUsers ? (
@@ -278,7 +147,7 @@ const EmployeeList = () => {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-indigo-900 uppercase tracking-wider">
                         <input type="checkbox" className="rounded border-indigo-300" />
                       </th>
-                      {["ID", "Email", "Role", "Active", "Created At", "Actions"].map((header) => (
+                      {["ID", "Email", "Role","Position", "Created At", "Actions"].map((header) => (
                         <th
                           key={header}
                           className="px-6 py-4 text-left text-xs font-semibold text-indigo-900 uppercase tracking-wider"
@@ -304,15 +173,11 @@ const EmployeeList = () => {
                           <input type="checkbox" className="rounded border-indigo-300" />
                         </td>
                         <td className="px-6 py-4 text-gray-700">{user.id}</td>
-                        <td className="px-6 py-4 text-gray-700">{user.email}</td>
-                        <td className="px-6 py-4 text-gray-700">{user.role}</td>
+                        <td className="px-6 py-4 text-gray-700">{user.user.email}</td>
+                        <td className="px-6 py-4 text-gray-700">{user.user.role}</td>
+                        <td className="px-6 py-4 text-gray-700">{user.position}</td>
                         <td className="px-6 py-4 text-gray-700">
-                          <span className={`px-2 py-1 rounded-full text-xs ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                            {user.is_active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {new Date(user.created_at).toLocaleDateString()}
+                          {new Date(user.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex space-x-3">
@@ -353,238 +218,6 @@ const EmployeeList = () => {
 
             {/* Pagination */}
             {(totalPages > 1 || users.length > 0) && (
-              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-sm text-indigo-700">
-                  Showing <span className="font-semibold">{(page - 1) * 10 + 1}</span> to{" "}
-                  <span className="font-semibold">{Math.min(page * 10, totalCount)}</span> of{" "}
-                  <span className="font-semibold">{totalCount}</span> results
-                </p>
-                <div className="flex space-x-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 rounded-lg border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-md"
-                    onClick={() => handlePagination(page - 1)}
-                    disabled={page === 1}
-                  >
-                    Previous
-                  </motion.button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <motion.button
-                      key={pageNum}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-4 py-2 rounded-lg border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-md ${
-                        page === pageNum ? "bg-indigo-600 text-white border-indigo-600" : ""
-                      }`}
-                      onClick={() => handlePagination(pageNum)}
-                    >
-                      {pageNum}
-                    </motion.button>
-                  ))}
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 rounded-lg border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-md"
-                    onClick={() => handlePagination(page + 1)}
-                    disabled={page === totalPages}
-                  >
-                    Next
-                  </motion.button>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        ) : activeTab === "Employee List" ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100"
-          >
-            {/* Employee Information Section */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl md:text-2xl font-bold text-indigo-900 tracking-tight">
-                  Employee Information
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsFormVisible(!isFormVisible)}
-                  className="text-indigo-500 hover:text-indigo-700"
-                >
-                  {isFormVisible ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-                </motion.button>
-              </div>
-
-              <AnimatePresence>
-                {isFormVisible && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                  >
-                    {/* Employee Name */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-indigo-900">
-                        Employee Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Search by name..."
-                        className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm"
-                        value={formData.userName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, userName: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    {/* Employee ID */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-indigo-900">
-                        Employee ID
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Search by ID..."
-                        className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm"
-                        value={formData.userId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, userId: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    {/* Employment Status */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-indigo-900">
-                        Employment Status
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={formData.role}
-                          onChange={(e) =>
-                            setFormData({ ...formData, role: e.target.value })
-                          }
-                          className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm appearance-none"
-                        >
-                          <option value="">All Statuses</option>
-                          <option value="Full-Time">Full-Time</option>
-                          <option value="Part-Time">Part-Time</option>
-                          <option value="Contract">Contract</option>
-                          <option value="Temporary">Temporary</option>
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-indigo-400 pointer-events-none" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end space-x-0 sm:space-x-4 gap-4 mb-8">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 border-2 border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all duration-200 shadow-md flex items-center justify-center gap-2 font-semibold"
-                onClick={handleReset}
-              >
-                <RotateCcw className="h-4 w-4" />
-                Reset
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg flex items-center justify-center gap-2 font-semibold"
-                onClick={handleSearch}
-              >
-                <Search className="h-4 w-4" />
-                Search
-              </motion.button>
-            </div>
-
-            {/* Employee Table */}
-            <div className="overflow-x-auto rounded-lg border border-indigo-100 shadow-sm">
-              {isLoadingEmployees ? (
-                <div className="text-center py-12 text-indigo-600 text-lg animate-pulse">
-                  Loading employees...
-                </div>
-              ) : employeesData?.data?.employees?.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 bg-gray-50">
-                  No employees found
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-indigo-900 uppercase tracking-wider">
-                        <input type="checkbox" className="rounded border-indigo-300" />
-                      </th>
-                      {["ID", "First Name", "Last Name", "Email", "Position", "Organization", "Actions"].map((header) => (
-                        <th
-                          key={header}
-                          className="px-6 py-4 text-left text-xs font-semibold text-indigo-900 uppercase tracking-wider"
-                        >
-                          <div className="flex items-center space-x-1">
-                            <span>{header}</span>
-                            <ArrowUpDown className="h-4 w-4 cursor-pointer hover:text-indigo-500" />
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-indigo-100 bg-white">
-                    {employeesData?.data?.employees.map((employee) => (
-                      <motion.tr
-                        key={employee.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        whileHover={{ backgroundColor: "#F9FAFB" }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <td className="px-6 py-4">
-                          <input type="checkbox" className="rounded border-indigo-300" />
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">{employee.id}</td>
-                        <td className="px-6 py-4 text-gray-700">{employee.firstName}</td>
-                        <td className="px-6 py-4 text-gray-700">{employee.lastName}</td>
-                        <td className="px-6 py-4 text-gray-700">{employee.user?.email || '-'}</td>
-                        <td className="px-6 py-4 text-gray-700">{employee.position || '-'}</td>
-                        <td className="px-6 py-4 text-gray-700">{employee.organisation?.name || '-'}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex space-x-3">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="text-indigo-500 hover:text-indigo-700"
-                              title="View"
-                            >
-                              <Eye className="h-5 w-5" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="text-green-500 hover:text-green-700"
-                              title="Edit"
-                            >
-                              <Edit2 className="h-5 w-5" />
-                            </motion.button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            {/* Employee Pagination */}
-            {employeesData?.data?.employees?.length > 0 && (
               <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-sm text-indigo-700">
                   Showing <span className="font-semibold">{(page - 1) * 10 + 1}</span> to{" "}

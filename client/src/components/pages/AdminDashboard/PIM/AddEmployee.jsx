@@ -5,7 +5,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useCreateEmployeeMutation } from "../../../../slices/employeeSlice";
 import { useGetOrganizationsQuery } from "../../../../slices/organizationSlice";
-
+import { useGetOrganisationByIdQuery } from "../../../../slices/organizationSlice";
+import { useSelector } from "react-redux";
+import { useGetEmployeeQuery } from "../../../../slices/employeeSlice";
 const AddEmployee = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -20,13 +22,17 @@ const AddEmployee = () => {
     role: "",
     organisationId: "", // Changed to empty string to require selection
   });
-
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
+  const { data: employee } = useGetEmployeeQuery(id);
+  const organisationId = employee?.data.employee.organisationId;
+  
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
 
   const [createEmployee, { isLoading: isCreatingEmployee }] = useCreateEmployeeMutation();
   const { data: organizationsData, isLoading: isLoadingOrganizations, error: orgError } = useGetOrganizationsQuery();
-  const organizations = organizationsData || [];
+  const {data: organization} = useGetOrganisationByIdQuery(organisationId);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -326,17 +332,11 @@ const AddEmployee = () => {
                     required
                   >
                     <option value="">Select Organization</option>
-                    {isLoadingOrganizations ? (
-                      <option>Loading organizations...</option>
-                    ) : orgError ? (
-                      <option>Error loading organizations</option>
-                    ) : (
-                      organizations.map((org) => (
-                        <option key={org.id} value={org.id}>
-                          {org.name}
+                   
+                    <option key={organization.data.organisation.id} value={organization.data.organisation.id}>
+                          {organization.data.organisation.name}
                         </option>
-                      ))
-                    )}
+                      
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-indigo-400 pointer-events-none" />
                 </div>
