@@ -4,9 +4,14 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-    darkMode: 'class',
+  darkMode: 'class',
   theme: {
     extend: {
+      screens: {
+        tablet: "640px",
+        laptop: "1024px",
+        desktop: "1280px",
+      },
       colors: {
         'terminal-green': '#00ff00',
         'dark-bg': '#1a1b1e',
