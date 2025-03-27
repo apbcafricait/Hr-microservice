@@ -21,3 +21,5 @@ const NotAuthorized = () => {
 };
 
 export default NotAuthorized;
+
+umuthi di munogu arleady ta bomuu

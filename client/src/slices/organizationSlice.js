@@ -14,6 +14,9 @@ export const organizationSlice = apiSlice.injectEndpoints({
       transformResponse: (response) => response.data,
       transformErrorResponse: (response) => response.data,
     }),
+    getOrganisationById: builder.query({
+    query: (id) => `/api/organisations/${id}`,
+}),
     getOrganizations: builder.query({
       query: () => '/api/organisations',
       // Corrected transformResponse: Access the 'organisations' array
@@ -40,6 +43,9 @@ export const organizationSlice = apiSlice.injectEndpoints({
       transformErrorResponse: (response) => response.data,
     }),
   }),
+
+  // Get a single organisation by id
+ 
 });
 
 export const {
@@ -47,4 +53,5 @@ export const {
   useGetOrganizationsQuery,
   useUpdateOrganizationMutation,
   useDeleteOrganizationMutation,
+  useGetOrganisationByIdQuery,
 } = organizationSlice;

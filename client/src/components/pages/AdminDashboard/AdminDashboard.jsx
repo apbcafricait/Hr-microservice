@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu } from '@headlessui/react';
 import {
-  Users, Briefcase, Building2, UserCircle, LogOut, Settings,
-  HelpCircle, Lock, Sun, Moon, ChevronDown, Plus, Building,
-  Users2, Network, ListTodo, FileText, BarChart2, Menu as MenuIcon,
+UserCircle, LogOut, Settings,
+  HelpCircle, Lock, Sun, Moon, ChevronDown, Menu as MenuIcon,
 } from 'lucide-react';
 import AdminSidebar from '../../Layouts/AdminSidebar';
 import Dashboard from './Dashboard';
@@ -20,7 +18,7 @@ import Payroll from '../ManagerDashboard/Payroll';
 
 const componentMap = {
   Dashboard: Dashboard,
-  PIM: EmployeList,
+  Employees: EmployeList,
   Recruitment: Recruitment,
   Performance: ManageReview,
   Admin:AdminImports,
