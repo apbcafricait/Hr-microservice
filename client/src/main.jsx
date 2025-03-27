@@ -7,7 +7,6 @@ import store from './store.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 // Import leave from admin dashboard
 import AssignLeave from './components/pages/AdminDashboard/Leave Dashboard/AssignLeave.jsx';
 import LeaveList from './components/pages/AdminDashboard/Leave Dashboard/LeaveList.jsx';
@@ -20,7 +19,7 @@ import App from './App.jsx';
 import LandingPage from './components/pages/Landing/Landing.jsx';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import NotAuthorized from './components/common/NotAuthorized'; // Create this component for unauthorized access
+import NotAuthorized from './components/common/NotAuthorized';
 
 // Admin dashboard components
 import AdminDashboard from './components/pages/AdminDashboard/AdminDashboard.jsx';
@@ -34,13 +33,11 @@ import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboa
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
 import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
+
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { userInfo } = store.getState().auth;
-  console.log(userInfo, "Logged in user")
-
- 
-
+  console.log(userInfo, "Logged in user");
 
   if (!userInfo) {
     return <Navigate to="/login" />;
@@ -73,23 +70,66 @@ const routes = createBrowserRouter(
             <AdminDashboard />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="admin/create-organization"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <CreateOrganization />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="admin/view-organization"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <ViewOrganization />
-          </ProtectedRoute>
-        }
-      />
+      >
+        {/* Nested Leave Routes */}
+        <Route
+          path="assign-leave"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AssignLeave />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="leave-list"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <LeaveList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="leave-apply"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <LeaveApply />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="my-leave"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <MyLeave />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="time"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Time />
+            </ProtectedRoute>
+          }
+        />
+        {/* Other Admin Routes */}
+        <Route
+          path="create-organization"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <CreateOrganization />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="view-organization"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <ViewOrganization />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
 
       {/* Manager Routes */}
       <Route

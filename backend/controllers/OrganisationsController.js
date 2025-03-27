@@ -75,7 +75,6 @@ export class OrganisationsController {
           creator: {
             select: {
               email: true,
-              name: true
             }
           },
           _count: {
