@@ -22,7 +22,7 @@ const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is
   const menuItems = [
     { name: 'Dashboard', icon: Home },
     { name: 'Admin', icon: Shield },
-    { name: 'PIM', icon: Users },
+    { name: 'Employees', icon: Users },
     { name: 'Leave', icon: Calendar },
     { name: 'Recruitment', icon: UserPlus },
     { name: 'Performance', icon: BarChart2 },

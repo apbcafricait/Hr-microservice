@@ -1,224 +1,79 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import {
-  Clock,
   Users,
-  Calendar,
-  ClipboardList,
-  ChevronRight,
-  Bell,
-  ArrowRight,
-  Star,
-  AlertTriangle,
+  Building,
+  Phone,
+  AlertCircle,
   CheckCircle,
-  Mail,
+  Clock8,
+  User,
+  Briefcase,
+  Calendar,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { motion } from "framer-motion";
+import { useGetEmployeeQuery, useGetOrganisationEmployeesQuery } from "../../../slices/employeeSlice";
+import { useGetOrganisationByIdQuery } from "../../../slices/organizationSlice";
 import { useSelector } from "react-redux";
-import {
-  useClockInMutation,
-  useClockOutMutation,
-  useGetAttedanceOfEmployeeQuery,
-} from "../../../slices/attendanceSlice";
-import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const [isPunchedIn, setIsPunchedIn] = useState(false);
-  const [punchTime, setPunchTime] = useState(null);
-  const [currentAttendanceId, setCurrentAttendanceId] = useState(null);
-  const [weeklyStats, setWeeklyStats] = useState([]);
-  const [currentDate, setCurrentDate] = useState("");
-
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: employee } = useGetEmployeeQuery(id);
+ 
   const employeeId = employee?.data.employee.id;
+  const organisationId = employee?.data.employee.organisationId;
+  const { data: employees } = useGetOrganisationEmployeesQuery(organisationId);
+  const { data: organisation } = useGetOrganisationByIdQuery(organisationId);
 
-  const [clockIn] = useClockInMutation();
-  const [clockOut] = useClockOutMutation();
-  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
-
-  const quickLaunchItems = [
-    {
-      title: "Assign Leave",
-      icon: Users,
-      path: "/admin/assign-leave",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600"
-    },
-    {
-      title: "Leave List",
-      icon: ClipboardList,
-      path: "/admin/leave-list",
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600"
-    },
-    {
-      title: "Timesheets",
-      icon: Clock,
-      path: "/admin/time",
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600"
-    },
-    {
-      title: "Apply Leave",
-      icon: Calendar,
-      path: "/admin/leave-apply",
-      bgColor: "bg-orange-50",
-      iconColor: "text-orange-600"
+  const getSubscriptionStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'expired':
+        return 'bg-red-100 text-red-800';
+      case 'trial':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  ];
-
-  const organizationalEvents = [
-    {
-      id: 1,
-      title: "Quarterly Team Meeting",
-      date: "2024-01-25 10:00 AM",
-      type: "meeting",
-      priority: "high"
-    },
-    {
-      id: 2,
-      title: "Employee Training Workshop",
-      date: "2024-01-26 2:00 PM",
-      type: "training",
-      priority: "medium"
-    },
-    {
-      id: 3,
-      title: "Project Deadline: Q1 Reports",
-      date: "2024-01-28",
-      type: "deadline",
-      priority: "high"
-    },
-    {
-      id: 4,
-      title: "Company Town Hall",
-      date: "2024-01-30 11:00 AM",
-      type: "meeting",
-      priority: "medium"
-    },
-    {
-      id: 5,
-      title: "Team Building Event",
-      date: "2024-02-01 3:00 PM",
-      type: "social",
-      priority: "low"
-    }
-  ];
-
-  const notifications = [
-    {
-      id: 1,
-      title: "Meeting Reminder",
-      message: "Team meeting in 30 minutes",
-      type: "warning",
-      icon: AlertTriangle,
-      iconColor: "text-yellow-500"
-    },
-    {
-      id: 2,
-      title: "Task Completed",
-      message: "Project milestone achieved",
-      type: "success",
-      icon: CheckCircle,
-      iconColor: "text-green-500"
-    },
-    {
-      id: 3,
-      title: "Messages to Read",
-      message: "You have 3 unread messages",
-      type: "info",
-      icon: Mail,
-      iconColor: "text-blue-500"
-    }
-  ];
-
-  useEffect(() => {
-    if (attendanceRecords?.length > 0) {
-      const latestRecord = attendanceRecords[attendanceRecords.length - 1];
-      setIsPunchedIn(!latestRecord.clockOut);
-      setCurrentAttendanceId(latestRecord.id);
-      setPunchTime(new Date(latestRecord.clockIn).toLocaleString());
-      calculateWeeklyStats(attendanceRecords);
-    } else {
-      setWeeklyStats([
-        { name: 'Sun', hours: 0 },
-        { name: 'Mon', hours: 0 },
-        { name: 'Tue', hours: 0 },
-        { name: 'Wed', hours: 0 },
-        { name: 'Thu', hours: 0 },
-        { name: 'Fri', hours: 0 },
-        { name: 'Sat', hours: 0 }
-      ]);
-    }
-
-    // Set current date and day
-    const today = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    setCurrentDate(today.toLocaleDateString('en-US', options));
-  }, [attendanceRecords]);
-
-  const calculateWeeklyStats = (records) => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-
-    const weekStats = days.map((day, index) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + index);
-      return {
-        name: day,
-        hours: 0,
-        date: date.toISOString().split('T')[0]
-      };
-    });
-
-    records.forEach(record => {
-      if (record.clockIn && record.clockOut) {
-        const clockInDate = new Date(record.clockIn);
-        const clockOutDate = new Date(record.clockOut);
-        const recordDateStr = clockInDate.toISOString().split('T')[0];
-
-        const dayIndex = weekStats.findIndex(stat => stat.date === recordDateStr);
-        if (dayIndex !== -1) {
-          const hours = (clockOutDate - clockInDate) / (1000 * 60 * 60);
-          weekStats[dayIndex].hours = Number(hours.toFixed(2));
-        }
-      }
-    });
-
-    setWeeklyStats(weekStats);
   };
 
-  const handlePunchToggle = async () => {
-    try {
-      const currentTime = new Date();
-      if (!isPunchedIn) {
-        const response = await clockIn({ 
-          employeeId, 
-          location: "Office",
-          clockIn: currentTime.toISOString()
-        }).unwrap();
-        setIsPunchedIn(true);
-        setCurrentAttendanceId(response.attendance.id);
-        setPunchTime(currentTime.toLocaleString());
-      } else {
-        await clockOut({
-          id: currentAttendanceId,
-          clockOut: currentTime.toISOString()
-        }).unwrap();
-        setIsPunchedIn(false);
-        setCurrentAttendanceId(null);
-        setPunchTime(currentTime.toLocaleString());
-      }
-      refetch();
-    } catch (error) {
-      console.error('Punch error:', error);
+  const getSubscriptionStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case 'expired':
+        return <AlertCircle className="w-5 h-5 text-red-600" />;
+      case 'trial':
+        return <Clock8 className="w-5 h-5 text-orange-600" />;
+      default:
+        return <AlertCircle className="w-5 h-5 text-gray-600" />;
     }
+  };
+
+  const getEmployeeDistributionData = () => {
+    if (!organisation?.data?.organisation?._count?.employees) return [];
+
+    return [
+      {
+        name: "Total Employees",
+        value: organisation.data.organisation._count.employees,
+        color: "#4F46E5"
+      }
+    ];
+  };
+
+  const distributionData = getEmployeeDistributionData();
+
+  // Format date function
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   const getPriorityColor = (priority) => {
@@ -231,181 +86,182 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-xl p-6 mb-6"
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                Welcome back, <span className="text-black font-extrabold">{employee?.data.employee.firstName}</span>
-                <span className="ml-2">👋</span>
-              </h1>
-              <p className="text-gray-600 mt-2 text-sm sm:text-base">Your productivity dashboard awaits</p>
-              <p className="text-blue-700 mt-3 text-sm sm:text-base font-medium">{currentDate}</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
+          Dashboard
+        </h1>
+
+        {/* Organization Status Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          {/* Subscription Status Card */}
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-xl shadow-md p-6"
+          >
+            <div className="flex items-center justify-between">
+              {getSubscriptionStatusIcon(organisation?.data?.organisation?.subscriptionStatus)}
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getSubscriptionStatusColor(organisation?.data?.organisation?.subscriptionStatus)
+                }`}>
+                {organisation?.data?.organisation?.subscriptionStatus?.toUpperCase() || 'N/A'}
+              </span>
             </div>
-            <div className="mt-4 sm:mt-0">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handlePunchToggle}
-                className={`px-4 py-2 sm:px-6 sm:py-3 rounded-xl text-white font-semibold ${
-                  isPunchedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
-                } transition-colors duration-300 text-sm sm:text-base`}
-              >
-                {isPunchedIn ? 'Clock Out' : 'Clock In'}
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
+            <h3 className="text-xl font-semibold mt-4">Subscription Status</h3>
+            <p className="text-sm text-gray-600 mt-1">Current plan status</p>
+          </motion.div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-          {/* Left Section: Weekly Stats and Notifications */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Weekly Stats Card */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
-            >
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center mb-4">
-                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-blue-600" />
-                Weekly Attendance Stats
-              </h2>
-
-              <div className="h-40 sm:h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weeklyStats}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" fontSize={12} />
-                    <YAxis fontSize={12} />
-                    <Tooltip 
-                      formatter={(value) => [`${value} hours`, 'Work Duration']}
-                      contentStyle={{ 
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar dataKey="hours" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-
-            {/* Notifications Card */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
-            >
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center mb-4">
-                <Bell className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-blue-600" />
-                Notifications
-              </h2>
-
-              <div className="space-y-3">
-                {notifications.map(notification => (
-                  <div key={notification.id} className="flex items-center p-3 bg-gray-50 rounded-lg">
-                    <notification.icon className={`w-5 h-5 mr-3 ${notification.iconColor}`} />
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{notification.title}</p>
-                      <p className="text-xs text-gray-600">{notification.message}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right Section: Time Info */}
+          {/* Total Employees Card */}
           <motion.div
             whileHover={{ y: -5 }}
             className="bg-white rounded-2xl shadow-lg p-4"
           >
-            <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center mb-3">
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
-              Time Info
-            </h2>
-
-            <div className="space-y-3">
-              <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600">Last Action</p>
-                <p className="text-sm sm:text-base font-semibold text-blue-700">{punchTime || 'No records yet'}</p>
-              </div>
-              <div className="bg-green-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600">Status</p>
-                <p className="text-sm sm:text-base font-semibold text-green-700">
-                  {isPunchedIn ? 'Currently Working' : 'Not Clocked In'}
-                </p>
-              </div>
+            <div className="flex items-center justify-between">
+              <User className="w-5 h-5 text-blue-600" />
+              <span className="text-2xl font-bold text-blue-600">
+                {organisation?.data?.organisation?._count?.employees || 0}
+              </span>
             </div>
+            <h3 className="text-xl font-semibold mt-4">Total Employees</h3>
+            <p className="text-sm text-gray-600 mt-1">Active members</p>
+          </motion.div>
+
+          {/* Organization Name Card */}
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-xl shadow-md p-6"
+          >
+            <div className="flex items-center justify-between">
+              <Building className="w-5 h-5 text-purple-600" />
+              <span className="text-sm font-medium text-purple-600">Details</span>
+            </div>
+            <h3 className="text-xl font-semibold mt-4">{organisation?.data?.organisation?.name || 'N/A'}</h3>
+            <p className="text-sm text-gray-600 mt-1">Organization Name</p>
+          </motion.div>
+
+          {/* Contact Info Card */}
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-xl shadow-md p-6"
+          >
+            <div className="flex items-center justify-between">
+              <Phone className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium text-green-600">Contact</span>
+            </div>
+            <h3 className="text-xl font-semibold mt-4">M-Pesa</h3>
+            <p className="text-sm text-gray-600 mt-1">{organisation?.data?.organisation?.mpesaPhone || 'N/A'}</p>
           </motion.div>
         </div>
 
-        {/* Events Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-6"
-        >
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center mb-4">
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-blue-600" />
-            Upcoming Events
-          </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Employee Distribution Chart */}
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-xl shadow-md p-6 lg:col-span-2"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+                <Users className="w-5 h-5 mr-2 text-indigo-600" />
+                Employee Distribution
+              </h2>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {organizationalEvents.map(event => (
-              <motion.div
-                key={event.id}
-                whileHover={{ scale: 1.02 }}
-                className="bg-gray-50 rounded-xl p-4 border border-gray-100"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{event.title}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1">{event.date}</p>
+            <div className="flex flex-col items-center md:flex-row md:justify-center gap-6">
+              <PieChart width={200} height={200}>
+                <Pie
+                  data={distributionData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                >
+                  {distributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+              <div className="flex flex-col gap-4">
+                {distributionData.map((item, index) => (
+                  <div key={index} className="flex items-center">
+                    <div
+                      className="w-4 h-4 rounded-full mr-2"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-sm text-gray-700 font-medium">
+                      {item.name}: {item.value}
+                    </span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(event.priority)}`}>
-                    {event.priority}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6"
-        >
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {quickLaunchItems.map((item, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`${item.bgColor} rounded-xl p-4 cursor-pointer`}
-                onClick={() => navigate(item.path)}
+          {/* Recent Employees Section */}
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-xl shadow-md p-6"
+          >
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-6">
+              <Users className="w-5 h-5 mr-2 text-indigo-600" />
+              Recent Employees
+            </h2>
+
+            <div className="space-y-4">
+              {employees?.data?.employees?.slice(0, 5).map((emp) => (
+                <Link
+                  to={`/employee/${emp.id}`}
+                  key={emp.id}
+                  className="block"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-indigo-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-900">
+                            {emp.firstName} {emp.lastName}
+                          </h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Briefcase className="w-4 h-4 text-gray-400" />
+                            <span className="text-xs text-gray-500">{emp.position}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span className="text-xs text-gray-500">
+                            {formatDate(emp.employmentDate)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+
+              {/* <Link
+                to="/employees"
+                className="block text-center text-sm text-indigo-600 hover:text-indigo-500 mt-4 font-medium"
               >
-                <div className="flex flex-col items-center">
-                  <item.icon className={`w-6 h-6 sm:w-8 sm:h-8 ${item.iconColor} mb-2`} />
-                  <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">
-                    {item.title}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
+                View All Employees
+              </Link> */}
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 };

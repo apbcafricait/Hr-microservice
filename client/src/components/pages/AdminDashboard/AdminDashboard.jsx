@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -24,7 +23,7 @@ import Support from './Support';
 // Mapping of sidebar links to their components
 const componentMap = {
   Dashboard: Dashboard,
-  PIM: EmployeList,
+  Employees: EmployeList,
   Recruitment: Recruitment,
   Performance: ManageReview,
   Admin: AdminImports,
