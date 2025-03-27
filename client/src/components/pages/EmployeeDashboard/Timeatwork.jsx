@@ -13,6 +13,7 @@ const Timeatwork = () => {
   const [isClockInOn, setIsClockInOn] = useState(false);
   const [isClockOutOn, setIsClockOutOn] = useState(false);
   const [activeAttendanceId, setActiveAttendanceId] = useState(null);
+  const [clockOutMessage, setClockOutMessage] = useState(""); // Added for better feedback
 
   const { userInfo } = useSelector((state) => state.auth);
   const employeeId = userInfo?.id;
@@ -23,6 +24,19 @@ const Timeatwork = () => {
     useClockOutMutation();
   const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
 
+  // Sync state with backend on load
+  useEffect(() => {
+    if (attendanceRecords) {
+      const activeRecord = attendanceRecords.find((record) => record.clockIn && !record.clockOut);
+      if (activeRecord) {
+        setIsClockInOn(true);
+        setIsClockOutOn(false);
+        setActiveAttendanceId(activeRecord.id);
+      }
+    }
+  }, [attendanceRecords]);
+
+  // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -66,18 +80,24 @@ const Timeatwork = () => {
     if (isClockInOn && !isClockOutOn && activeAttendanceId) {
       console.log("Attempting to clock out with attendanceId:", activeAttendanceId, "at time:", currentTime.toISOString());
       try {
-        await clockOut(activeAttendanceId).unwrap();
-        console.log("Clock out successful");
+        const response = await clockOut({
+          id: activeAttendanceId,
+          clockOutTime: currentTime.toISOString(), // Added clockOutTime
+        }).unwrap();
+        console.log("Clock out successful, response:", response);
         setIsClockOutOn(true);
         setIsClockInOn(false);
         setActiveAttendanceId(null);
+        setClockOutMessage(""); // Clear any error message
         refetch();
         alert("Clocked out successfully!");
       } catch (error) {
         console.error("Failed to clock out:", error);
+        setClockOutMessage(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
         alert(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
       }
     } else {
+      setClockOutMessage("Cannot clock out: You are not clocked in, already clocked out, or no active attendance record exists.");
       console.log("Cannot clock out: Not clocked in, already clocked out, or no active attendance ID. States:", {
         isClockInOn,
         isClockOutOn,
@@ -95,7 +115,7 @@ const Timeatwork = () => {
   };
 
   const formatIsoDate = (isoDate) => {
-    if (!isoDate) return "";
+    if (!isoDate) return { time: "", day: "", date: "" };
     const date = new Date(isoDate);
     return {
       time: formatTime(date),
@@ -119,7 +139,7 @@ const Timeatwork = () => {
         <div className="bg-white rounded-2xl shadow-lg p-6 w-full flex flex-col items-center">
           {/* Header with Current Time and Date */}
           <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold text-blue-600">{formatTime(currentTime)}</h1> {/* Time in blue */}
+            <h1 className="text-4xl font-bold text-blue-600">{formatTime(currentTime)}</h1>
             <p className="text-gray-500">{formatDate(currentTime)}</p>
           </div>
 
@@ -176,12 +196,15 @@ const Timeatwork = () => {
               {clockOutSuccess && (
                 <p className="text-green-500 text-sm mt-2">Clocked out successfully!</p>
               )}
+              {clockOutMessage && (
+                <p className="text-red-500 text-sm mt-2">{clockOutMessage}</p>
+              )}
             </div>
           </div>
 
           {/* Paginated Attendance Records Table */}
           <div className="w-full bg-white rounded-xl shadow-md p-8">
-            <h2 className="text-2xl font-semibold text-blue-600 mb-6">Attendance Records</h2> {/* Title in blue */}
+            <h2 className="text-2xl font-semibold text-blue-600 mb-6">Attendance Records</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-100">
@@ -196,16 +219,14 @@ const Timeatwork = () => {
                 <tbody>
                   {paginatedRecords.length > 0 ? (
                     paginatedRecords.map((record) => {
-                      const { time: clockInTime, day, date } = formatIsoDate(record.clockIn);
-                      const clockOutTime = record.clockOut
-                        ? formatIsoDate(record.clockOut).time
-                        : "Not clocked out";
+                      const clockIn = formatIsoDate(record.clockIn);
+                      const clockOut = formatIsoDate(record.clockOut);
                       return (
                         <tr key={record.id} className="border-b hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 text-gray-600">{clockInTime}</td>
-                          <td className="px-6 py-4 text-gray-600">{clockOutTime}</td>
-                          <td className="px-6 py-4 text-gray-600">{day}</td>
-                          <td className="px-6 py-4 text-gray-600">{date}</td>
+                          <td className="px-6 py-4 text-gray-600">{clockIn.time || "N/A"}</td>
+                          <td className="px-6 py-4 text-gray-600">{clockOut.time || "Not clocked out"}</td>
+                          <td className="px-6 py-4 text-gray-600">{clockIn.day || "N/A"}</td>
+                          <td className="px-6 py-4 text-gray-600">{clockIn.date || "N/A"}</td>
                           <td className="px-6 py-4 text-gray-600">{record.location || "Not specified"}</td>
                         </tr>
                       );
