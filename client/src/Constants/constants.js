@@ -12,6 +12,7 @@ export const CLAIM_URL = "/api/claims"
 export const DEPENDENTS_URL = "/api/dependents"
 export const LEAVE_TYPES = "/api/leaveTypes"
 export const REPORT_TO_URL = "/api/report-to"
+export const MPESA_URL = "/api/mpesa"
 
 
 

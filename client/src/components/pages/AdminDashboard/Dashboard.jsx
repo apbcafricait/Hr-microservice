@@ -27,6 +27,8 @@ const Dashboard = () => {
   const { data: employees } = useGetOrganisationEmployeesQuery(organisationId);
   const { data: organisation } = useGetOrganisationByIdQuery(organisationId);
 
+  console.log(organisation, "organisation");
+
   const getSubscriptionStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'active':

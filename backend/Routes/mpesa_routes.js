@@ -7,7 +7,7 @@ const router = express.Router()
 router.route('/').get((req, res) => {
   res.send('Hello mpesa!')
 })
-router.route('/stk-push-request').post(makeStkPushRequest)
+router.route('/stk-push-request/:organisationId').post(makeStkPushRequest)
 router.route('/stk-push/callback').post(stkCallBackUrl)
 
 export default router
