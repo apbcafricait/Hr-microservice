@@ -1,167 +1,153 @@
-// src/components/pages/EmployeeDashboard/ReportTo.jsx
-import React from 'react';
-import { useState } from 'react'; // Added since useState is used but wasn't imported
-import { useSelector, useDispatch } from 'react-redux';
-import { addSupervisor, addSubordinate, addAttachment, removeAttachment } from '../../../slices/ReportSlice';
-import EmployeeHeader from '../../Layouts/EmployeeHeader';
-
-
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import {
+  useGetAllReportsQuery,
+  useCreateReportMutation,
+  useUpdateReportMutation,
+  useDeleteReportMutation,
+} from "../../../slices/ReportSlice";
+import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
+import EmployeeHeader from "../../Layouts/EmployeeHeader";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ReportTo = () => {
-  const dispatch = useDispatch();
-  const { supervisors, subordinates, attachments } = useSelector((state) => state.reportTo);
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
 
-  const handleAddSupervisor = () => {
-    const newSupervisor = {
-      name: "John Doe",
-      reportingMethod: "Direct",
-    };
-    dispatch(addSupervisor(newSupervisor));
+  // Fetch employee data
+  const {
+    data: employee,
+    isLoading: isEmployeeLoading,
+    error: employeeError,
+  } = useGetEmployeeQuery(id);
+
+  const employeeId = employee?.data?.employee?.id || "";
+  const organisationId = employee?.data?.employee?.organisation?.id || "";
+
+  // Fetch all reports
+  const { data: reports, isLoading: isReportsLoading } = useGetAllReportsQuery({
+    employeeId,
+    organisationId,
+  });
+
+  // Mutations
+  const [createReport] = useCreateReportMutation();
+  const [updateReport] = useUpdateReportMutation();
+  const [deleteReport] = useDeleteReportMutation();
+
+  // State
+  const [comment, setComment] = useState("");
+  const [editReportId, setEditReportId] = useState(null);
+
+  // Handlers
+  const handleSaveReport = async () => {
+    if (!employeeId || !organisationId || !comment.trim()) {
+      toast.error("Please ensure all fields are filled out before submitting.");
+      return;
+    }
+
+    const reportData = { employeeId, organisationId, comment };
+
+    try {
+      if (editReportId) {
+        // Update existing report
+        const response = await updateReport({ id: editReportId, ...reportData }).unwrap();
+        toast.success("Report updated successfully!");
+        console.log("Updated Report:", response);
+      } else {
+        // Create new report
+        const response = await createReport(reportData).unwrap();
+        toast.success("Report saved successfully!");
+        console.log("Created Report:", response);
+      }
+      setComment("");
+      setEditReportId(null); // Reset editing state
+    } catch (error) {
+      console.error("Failed to save the report:", error);
+      toast.error("Error saving the report. Please try again.");
+    }
   };
 
-  const handleAddSubordinate = () => {
-    const newSubordinate = {
-      name: "Jane Smith",
-      reportingMethod: "Indirect",
-    };
-    dispatch(addSubordinate(newSubordinate));
+  const handleEditReport = (report) => {
+    setEditReportId(report.id);
+    setComment(report.comment);
   };
 
-  const handleAddAttachment = () => {
-    const newAttachment = {
-      fileName: "example.pdf",
-      description: "Example Attachment",
-      size: "500KB",
-      type: "PDF",
-      dateAdded: "2025-02-10",
-      addedBy: "Admin",
-    };
-    dispatch(addAttachment(newAttachment));
-  };
-
-  const handleRemoveAttachment = (fileName) => {
-    dispatch(removeAttachment({ fileName }));
+  const handleDeleteReport = async (reportId) => {
+    try {
+      await deleteReport(reportId).unwrap();
+      toast.success("Report deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete the report:", error);
+      toast.error("Error deleting the report. Please try again.");
+    }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       <EmployeeHeader />
-      
-      {/* Main Content with Offset for Fixed Header */}
+
       <div className="pt-24 p-6 flex-1">
         <h2 className="text-lg font-semibold mb-4">Report To</h2>
         <div className="border border-gray-300 p-4 rounded">
-          {/* Supervisors Section */}
-          <div className="mb-6">
-            <h3 className="text-md font-semibold mb-2">Assigned Supervisors</h3>
-            {supervisors.length === 0 ? (
-              <p>No Records Found</p>
-            ) : (
-              <table className="table-auto w-full text-left border-collapse border border-gray-300">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="p-2">Name</th>
-                    <th className="p-2">Reporting Method</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {supervisors.map((supervisor, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="p-2">{supervisor.name}</td>
-                      <td className="p-2">{supervisor.reportingMethod}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <button
-              onClick={handleAddSupervisor}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Add Supervisor
-            </button>
-          </div>
+          {isEmployeeLoading && <p>Loading employee data...</p>}
+          {employeeError && <p>Error loading employee data.</p>}
+          {!isEmployeeLoading && !employeeError && (
+            <>
+              <div className="mb-4">
+                <label className="block font-semibold mb-2">Comment</label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  placeholder="Add a comment"
+                  rows="4"
+                ></textarea>
+              </div>
+              <button
+                onClick={handleSaveReport}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
+              >
+                {editReportId ? "Update Report" : "Save Report"}
+              </button>
+            </>
+          )}
+        </div>
 
-          {/* Subordinates Section */}
-          <div className="mb-6">
-            <h3 className="text-md font-semibold mb-2">Assigned Subordinates</h3>
-            {subordinates.length === 0 ? (
-              <p>No Records Found</p>
-            ) : (
-              <table className="table-auto w-full text-left border-collapse border border-gray-300">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="p-2">Name</th>
-                    <th className="p-2">Reporting Method</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subordinates.map((subordinate, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="p-2">{subordinate.name}</td>
-                      <td className="p-2">{subordinate.reportingMethod}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <button
-              onClick={handleAddSubordinate}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Add Subordinate
-            </button>
-          </div>
-
-          {/* Attachments Section */}
-          <div>
-            <h3 className="text-md font-semibold mb-2">Attachments</h3>
-            {attachments.length === 0 ? (
-              <p>No Records Found</p>
-            ) : (
-              <table className="table-auto w-full text-left border-collapse border border-gray-300">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="p-2">File Name</th>
-                    <th className="p-2">Description</th>
-                    <th className="p-2">Size</th>
-                    <th className="p-2">Type</th>
-                    <th className="p-2">Date Added</th>
-                    <th className="p-2">Added By</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attachments.map((attachment, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="p-2">{attachment.fileName}</td>
-                      <td className="p-2">{attachment.description}</td>
-                      <td className="p-2">{attachment.size}</td>
-                      <td className="p-2">{attachment.type}</td>
-                      <td className="p-2">{attachment.dateAdded}</td>
-                      <td className="p-2">{attachment.addedBy}</td>
-                      <td>
-                        <button
-                          onClick={() => handleRemoveAttachment(attachment.fileName)}
-                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <button
-              onClick={handleAddAttachment}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Add Attachment
-            </button>
-          </div>
+        <div className="mt-6">
+          <h3 className="text-md font-semibold mb-2">Reports</h3>
+          {isReportsLoading ? (
+            <p>Loading reports...</p>
+          ) : (
+            reports?.map((report) => (
+              <div
+                key={report.id}
+                className="border border-gray-200 p-3 rounded mb-2"
+              >
+                <p>Employee ID: {report.employeeId}</p>
+                <p>Organisation ID: {report.organisationId}</p>
+                <p>Comment: {report.comment}</p>
+                <div className="mt-2">
+                  <button
+                    onClick={() => handleEditReport(report)}
+                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteReport(report.id)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

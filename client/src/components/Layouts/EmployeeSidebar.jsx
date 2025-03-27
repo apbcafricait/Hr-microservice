@@ -5,28 +5,37 @@ import {
   CalendarIcon, 
   UserIcon, 
   DocumentTextIcon,
-  
   ShieldCheckIcon,
   AcademicCapIcon,
   UserGroupIcon,
-  CogIcon // Import the settings icon
+  CogIcon,
+  LogoutIcon // Import the logout icon
 } from '@heroicons/react/24/outline';
+import { useDispatch } from 'react-redux'; // If using Redux
+import { logout } from '../../slices/authSlice'; // Adjust the import according to your auth slice
+import { useNavigate } from 'react-router-dom'; // Import navigate hook
 
 const EmployeeSidebar = ({ setActiveComponent }) => {
-  const [activeItem, setActiveItem] = useState('EmployeeDashboard'); // Track active component
+  const [activeItem, setActiveItem] = useState('EmployeeDashboard');
   const menuItems = [
     { name: 'Dashboard', icon: HomeIcon, component: 'EmployeeDashboard' },
     { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
     { name: 'Leave Approval', icon: ShieldCheckIcon, component: 'LeaveApproval' },
-    // { name: 'Personal Details', icon: DocumentTextIcon, component: 'PersonalDetails' },
     { name: 'Qualifications', icon: AcademicCapIcon, component: 'Qualifications' },
-    // { name: 'Report To', icon: UserGroupIcon, component: 'ReportTo' },
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
   ];
 
+  const dispatch = useDispatch(); // Create dispatch function
+  const navigate = useNavigate(); // Create navigate function
+
   const handleItemClick = (component) => {
-    setActiveItem(component); // Update active item
-    setActiveComponent(component); // Trigger parent component change
+    setActiveItem(component);
+    setActiveComponent(component);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout()); // Dispatch logout action
+    navigate('/login'); // Redirect to login page
   };
 
   return (
@@ -41,7 +50,6 @@ const EmployeeSidebar = ({ setActiveComponent }) => {
                   onClick={() => handleItemClick(item.component)}
                   className={`flex items-center w-full p-3 rounded-lg transition-all duration-300 ease-in-out ${activeItem === item.component ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'}`}
                 >
-                  {/* Blue dot indicator */}
                   <span className={`w-2 h-2 rounded-full mr-3 transition-all duration-300 ${activeItem === item.component ? 'bg-blue-500' : 'bg-transparent'}`} />
                   <item.icon className="w-6 h-6 mr-3" />
                   {item.name}
@@ -52,7 +60,15 @@ const EmployeeSidebar = ({ setActiveComponent }) => {
         </nav>
       </div>
       {/* User Profile and Settings Icons */}
-      
+      <div className="p-4 border-t border-gray-700">
+        <button
+          onClick={handleLogout}
+          className="flex items-center w-full p-3 rounded-lg transition-all duration-300 ease-in-out hover:bg-gray-700"
+        >
+          <LogoutIcon className="w-6 h-6 mr-3" />
+          Log Out
+        </button>
+      </div>
     </div>
   );
 };

@@ -57,13 +57,12 @@ const UserManagement = () => {
   const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
 
-  // Apply search and filter with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(searchTerm);
       setRoleFilter(filters.role);
     }, 500);
-
+  
     return () => clearTimeout(timer);
   }, [searchTerm, filters.role]);
 

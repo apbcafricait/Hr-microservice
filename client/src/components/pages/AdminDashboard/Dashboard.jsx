@@ -21,6 +21,7 @@ const Dashboard = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: employee } = useGetEmployeeQuery(id);
+  const { data: employee } = useGetEmployeeQuery(id);
   const employeeId = employee?.data.employee.id;
   const organisationId = employee?.data.employee.organisationId;
   const { data: employees } = useGetOrganisationEmployeesQuery(organisationId);
@@ -75,6 +76,15 @@ const Dashboard = () => {
     });
   };
 
+  const getPriorityColor = (priority) => {
+    const colors = {
+      high: "bg-red-100 text-red-800",
+      medium: "bg-yellow-100 text-yellow-800",
+      low: "bg-green-100 text-green-800"
+    };
+    return colors[priority] || colors.medium;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <motion.div
@@ -108,7 +118,7 @@ const Dashboard = () => {
           {/* Total Employees Card */}
           <motion.div
             whileHover={{ y: -5 }}
-            className="bg-white rounded-xl shadow-md p-6"
+            className="bg-white rounded-2xl shadow-lg p-4"
           >
             <div className="flex items-center justify-between">
               <User className="w-5 h-5 text-blue-600" />
