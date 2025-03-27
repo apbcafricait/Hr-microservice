@@ -11,7 +11,7 @@ import {
 } from '../../../slices/claimsApiSlice';
 import { useGetAllEmployeesQuery } from '../../../slices/employeeSlice';
 
-const ClaimsPortal = () => {
+const Claims = () => {
   const [activeTab, setActiveTab] = useState('myClaims');
 
   const tabs = [
@@ -436,4 +436,4 @@ const AssignClaimPage = () => {
   );
 };
 
-export default ClaimsPortal;
+export default Claims;

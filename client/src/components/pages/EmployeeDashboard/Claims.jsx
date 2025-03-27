@@ -1,26 +1,14 @@
-import { useState} from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import {
   useGetMyClaimsQuery,
-  useSubmitClaimMutation,
+  useSubmitClaimMutation, // Only these two hooks are needed for employees
 } from "../../../slices/claimsApiSlice";
-import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import EmployeeHeader from "../../Layouts/EmployeeHeader";
 
-const Claims = () => {
-  const { userInfo } = useSelector((state) => state.auth);
-  const id = userInfo?.id;
-
-  const { data: employee, isLoading: employeeLoading } = useGetEmployeeQuery(id);
-  const employeeId = employee?.data?.employee?.id;
-
-  const { data: claimsData, isLoading: claimsLoading, refetch } =
-    useGetMyClaimsQuery();
-  console.log(claimsData?.data?.claims, "claims");
-
-  const [submitClaim] = useSubmitClaimMutation();
+const Claim = () => {
+  const { data: claimsData, isLoading, error, refetch } = useGetMyClaimsQuery();
+  const [submitClaim] = useSubmitClaimMutation(); // Correct hook for submitting claims
 
   const [formData, setFormData] = useState({
     eventName: "",
@@ -29,26 +17,29 @@ const Claims = () => {
     amount: "",
     fromDate: "",
     toDate: "",
+    comment: "",
   });
 
-  const handleInputChange = (e) => {
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to fetch claims: " + error.message);
+    }
+  }, [error]);
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmitClaim = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!employeeId) {
-      toast.error("Employee ID not available");
-      return;
-    }
     try {
-      await submitClaim({
+      const claimData = {
         ...formData,
-        amount: Number(formData.amount),
-        employeeId,
-      }).unwrap();
-      toast.success("Claim submitted successfully");
+        amount: parseFloat(formData.amount), // Convert to float for backend
+      };
+      await submitClaim(claimData).unwrap();
+      toast.success("Claim submitted successfully!");
       setFormData({
         eventName: "",
         description: "",
@@ -56,133 +47,94 @@ const Claims = () => {
         amount: "",
         fromDate: "",
         toDate: "",
+        comment: "",
       });
-      refetch();
-    } catch (error) {
-      toast.error(
-        "Failed to submit claim: " + (error?.data?.message || error.message)
-      );
+      refetch(); // Refresh claims list
+    } catch (err) {
+      toast.error("Failed to submit claim: " + (err?.data?.message || err.message));
     }
   };
-
-  const isLoading = employeeLoading || claimsLoading;
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Employee Header */}
-      <EmployeeHeader /> {/* Added EmployeeHeader component */}
-
-      {/* Existing Header */}
+      {/* Header */}
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-lg shadow-md">
-          Claims
+        <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-green-600 to-teal-600 p-4 rounded-lg shadow-md">
+          My Claims
         </h1>
       </header>
 
       {/* Claim Submission Form */}
-      <div className="bg-white shadow-lg rounded-lg p-6 mb-6 max-w-lg mx-auto">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Submit New Claim
-        </h2>
-        <form onSubmit={handleSubmitClaim} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Event Name
-            </label>
-            <select
-              name="eventName"
-              value={formData.eventName}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-              required
-            >
-              <option value="">Select Event</option>
-              <option value="Medical Reimbursement">Medical Reimbursement</option>
-              <option value="Travel Allowance">Travel Allowance</option>
-              <option value="Advanced Salary">Advanced Salary</option>
-              <option value="Over-Time">Over-Time</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-              placeholder="Describe your claim"
-              rows="3"
-              required
-            />
-          </div>
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                placeholder="0.00"
-                min="1"
-                step="0.01"
-                required
-              />
-            </div>
-            <div className="w-24">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Currency
-              </label>
-              <select
-                name="currency"
-                value={formData.currency}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-              >
-                <option value="KES">KES</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              From Date
-            </label>
-            <input
-              type="date"
-              name="fromDate"
-              value={formData.fromDate}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              To Date
-            </label>
-            <input
-              type="date"
-              name="toDate"
-              value={formData.toDate}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-              required
-            />
-          </div>
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Submit a New Claim</h2>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="eventName"
+            value={formData.eventName}
+            onChange={handleChange}
+            placeholder="Event Name"
+            className="border p-2 rounded"
+            required
+          />
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Description"
+            className="border p-2 rounded"
+            required
+          />
+          <select
+            name="currency"
+            value={formData.currency}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          >
+            <option value="KES">KES</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+          </select>
+          <input
+            type="number"
+            name="amount"
+            value={formData.amount}
+            onChange={handleChange}
+            placeholder="Amount"
+            className="border p-2 rounded"
+            required
+            step="0.01"
+          />
+          <input
+            type="date"
+            name="fromDate"
+            value={formData.fromDate}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+          <input
+            type="date"
+            name="toDate"
+            value={formData.toDate}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+          <textarea
+            name="comment"
+            value={formData.comment}
+            onChange={handleChange}
+            placeholder="Comment (optional)"
+            className="border p-2 rounded col-span-full"
+          />
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-300 shadow-md"
-            disabled={isLoading || !employeeId}
+            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 col-span-full"
           >
             Submit Claim
           </button>
@@ -191,49 +143,33 @@ const Claims = () => {
 
       {/* Claims Table */}
       <div className="bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Claims</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">My Claims</h2>
         {isLoading ? (
           <p className="text-gray-600">Loading claims...</p>
+        ) : error ? (
+          <p className="text-red-600">Error: {error.message}</p>
         ) : claimsData?.data?.claims.length === 0 ? (
-          <p className="text-gray-600">No claims found</p>
+          <p className="text-gray-600">No claims submitted yet</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                    Reference ID
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                    Event Name
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                    Amount
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                    Date Submitted
-                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Reference ID</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Event Name</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Amount</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {claimsData?.data?.claims.map((claim) => (
-                  <tr
-                    key={claim.referenceId}
-                    className="border-b hover:bg-gray-50 transition-colors"
-                  >
+                  <tr key={claim.referenceId} className="border-b hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-2 text-sm text-gray-600">{claim.referenceId}</td>
+                    <td className="px-4 py-2 text-sm text-gray-600">{claim.eventName}</td>
                     <td className="px-4 py-2 text-sm text-gray-600">
-                      {claim.referenceId}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      {claim.eventName}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      {claim.amount?.toLocaleString("en-US", {
+                      {claim.amount.toLocaleString("en-US", {
                         style: "currency",
-                        currency: claim.currency || formData.currency,
+                        currency: claim.currency || "KES",
                       })}
                     </td>
                     <td className="px-4 py-2 text-sm">
@@ -243,16 +179,19 @@ const Claims = () => {
                             ? "bg-green-100 text-green-800"
                             : claim.status === "REJECTED"
                             ? "bg-red-100 text-red-800"
-                            : claim.status === "SUBMITTED"
+                            : claim.status === "IN_REVIEW" || claim.status === "ASSIGNED"
                             ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
+                            : "bg-blue-100 text-blue-800" // For "CLAIM_SUBMITTED"
                         }`}
                       >
-                        {claim.status}
+                        {claim.status === "CLAIM_SUBMITTED"
+                          ? "Claim Submitted"
+                          : claim.status === "IN_REVIEW"
+                          ? "In Review"
+                          : claim.status === "ASSIGNED"
+                          ? "Assigned"
+                          : claim.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      {new Date(claim.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
@@ -265,4 +204,4 @@ const Claims = () => {
   );
 };
 
-export default Claims;
+export default Claim;

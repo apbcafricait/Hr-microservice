@@ -6,6 +6,7 @@ import EmployeeList from "./EmployeeList";
 import Dashboard from "./Dashboard";
 import Leave from "./Leave";
 import Payroll from "./Payroll";
+import Claim from "./Claim";
 import ManageReview from "../AdminDashboard/Peformance/ManageReview";
 import Recruitment from "../AdminDashboard/Recruitment";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 const ManagerDashboard = () => {
   const [currentSection, setCurrentSection] = useState("dashboard");
+
   const [showForm, setShowForm] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false); // New state for modal
@@ -177,7 +179,8 @@ const ManagerDashboard = () => {
         {currentSection === "leave" && <Leave />}
         {currentSection === "reports" && <p>Reports Section</p>}
         {currentSection === "payroll" && <Payroll />}
-        {currentSection === "settings" && <p>Settings Section</p>}
+        {currentSection === "claims" && <Claim />}
+       {currentSection === "settings" && <p>Settings Section</p>}
         {currentSection === "performance" && <ManageReview />}
         {currentSection === "recruitment" && <Recruitment />}
       </main>
