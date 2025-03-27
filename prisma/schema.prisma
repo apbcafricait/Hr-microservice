@@ -66,6 +66,7 @@ model Organisation {
   subdomain         String    @unique @db.VarChar(50)
   mpesaPhone        String?   @map("mpesa_phone") @db.VarChar(20)
   subscriptionStatus String    @default("trial") @map("subscription_status") @db.VarChar(20)
+  subscriptionEndDate DateTime? @map("subscription_end_date")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
