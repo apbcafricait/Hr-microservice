@@ -1,16 +1,69 @@
-import React from 'react'
+import React from 'react';
 import {
   CalendarIcon,
   DocumentTextIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import EmployeeHeader from '../../Layouts/EmployeeHeader';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 
-const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, totalLeaveRequests, attendanceTrendData, attendanceData, chartOptions, paymentData, totalWorkingHours }) => {
+const Dashboard = ({
+  employeeName,
+  ClockIcon,
+  lastCheckIn,
+  TotalLeaveBalances,
+  totalLeaveRequests,
+  attendanceData,
+  chartOptions,
+  totalWorkingHours,
+  totalSuggestionsCount,
+  isSuggestionsLoading,
+}) => {
+  const getAttendanceTrendData = (attendance) => {
+    if (!attendance || attendance.length === 0) {
+      return {
+        labels: [],
+        datasets: [
+          {
+            label: 'Clock-In Times',
+            data: [],
+            borderColor: 'rgba(16, 185, 129, 1)',
+            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+            fill: true,
+            tension: 0.4,
+          },
+        ],
+      };
+    }
+
+    const sortedAttendance = [...attendance].sort(
+      (a, b) => new Date(a.clockIn) - new Date(b.clockIn)
+    );
+    const labels = sortedAttendance.map((entry) =>
+      new Date(entry.clockIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    );
+    const data = sortedAttendance.map((entry) => {
+      const clockIn = new Date(entry.clockIn);
+      return clockIn.getHours() + clockIn.getMinutes() / 60;
+    });
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Clock-In Times (Hours)',
+          data,
+          borderColor: 'rgba(16, 185, 129, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          fill: true,
+          tension: 0.4,
+        },
+      ],
+    };
+  };
+
   return (
     <div className="flex">
-      {/* Sidebar should be separately fixed */}
       <div className="flex-1 min-h-screen bg-gray-50 p-6">
         <EmployeeHeader />
         <div className="p-6">
@@ -19,7 +72,6 @@ const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, t
             <p className="text-gray-600">Welcome back, {employeeName}!</p>
           </div>
 
-          {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
@@ -27,10 +79,23 @@ const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, t
                   <ClockIcon className="w-8 h-8" />
                 </div>
                 <span className="text-xs font-semibold bg-blue-400 bg-opacity-30 px-2 py-1 rounded-full">
-                  {lastCheckIn?.dayName}
+                  {lastCheckIn?.dayName || 'N/A'}
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">{new Date(lastCheckIn?.clockIn).toLocaleString()}</h3>
+              <h3 className="text-lg font-bold mb-2">
+                {lastCheckIn ? (
+                  <>
+                    In: {new Date(lastCheckIn.clockIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    <br />
+                    Out:{' '}
+                    {lastCheckIn.clockOut
+                      ? new Date(lastCheckIn.clockOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                      : 'Still Clocked In'}
+                  </>
+                ) : (
+                  'No data'
+                )}
+              </h3>
               <p className="text-blue-100">Last Check-in</p>
             </div>
 
@@ -43,7 +108,7 @@ const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, t
                   Available
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">{TotalLeaveBalances} Days</h3>
+              <h3 className="text-2xl font-bold mb-2">{TotalLeaveBalances || 0} Days</h3>
               <p className="text-green-100">Leave Balance</p>
             </div>
 
@@ -56,7 +121,7 @@ const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, t
                   Pending
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">{totalLeaveRequests?.length}</h3>
+              <h3 className="text-2xl font-bold mb-2">{totalLeaveRequests?.length || 0}</h3>
               <p className="text-purple-100">Leave Requests</p>
             </div>
 
@@ -74,24 +139,27 @@ const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, t
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Attendance Trend</h3>
               <div className="relative h-64">
                 <Line
-                  data={attendanceTrendData(attendanceData)}
-                  options={{ ...chartOptions, plugins: { ...chartOptions.plugins, title: { ...chartOptions.plugins.title, text: 'Clock-In Patterns' } } }}
-                  className="w-full h-full"
-                />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Payment Overview</h3>
-              <div className="relative h-64">
-                <Bar
-                  data={paymentData}
-                  options={{ ...chartOptions, plugins: { ...chartOptions.plugins, title: { ...chartOptions.plugins.title, text: 'Monthly Payments' } } }}
+                  data={getAttendanceTrendData(attendanceData)}
+                  options={{
+                    ...chartOptions,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      title: { ...chartOptions.plugins.title, text: 'Clock-In Patterns' },
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        max: 24,
+                        title: { display: true, text: 'Clock-In Time (Hours)' },
+                      },
+                      x: { title: { display: true, text: 'Date' } },
+                    },
+                  }}
                   className="w-full h-full"
                 />
               </div>
@@ -132,17 +200,20 @@ const Dashboard = ({ employeeName, ClockIcon, lastCheckIn, TotalLeaveBalances, t
                   <DocumentTextIcon className="w-8 h-8 text-purple-600" />
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-800">3</p>
-                  <p className="text-sm text-gray-500">Submitted</p>
+                  {isSuggestionsLoading ? (
+                    <p className="text-2xl font-bold text-gray-800">Loading...</p>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-800">{totalSuggestionsCount}</p>
+                  )}
+                  <p className="text-sm text-gray-500">Forwarded</p>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
