@@ -19,7 +19,7 @@ import Payroll from '../ManagerDashboard/Payroll';
 import Security from './Security';
 import SettingPage from './SettingPage';
 import Support from './Support';
-
+import { motion, AnimatePresence } from "framer-motion";
 // Mapping of sidebar links to their components
 const componentMap = {
   Dashboard: Dashboard,
