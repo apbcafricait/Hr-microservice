@@ -33,26 +33,8 @@ import ManagerDashboard from './components/pages/ManagerDashboard/ManagerDashboa
 import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDashboard.jsx';
 import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
-
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { userInfo } = store.getState().auth;
-  console.log(userInfo, "Logged in user");
-
-  if (!userInfo) {
-    return <Navigate to="/login" />;
-  }
-
-  const userRole = userInfo.role;
-
-  if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/not-authorized" />;
-  }
-
-  return children;
-};
-
-// Router Configuration
+import Subscribe from './components/common/Subscribe.jsx';
+import { ProtectedRoute } from './ProtectedRoute.jsx';
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -61,12 +43,13 @@ const routes = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="not-authorized" element={<NotAuthorized />} />
+      <Route path="subscribe" element={<Subscribe />} />
 
       {/* Admin Routes */}
       <Route
         path="admin"
         element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
             <AdminDashboard />
           </ProtectedRoute>
         }
@@ -75,7 +58,7 @@ const routes = createBrowserRouter(
         <Route
           path="assign-leave"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <AssignLeave />
             </ProtectedRoute>
           }
@@ -83,7 +66,7 @@ const routes = createBrowserRouter(
         <Route
           path="leave-list"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <LeaveList />
             </ProtectedRoute>
           }
@@ -91,7 +74,7 @@ const routes = createBrowserRouter(
         <Route
           path="leave-apply"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <LeaveApply />
             </ProtectedRoute>
           }
@@ -99,7 +82,7 @@ const routes = createBrowserRouter(
         <Route
           path="my-leave"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <MyLeave />
             </ProtectedRoute>
           }
@@ -107,7 +90,7 @@ const routes = createBrowserRouter(
         <Route
           path="time"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <Time />
             </ProtectedRoute>
           }
@@ -116,7 +99,7 @@ const routes = createBrowserRouter(
         <Route
           path="create-organization"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <CreateOrganization />
             </ProtectedRoute>
           }
@@ -124,7 +107,7 @@ const routes = createBrowserRouter(
         <Route
           path="view-organization"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']} requireSubscription={true}>
               <ViewOrganization />
             </ProtectedRoute>
           }
@@ -135,7 +118,7 @@ const routes = createBrowserRouter(
       <Route
         path="manager"
         element={
-          <ProtectedRoute allowedRoles={['manager']}>
+          <ProtectedRoute allowedRoles={['manager']} requireSubscription={true}>
             <ManagerDashboard />
           </ProtectedRoute>
         }
@@ -145,7 +128,7 @@ const routes = createBrowserRouter(
       <Route
         path="employee"
         element={
-          <ProtectedRoute allowedRoles={['employee']}>
+          <ProtectedRoute allowedRoles={['employee']} requireSubscription={true}>
             <EmployeeDashboard />
           </ProtectedRoute>
         }
@@ -153,7 +136,7 @@ const routes = createBrowserRouter(
       <Route
         path="employee-profile"
         element={
-          <ProtectedRoute allowedRoles={['employee']}>
+          <ProtectedRoute allowedRoles={['employee']} requireSubscription={true}>
             <EmployeeProfile />
           </ProtectedRoute>
         }
@@ -161,7 +144,7 @@ const routes = createBrowserRouter(
       <Route
         path="personal-details"
         element={
-          <ProtectedRoute allowedRoles={['employee']}>
+          <ProtectedRoute allowedRoles={['employee']} requireSubscription={true}>
             <PersonalDetails />
           </ProtectedRoute>
         }
