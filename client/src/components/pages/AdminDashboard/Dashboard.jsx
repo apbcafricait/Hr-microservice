@@ -21,7 +21,7 @@ const Dashboard = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: employee } = useGetEmployeeQuery(id);
-  const { data: employee } = useGetEmployeeQuery(id);
+ 
   const employeeId = employee?.data.employee.id;
   const organisationId = employee?.data.employee.organisationId;
   const { data: employees } = useGetOrganisationEmployeesQuery(organisationId);
