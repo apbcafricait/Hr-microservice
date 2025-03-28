@@ -326,32 +326,31 @@ model Vacancy {
 }
 
 model Claim {
-  id            Int       @id @default(autoincrement())
-  referenceId   String    @unique
+  id            Int      @id @default(autoincrement())
+  referenceId   String   @unique
   employeeId    Int
   eventName     String
   description   String?
   currency      String
-  amount        Decimal   @db.Decimal(10, 2)
-  fromDate      DateTime  @db.Date
-  toDate        DateTime  @db.Date
-  submittedDate DateTime  @default(now())
-  enum ClaimStatus {
-  SUBMITTED
-  IN_REVIEW
-  APPROVED
-  REJECTED
-}
-
-  comment       String?
-  assignedToId  Int?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  amount        Decimal  @db.Decimal(10, 2)
+  fromDate      DateTime @db.Date
+  toDate        DateTime @db.Date
+  submittedDate DateTime @default(now())
+  status        String   @default("SUBMITTED")
+  comment       String?  @db.Text
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  assignedToId  Int?       
   assignedTo    Employee? @relation("AssignedClaims", fields: [assignedToId], references: [id])
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("claims")
 }
+
+// prisma/schema.prisma additions
+// Add this model to your existing schema.prisma file
+
 
 model Dependent {
   id           String   @id @default(uuid())
