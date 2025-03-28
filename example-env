@@ -9,3 +9,5 @@ CONSUMER_SECRET='YDDcBul4CzaJKx6ZvsYcz5n80HAGbGDC4aX2L8MFiAFlw8zF6tMsiiXSmsPRZg6
 AUTH_LINK='https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
 APP_DOMAIN= 'https://apbcafrica.com'
 JWT_SECRET='HR-Microservice-123456789'
+EMAIL_USER='2004289@students.kcau.ac.ke'
+EMAIL_PASS='nthq wbxw wpvf uvnj'
