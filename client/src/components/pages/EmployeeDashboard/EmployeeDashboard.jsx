@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
-import TimeAtWork from './TimeAtWork';
+import TimeAtWork from './Timeatwork';
 import Suggestion from './Suggestion';
 import Claims from './Claims';
 import { useGetEmployeeQuery } from '../../../slices/employeeSlice';

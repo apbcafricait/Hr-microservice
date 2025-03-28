@@ -1,36 +1,10 @@
-// apiSlice.js
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
-export const apiSlice = createApi({
-  reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api', // Use relative path since Vite will proxy requests
-    credentials: 'include',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-    fetchFn: async (...args) => {
-      try {
-        return await fetch(...args);
-      } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
-      }
-    },
-  }),
-  tagTypes: ['Users'],
-  endpoints: () => ({}),
-});
+import { apiSlice } from './apiSlice';
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     registerUser: builder.mutation({
       query: (credentials) => ({
-        url: '/users',
+        url: '/api/users',
         method: 'POST',
         body: credentials,
       }),
@@ -38,7 +12,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     loginUser: builder.mutation({
       query: (credentials) => ({
-        url: '/users/login',
+        url: '/api/users/login',
         method: 'POST',
         body: credentials,
       }),
@@ -46,7 +20,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     getUsers: builder.query({
       query: (params) => ({
-        url: '/users',
+        url: '/api/users',
         method: 'GET',
         params: params,
       }),
@@ -55,7 +29,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     getUserById: builder.query({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/api/users/${id}`,
         method: 'GET',
       }),
       providesTags: (result, error, id) => [{ type: 'Users', id }],
@@ -63,7 +37,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     createUser: builder.mutation({
       query: (userData) => ({
-        url: '/users',
+        url: '/api/users',
         method: 'POST',
         body: userData,
       }),
@@ -72,7 +46,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     updateUser: builder.mutation({
       query: ({ id, ...userData }) => ({
-        url: `/users/${id}`,
+        url: `/api/users/${id}`,
         method: 'PUT',
         body: userData,
       }),
@@ -84,7 +58,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/api/users/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Users'],
@@ -92,7 +66,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     updateUserStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/users/${id}/status`,
+        url: `/api/users/${id}/status`,
         method: 'PATCH',
         body: { status },
       }),

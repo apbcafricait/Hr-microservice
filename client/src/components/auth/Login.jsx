@@ -19,7 +19,6 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const [loginUser, { isLoading }] = useLoginUserMutation();
-  const { userInfo } = useSelector((state) => state.auth);
 
   const validateForm = () => {
     const newErrors = {};
@@ -67,9 +66,10 @@ const Login = () => {
         draggable: true,
       });
       setTimeout(() => {
-        handleRedirect(response.role);
+        handleRedirect(response?.role);
       }, 1000);
     } catch (err) {
+      console.log(err, "error message")
       toast.error(err.data?.message || 'Login failed. Please check your credentials.', {
         position: 'top-right',
         autoClose: 5000,
