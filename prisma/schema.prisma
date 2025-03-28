@@ -64,7 +64,7 @@ model Organisation {
   subscriptionStatus    String       @default("trial") @map("subscription_status") @db.VarChar(20)
   createdAt             DateTime     @default(now()) @map("created_at")
   updatedAt             DateTime     @updatedAt @map("updated_at")
-  subscription_end_date DateTime?
+  subscriptionEndDate DateTime?
   Department            Department[]
   employees             Employee[]
   LeaveType             LeaveType[]

@@ -46,8 +46,8 @@ export const makeStkPushRequest = expressAsyncHandler(async (req, res) => {
         PartyB: process.env.SHORT_CODE,
         PhoneNumber: phoneNumber,
         CallBackURL: `${process.env.APP_DOMAIN}/mpesa/stk-push/callback`,
-        AccountReference: 'BigManComputers Payment',
-        TransactionDesc: 'BigManComputers Payment'
+        AccountReference: 'Nexus Subscription',
+        TransactionDesc: 'Nexus Subscription'
       },
       {
         headers: {
