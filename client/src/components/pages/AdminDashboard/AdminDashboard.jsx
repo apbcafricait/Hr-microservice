@@ -110,12 +110,7 @@ const AdminDashboard = () => {
       case 'Security':
         setActiveLink('Security');
         break;
-      case 'Support':
-        setActiveLink('Support');
-        break;
-      case 'Settings':
-        setActiveLink('SettingPage');
-        break;
+      
       default:
         break;
     }
@@ -216,18 +211,7 @@ const AdminDashboard = () => {
                   <Menu.Items className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       {[
-                        {
-                          icon: Settings,
-                          text: 'Settings',
-                          desc: 'Manage your preferences',
-                          onClick: () => handleMenuAction('Settings'),
-                        },
-                        {
-                          icon: HelpCircle,
-                          text: 'Support',
-                          desc: 'Get help',
-                          onClick: () => handleMenuAction('Support'),
-                        },
+                        
                         {
                           icon: Lock,
                           text: 'Security',
