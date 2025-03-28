@@ -20,6 +20,8 @@ import Security from './Security';
 import SettingPage from './SettingPage';
 import Support from './Support';
 import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from 'react-redux';
+import { useGetEmployeeQuery } from '../../../slices/employeeSlice';
 // Mapping of sidebar links to their components
 const componentMap = {
   Dashboard: Dashboard,
@@ -42,43 +44,12 @@ const AdminDashboard = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeLink, setActiveLink] = useState('Dashboard');
-  const [userData, setUserData] = useState({
-    firstName: '',
-    lastName: '',
-    role: '',
-    isLoading: true,
-    error: null
-  });
+    const { userInfo } = useSelector((state) => state.auth);
+    const id = userInfo?.id;
+    const { data: employee } = useGetEmployeeQuery(id);
+    console.log(employee, "Employee")
 
   const ActiveComponent = componentMap[activeLink];
-
-  // Fetch user data
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Replace this with your actual API call
-        const response = await fetch('/api/user/profile');
-        if (!response.ok) throw new Error('Failed to fetch user data');
-        
-        const data = await response.json();
-        setUserData({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: data.role,
-          isLoading: false,
-          error: null
-        });
-      } catch (error) {
-        setUserData(prev => ({
-          ...prev,
-          isLoading: false,
-          error: error.message
-        }));
-      }
-    };
-
-    fetchUserData();
-  }, []);
 
   // Handle scroll effect for sticky header
   useEffect(() => {
@@ -117,11 +88,11 @@ const AdminDashboard = () => {
   };
 
   // Display user's full name or loading state
-  const displayName = userData.isLoading 
+  const displayName = employee.isLoading 
     ? 'Loading...' 
-    : userData.error 
+    : employee.error 
     ? 'User' 
-    : `${userData.firstName} ${userData.lastName}`;
+      : `${employee?.data.employee.firstName} ${employee?.data.employee.lastName}`;
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50">
@@ -188,7 +159,8 @@ const AdminDashboard = () => {
                 </button>
                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
                   <span className="text-white font-bold">
-                    {userData.firstName ? userData.firstName[0] : 'A'}
+                    {employee?.data?.employee?.firstName?.charAt(0)}
+                    {employee?.data?.employee?.lastName?.charAt(0)}
                   </span>
                 </div>
                 <h1 className="text-xl font-bold text-gray-800">
