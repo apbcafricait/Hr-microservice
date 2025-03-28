@@ -10,14 +10,16 @@ import { useSelector } from "react-redux";
 const TimeAtWork = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeAttendanceId, setActiveAttendanceId] = useState(null);
-  const [clockOutMessage, setClockOutMessage] = useState(""); // Added for better feedback
+  const [clockOutMessage, setClockOutMessage] = useState("");
+  const [isClockInOn, setIsClockInOn] = useState(false); // Added missing state
+  const [isClockOutOn, setIsClockOutOn] = useState(false); // Added missing state
 
   const { userInfo } = useSelector((state) => state.auth);
   const employeeId = userInfo?.id;
 
   const [clockIn, { isLoading: isClockingIn, error: clockInError }] = useClockInMutation();
   const [clockOut, { isLoading: isClockingOut, error: clockOutError }] = useClockOutMutation();
-  const { data: attendanceRecords } = useGetAttedanceOfEmployeeQuery(employeeId);
+  const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
 
   // Sync state with backend on load
   useEffect(() => {
@@ -27,6 +29,9 @@ const TimeAtWork = () => {
         setIsClockInOn(true);
         setIsClockOutOn(false);
         setActiveAttendanceId(activeRecord.id);
+      } else {
+        setIsClockInOn(false);
+        setIsClockOutOn(true);
       }
     }
   }, [attendanceRecords]);
@@ -34,15 +39,8 @@ const TimeAtWork = () => {
   // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    if (attendanceRecords) {
-      const sortedRecords = [...attendanceRecords].sort(
-        (a, b) => new Date(b.clockIn) - new Date(a.clockIn)
-      );
-      const latestRecord = sortedRecords[0];
-      setActiveAttendanceId(latestRecord?.clockOut ? null : latestRecord?.id);
-    }
     return () => clearInterval(timer);
-  }, [attendanceRecords]);
+  }, []);
 
   const toggleClockIn = async () => {
     if (!activeAttendanceId) {
@@ -57,6 +55,8 @@ const TimeAtWork = () => {
           location: "Office A",
         }).unwrap();
         setActiveAttendanceId(response.id);
+        setIsClockInOn(true);
+        setIsClockOutOn(false);
         alert("Clocked in successfully!");
       } catch (error) {
         alert(`Failed to clock in: ${error.data?.message || "Unknown error"}`);
@@ -67,26 +67,16 @@ const TimeAtWork = () => {
   const toggleClockOut = async () => {
     if (activeAttendanceId) {
       try {
-
-        await clockOut(activeAttendanceId).unwrap();
-        setActiveAttendanceId(null);
-        alert("Clocked out successfully!");
-      } catch (error) {
-        alert(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
-      }
-    } else {
-      alert("You must be clocked in to clock out.");
-
         const response = await clockOut({
           id: activeAttendanceId,
-          clockOutTime: currentTime.toISOString(), // Added clockOutTime
+          clockOutTime: currentTime.toISOString(),
         }).unwrap();
         console.log("Clock out successful, response:", response);
         setIsClockOutOn(true);
         setIsClockInOn(false);
         setActiveAttendanceId(null);
-        setClockOutMessage(""); // Clear any error message
-        refetch();
+        setClockOutMessage("");
+        refetch(); // Refresh attendance records
         alert("Clocked out successfully!");
       } catch (error) {
         console.error("Failed to clock out:", error);
@@ -94,13 +84,12 @@ const TimeAtWork = () => {
         alert(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
       }
     } else {
-      setClockOutMessage("Cannot clock out: You are not clocked in, already clocked out, or no active attendance record exists.");
-      console.log("Cannot clock out: Not clocked in, already clocked out, or no active attendance ID. States:", {
+      setClockOutMessage("Cannot clock out: You are not clocked in or no active attendance record exists.");
+      console.log("Cannot clock out: Not clocked in or no active attendance ID.", {
         isClockInOn,
         isClockOutOn,
         activeAttendanceId,
       });
-
     }
   };
 
@@ -186,14 +175,9 @@ const TimeAtWork = () => {
                   Error: {clockOutError.data?.message || "Failed to clock out"}
                 </p>
               )}
-
-              {clockOutSuccess && (
-                <p className="text-green-500 text-sm mt-2">Clocked out successfully!</p>
-              )}
               {clockOutMessage && (
                 <p className="text-red-500 text-sm mt-2">{clockOutMessage}</p>
               )}
-n
             </div>
           </div>
 
