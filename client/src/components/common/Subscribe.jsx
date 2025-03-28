@@ -41,7 +41,7 @@ const Subscribe = () => {
 
     // Redirect based on role
     const handleRedirect = () => {
-        const role = userInfo?.role; // Assuming role is in userInfo from Redux
+        const role = userInfo?.role; 
         if (!role) {
             console.error('Role is undefined or null');
             return;
@@ -59,9 +59,6 @@ const Subscribe = () => {
             default:
                 console.error('Invalid role:', role);
         }
-
-        // TODO: Send email with subscription details
-        console.log('TODO: Send email with subscription details:', subscriptionDetails);
     };
 
     return (
@@ -165,7 +162,7 @@ const Subscribe = () => {
                         <p className="mt-2">
                             Need help? Contact support at{' '}
                             <a href="mailto:support@example.com" className="text-blue-600 hover:text-blue-800">
-                                support@example.com
+                                support@nexus.apbcafrica.com
                             </a>
                         </p>
                     </div>
