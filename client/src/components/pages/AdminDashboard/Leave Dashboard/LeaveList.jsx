@@ -4,10 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Popover } from '@headlessui/react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useGetAllLeaveRequestsQuery, useDeleteLeaveRequestMutation } from '../../../../slices/leaveApiSlice';
+import { useGetAllLeaveRequestsOfOrganisationQuery, useDeleteLeaveRequestMutation } from '../../../../slices/leaveApiSlice';
+import { useSelector } from 'react-redux';
+import { useGetEmployeeQuery } from '../../../../slices/employeeSlice';
 
 const LeaveList = () => {
   const [dateRange, setDateRange] = useState({ from: '2025-01-01', to: '2025-12-31' });
+    const { userInfo } = useSelector((state) => state.auth);
+    const id = userInfo?.id;
+    const { data: employee } = useGetEmployeeQuery(id);
+   
+    const employeeId = employee?.data.employee.id;
   const [filters, setFilters] = useState({
     status: '',
     leaveType: '',
@@ -16,7 +23,8 @@ const LeaveList = () => {
   });
 
   // Fetch leave requests from backend
-  const { data: leaveRequests, isLoading, error, refetch } = useGetAllLeaveRequestsQuery();
+  const { data: leaveRequests, isLoading, error, refetch } = useGetAllLeaveRequestsOfOrganisationQuery(employeeId);
+  console.log(leaveRequests, "leaveRequests");
   const [deleteLeaveRequest, { isLoading: isDeleting }] = useDeleteLeaveRequestMutation();
 
   const handleReset = () => {
@@ -64,7 +72,7 @@ const LeaveList = () => {
     }
   };
 
-  const filteredData = leaveRequests?.data?.leaveRequests?.filter((request) => {
+  const filteredData = leaveRequests?.data?.filter((request) => {
     const startDate = new Date(request.startDate);
     const fromDate = new Date(dateRange.from);
     const toDate = new Date(dateRange.to);
@@ -79,7 +87,7 @@ const LeaveList = () => {
 
     return matchesDate && matchesStatus && matchesType && matchesName;
   }) || [];
-
+console.log(filteredData, "filteredData");
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -103,119 +111,8 @@ const LeaveList = () => {
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            {/* Date Range Pickers */}
-            {['from', 'to'].map((type) => (
-              <Popover key={type} className="relative">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-indigo-900">
-                    {type.charAt(0).toUpperCase() + type.slice(1)} Date
-                  </label>
-                  <Popover.Button className="w-full flex items-center px-4 py-2.5 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm">
-                    <span className="flex-1 text-left text-gray-700">{dateRange[type]}</span>
-                    <Calendar className="w-5 h-5 text-indigo-500" />
-                  </Popover.Button>
-                </div>
-                <Popover.Panel className="absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-indigo-100 p-2">
-                  <input
-                    type="date"
-                    value={dateRange[type]}
-                    onChange={(e) => setDateRange({ ...dateRange, [type]: e.target.value })}
-                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-indigo-500"
-                  />
-                </Popover.Panel>
-              </Popover>
-            ))}
+         
 
-            {/* Status Dropdown */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-indigo-900">Status</label>
-              <div className="relative">
-                <select
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-indigo-200 rounded-lg appearance-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-indigo-500" />
-              </div>
-            </div>
-
-            {/* Leave Type Dropdown */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-indigo-900">Leave Type</label>
-              <div className="relative">
-                <select
-                  value={filters.leaveType}
-                  onChange={(e) => setFilters({ ...filters, leaveType: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-indigo-200 rounded-lg appearance-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
-                >
-                  <option value="">All Types</option>
-                  <option value="Annual Leave">Annual Leave</option>
-                  <option value="Sick Leave">Sick Leave</option>
-                  <option value="Personal Leave">Personal Leave</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-indigo-500" />
-              </div>
-            </div>
-
-            {/* Employee Search */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-indigo-900">Employee Name</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search employees..."
-                  value={filters.employeeName}
-                  onChange={(e) => setFilters({ ...filters, employeeName: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
-                />
-                <Search className="absolute right-3 top-3 w-5 h-5 text-indigo-500" />
-              </div>
-            </div>
-
-            {/* Past Employees Toggle */}
-            <div className="flex items-center space-x-3">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.includePastEmployees}
-                  onChange={(e) => setFilters({ ...filters, includePastEmployees: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                <span className="ml-3 text-sm font-medium text-indigo-900">Past Employees</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-            <p className="text-sm text-indigo-600">* Filter to narrow results</p>
-            <div className="flex space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleReset}
-                className="px-6 py-2.5 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors shadow-sm"
-              >
-                Reset
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-2.5 text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors flex items-center gap-2 shadow-md"
-              >
-                <Search className="w-4 h-4" />
-                Search
-              </motion.button>
-            </div>
-          </div>
 
           {/* Table */}
           <div className="overflow-x-auto rounded-lg border border-indigo-100 shadow-sm">
@@ -282,7 +179,7 @@ const LeaveList = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <div className="flex space-x-2">
-                            <motion.button
+                            {/* <motion.button
                               whileHover={{ scale: 1.1 }}
                               className="p-1 text-indigo-600 hover:text-indigo-900"
                             >
@@ -293,7 +190,7 @@ const LeaveList = () => {
                               className="p-1 text-indigo-600 hover:text-indigo-900"
                             >
                               <Edit2 className="w-4 h-4" />
-                            </motion.button>
+                            </motion.button> */}
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               onClick={() => handleDelete(request.id)}
