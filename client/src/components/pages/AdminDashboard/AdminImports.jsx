@@ -33,7 +33,7 @@ const AdminImports = () => {
     // },
     {
       icon: Building,
-      title: "View Organizations",
+      title: "View My Organization",
       id: "view-org",
       component: ViewOrganization,
     },
