@@ -333,6 +333,10 @@ model Claim {
   @@map("claims")
 }
 
+// prisma/schema.prisma additions
+// Add this model to your existing schema.prisma file
+
+
 model Dependent {
   id           String   @id @default(uuid())
   employeeId   Int
