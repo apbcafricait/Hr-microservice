@@ -1,43 +1,29 @@
 import React, { useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  Search,
-  RotateCcw,
-  Plus,
-  ArrowUpDown,
-  Edit2,
-  Trash2,
-  Eye,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Search, RotateCcw, Plus, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useDeleteUserMutation } from "../../../../slices/UserApiSlice";
 import AddEmployee from "../../AdminDashboard/PIM/AddEmployee";
-import { useGetEmployeeQuery } from "../../../../slices/employeeSlice";
-import { useGetOrganisationEmployeesQuery } from "../../../../slices/employeeSlice";
+import { useGetEmployeeQuery, useGetOrganisationEmployeesQuery } from "../../../../slices/employeeSlice";
 import { useSelector } from "react-redux";
-const EmployeeList = () => {
 
+const EmployeeList = () => {
   const [activeTab, setActiveTab] = useState("Organisation Employee List");
   const [page, setPage] = useState(1);
-    const { userInfo } = useSelector((state) => state.auth);
-    const id = userInfo?.id;
-    const { data: employee } = useGetEmployeeQuery(id);
+  const { userInfo } = useSelector((state) => state.auth);
+  const id = userInfo?.id;
+  const { data: employee } = useGetEmployeeQuery(id);
   const organisationId = employee?.data.employee.organisationId;
-  // Fetch system users
-  const { data: usersData, isLoading: isLoadingUsers, isError: isErrorUsers, refetch: refetchUsers } = useGetOrganisationEmployeesQuery(organisationId);
 
-  // Fetch employees (optional, if you want to keep this tab)
-  const { data: employeesData,  refetch: refetchEmployees } = useGetOrganisationEmployeesQuery(organisationId);
-  console.log(employeesData)
+  // Fetch employees
+  const { data: usersData, isLoading: isLoadingUsers, isError: isErrorUsers, refetch: refetchUsers } = useGetOrganisationEmployeesQuery(organisationId);
+  const { data: employeesData, refetch: refetchEmployees } = useGetOrganisationEmployeesQuery(organisationId);
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
-  const users = usersData?.data.employees;
-  const totalPages = usersData?.totalPages || Math.ceil(users.length / 10); // Adjust if backend provides totalPages
+  const users = usersData?.data.employees || [];
+  const totalPages = usersData?.totalPages || Math.ceil(users.length / 10);
   const totalCount = usersData?.totalCount || users.length;
-
 
   const handlePagination = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -50,7 +36,6 @@ const EmployeeList = () => {
   const handleDelete = async (id) => {
     try {
       await deleteUser(id).unwrap();
-      console.log(`User ${id} deleted successfully`);
       toast.success("User deleted successfully!", {
         position: "top-right",
         autoClose: 3000,
@@ -59,11 +44,10 @@ const EmployeeList = () => {
         pauseOnHover: true,
         draggable: true,
         theme: "colored",
-        className: 'bg-green-500 text-white',
+        className: "bg-green-600 text-white font-medium rounded-lg shadow-lg",
       });
       refetchUsers();
     } catch (error) {
-      console.error("Failed to delete user:", error);
       toast.error(`Failed to delete user: ${error?.data?.message || error.message}`, {
         position: "top-right",
         autoClose: 3000,
@@ -72,13 +56,13 @@ const EmployeeList = () => {
         pauseOnHover: true,
         draggable: true,
         theme: "colored",
-        className: 'bg-red-500 text-white',
+        className: "bg-red-600 text-white font-medium rounded-lg shadow-lg",
       });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 p-4.ConcurrentModificationException sm:p-6 lg:p-8 font-inter">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -94,18 +78,18 @@ const EmployeeList = () => {
       />
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-indigo-100 shadow-md sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 shadow-md sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-3 py-4">
-            {["Organisation Employee List",  "Add Employee"].map((tab) => (
+            {["Organisation Employee List", "Add Employee"].map((tab) => (
               <motion.button
                 key={tab}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-sm ${
+                className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-sm text-sm sm:text-base ${
                   activeTab === tab
-                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                    : "text-indigo-600 hover:bg-indigo-50 border border-indigo-200"
+                    ? "bg-blue-600 text-white"
+                    : "text-blue-600 hover:bg-blue-50 border border-blue-200"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -123,91 +107,63 @@ const EmployeeList = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-xl p-6 border border-indigo-100"
+            className="bg-white rounded-xl shadow-lg p-6 border border-gray-100"
           >
-            
+            {/* Header */}
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Employee List</h2>
+
             {/* Table Section */}
-            <div className="overflow-x-auto rounded-lg border border-indigo-100 shadow-sm">
+            <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm">
               {isLoadingUsers ? (
-                <div className="text-center py-12 text-indigo-600 text-lg animate-pulse">
-                  Loading users...
+                <div className="text-center py-12 text-blue-600 text-lg animate-pulse">
+                  Loading employees...
                 </div>
               ) : isErrorUsers ? (
                 <div className="text-center py-12 text-red-500">
-                  Error fetching users: {isErrorUsers.message}
+                  Error fetching employees: {isErrorUsers.message}
                 </div>
               ) : users.length === 0 ? (
                 <div className="text-center py-12 text-gray-500 bg-gray-50">
-                  No users found
+                  No employees found
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-indigo-50 to-purple-50">
+                <table className="w-full table-auto">
+                  <thead className="bg-gradient-to-r from-blue-50 to-gray-50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-indigo-900 uppercase tracking-wider">
-                        <input type="checkbox" className="rounded border-indigo-300" />
+                      <th className="px-4 py-3 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
+                        <input type="checkbox" className="rounded border-gray-300" />
                       </th>
-                      {["ID", "Email", "Role","Position", "Created At", "Actions"].map((header) => (
+                      {["ID", "Email", "Role", "Position", "Created At"].map((header) => (
                         <th
                           key={header}
-                          className="px-6 py-4 text-left text-xs font-semibold text-indigo-900 uppercase tracking-wider"
+                          className="px-4 py-3 text-left text-sm font-bold text-gray-800 uppercase tracking-wider"
                         >
                           <div className="flex items-center space-x-1">
                             <span>{header}</span>
-                            <ArrowUpDown className="h-4 w-4 cursor-pointer hover:text-indigo-500" />
+                            <ArrowUpDown className="h-4 w-4 cursor-pointer hover:text-blue-500" />
                           </div>
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-indigo-100 bg-white">
+                  <tbody className="divide-y divide-gray-100 bg-white">
                     {users.map((user) => (
                       <motion.tr
                         key={user.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        whileHover={{ backgroundColor: "#F9FAFB" }}
+                        whileHover={{ backgroundColor: "#F3F4F6" }}
                         transition={{ duration: 0.2 }}
                       >
-                        <td className="px-6 py-4">
-                          <input type="checkbox" className="rounded border-indigo-300" />
+                        <td className="px-4 py-3">
+                          <input type="checkbox" className="rounded border-gray-300" />
                         </td>
-                        <td className="px-6 py-4 text-gray-700">{user.id}</td>
-                        <td className="px-6 py-4 text-gray-700">{user.user.email}</td>
-                        <td className="px-6 py-4 text-gray-700">{user.user.role}</td>
-                        <td className="px-6 py-4 text-gray-700">{user.position}</td>
-                        <td className="px-6 py-4 text-gray-700">
+                        <td className="px-4 py-3 text-gray-600 text-sm">{user.id}</td>
+                        <td className="px-4 py-3 text-gray-600 text-sm">{user.user.email}</td>
+                        <td className="px-4 py-3 text-gray-600 text-sm">{user.user.role}</td>
+                        <td className="px-4 py-3 text-gray-600 text-sm">{user.position}</td>
+                        <td className="px-4 py-3 text-gray-600 text-sm">
                           {new Date(user.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex space-x-3">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="text-indigo-500 hover:text-indigo-700"
-                              title="View"
-                            >
-                              <Eye className="h-5 w-5" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              className="text-green-500 hover:text-green-700"
-                              title="Edit"
-                            >
-                              <Edit2 className="h-5 w-5" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => handleDelete(user.id)}
-                              disabled={isDeleting}
-                              className="text-red-500 hover:text-red-700 disabled:opacity-50"
-                              title="Delete"
-                            >
-                              <Trash2 className="h-5 w-5" />
-                            </motion.button>
-                          </div>
                         </td>
                       </motion.tr>
                     ))}
@@ -219,16 +175,16 @@ const EmployeeList = () => {
             {/* Pagination */}
             {(totalPages > 1 || users.length > 0) && (
               <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-sm text-indigo-700">
+                <p className="text-sm text-gray-600">
                   Showing <span className="font-semibold">{(page - 1) * 10 + 1}</span> to{" "}
                   <span className="font-semibold">{Math.min(page * 10, totalCount)}</span> of{" "}
                   <span className="font-semibold">{totalCount}</span> results
                 </p>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap justify-center space-x-2">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 rounded-lg border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-md"
+                    className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm transition-all duration-200 shadow-sm disabled:opacity-50"
                     onClick={() => handlePagination(page - 1)}
                     disabled={page === 1}
                   >
@@ -239,8 +195,8 @@ const EmployeeList = () => {
                       key={pageNum}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-4 py-2 rounded-lg border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-md ${
-                        page === pageNum ? "bg-indigo-600 text-white border-indigo-600" : ""
+                      className={`px-4 py-2 rounded-lg border border-gray-200 text-sm transition-all duration-200 shadow-sm ${
+                        page === pageNum ? "bg-blue-600 text-white border-blue-600" : "text-gray-600 hover:bg-gray-50"
                       }`}
                       onClick={() => handlePagination(pageNum)}
                     >
@@ -250,7 +206,7 @@ const EmployeeList = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 rounded-lg border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-md"
+                    className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm transition-all duration-200 shadow-sm disabled:opacity-50"
                     onClick={() => handlePagination(page + 1)}
                     disabled={page === totalPages}
                   >
