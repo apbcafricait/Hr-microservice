@@ -122,22 +122,50 @@ const ManagerDashboard = ({  }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9 l-7 7 l-7 -7" />
               </svg>
             </button>
-            {isDropdownOpen && (
-              <div className="absolute right-0 w-48 mt-2 bg-white rounded-lg shadow-lg z-10 overflow-hidden transition-all duration-300 ease-in-out transform origin-top">
-                <button
-                  onClick={handleProfileClick}
-                  className="block px-4 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 w-full text-left transition duration-200"
-                >
-                  Profile
-                </button>
-                <button
-                  className="block px-4 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 w-full text-left transition duration-200"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
+            <div className="relative inline-block text-left">
+      {/* Trigger to toggle dropdown */}
+      {/* <button
+        onClick={() => setDropdownOpen(!isDropdownOpen)}
+        className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+      >
+        Open Menu
+      </button> */}
+
+      {/* Dropdown */}
+      {isDropdownOpen && (
+        <div className="absolute right-0 w-48 mt-2 bg-white rounded-lg shadow-lg z-10 overflow-hidden transition-all duration-300 ease-in-out transform origin-top">
+          <button
+            onClick={handleProfileClick}
+            className="block px-4 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 w-full text-left transition duration-200"
+          >
+            Profile
+          </button>
+          <button
+            onClick={handleLogout}
+            className="block px-4 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 w-full text-left transition duration-200"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+
+      {/* Modal */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
+            <p className="mb-2"><strong>National ID:</strong> {nationalId || 'N/A'}</p>
+            <p className="mb-4"><strong>Email:</strong> {useremail || 'N/A'}</p>
+            <button
+              onClick={closeProfileModal}
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
           </div>
         </header>
   
