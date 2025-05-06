@@ -21,6 +21,9 @@ import dependentsRoutes from './Routes/dependentRoutes.js'
 import leaveTypeRoutes from './Routes/leaveTypeRoutes.js'
 import Reports from './Routes/reportRoutes.js'
 import './subscriptionCheck.js'
+import changePasswordRoutes from './Routes/changePasswordRoutes.js'
+
+
 const app = express()
 
 dotenv.config()
@@ -33,7 +36,7 @@ const PORT = process.env.PORT || 8100;
 app.use('/api/employees', employeeRoutes)
 app.use('/api/organisations', organisationRoutes)
 app.use("/api/users", userRoute)
-
+app.use('/api/auth', changePasswordRoutes)
 app.use('/uploads', express.static('uploads'))
 
 app.use('/api/documents', documentRoutes)
