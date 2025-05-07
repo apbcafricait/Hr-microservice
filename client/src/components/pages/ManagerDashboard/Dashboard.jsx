@@ -41,8 +41,6 @@ const Dashboard = () => {
   const totalLeaveRequests = leaveRequests?.data?.length || 0;
   console.log("These are the leave requests", totalLeaveRequests)
   
-
-
   const departmentSalaryData = employees?.data?.employees?.reduce((acc, emp) => {
     const departmentName = emp.department?.name || "Unassigned";
     acc[departmentName] = (acc[departmentName] || 0) + parseFloat(emp.salary);

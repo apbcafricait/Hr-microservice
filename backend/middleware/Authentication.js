@@ -54,6 +54,7 @@ const admin = () => {
   }
 }
 
+
 // Same fix for manager middleware
 const manager = () => {
   return async (req, res, next) => {
