@@ -124,7 +124,7 @@ export class EmployeesController {
         try {
             const {
                 email,
-                password, // Add password for user creation
+                password, 
                 organisationId,
                 firstName,
                 lastName,
