@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+ import React, { useState } from "react";
 import { FaBars, FaTimes, FaTachometerAlt, FaUsers, FaRegCalendarAlt, FaClipboardList, FaChartBar, FaMoneyBillWave, FaCog } from "react-icons/fa";
 
 const ManagerSidebar = ({ currentSection, setCurrentSection }) => {
