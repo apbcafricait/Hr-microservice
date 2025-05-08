@@ -27,15 +27,20 @@ const Dashboard = () => {
   const id = userInfo?.id;
   const { data: orgEmpData } = useGetEmployeeQuery(id);
   const organisationId = orgEmpData?.data.employee.organisation.id;
+  console.log("This is the organisation ID", organisationId);
+
   const employeeId = orgEmpData?.data.employee.id;
 
   const { data: employees, error: employeesError, isLoading: employeesLoading } = useGetOrganisationEmployeesQuery(organisationId);
-  const { data: leaveRequests, error: leaveError, isLoading: leaveLoading } = useGetAllLeaveRequestsOfOrganisationQuery(employeeId);
+
+  const { data: leaveRequests, error: leaveError, isLoading: leaveLoading } = useGetAllLeaveRequestsOfOrganisationQuery(organisationId);
 
   const totalEmployees = employees?.data?.employees?.length || 0;
   const totalSalary = employees?.data?.employees?.reduce((acc, emp) => acc + parseFloat(emp.salary), 0) || 0;
-  const totalLeaveRequests = leaveRequests?.data?.leaveRequests?.length || 0;
 
+  const totalLeaveRequests = leaveRequests?.data?.length || 0;
+  console.log("These are the leave requests", totalLeaveRequests)
+  
   const departmentSalaryData = employees?.data?.employees?.reduce((acc, emp) => {
     const departmentName = emp.department?.name || "Unassigned";
     acc[departmentName] = (acc[departmentName] || 0) + parseFloat(emp.salary);
@@ -155,7 +160,7 @@ const Dashboard = () => {
 
       <section className="mt-6">
         <h2 className="text-lg font-medium text-gray-600 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={handleAddEmployeeClick}
             className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
@@ -168,11 +173,11 @@ const Dashboard = () => {
           >
             Approve Leave
           </button>
-          <button
+          {/* <button
             className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white py-3 rounded-lg shadow transition duration-300 transform hover:scale-105"
           >
             Start Recruitment
-          </button>
+          </button> */}
 
         </div>
       </section>
