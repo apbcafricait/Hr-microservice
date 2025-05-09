@@ -15,7 +15,7 @@ import {
   Shield
 } from 'lucide-react';
 
-const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is received
+const Sidebar = ({ activeLink, setActiveLink }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [hoveredLink, setHoveredLink] = useState(null);
 
@@ -26,7 +26,7 @@ const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is
     { name: 'Leave', icon: Calendar },
     { name: 'Recruitment', icon: UserPlus },
     { name: 'Performance', icon: BarChart2 },
-    { name: "Payroll",  icon: BarChart2 },
+    { name: "Payroll", icon: BarChart2 },
     { name: 'Time', icon: Clock },
     { name: 'My Info', icon: User },
     { name: 'Claims', icon: FileText },
@@ -38,12 +38,12 @@ const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is
       initial={{ width: isExpanded ? 256 : 80 }}
       animate={{ width: isExpanded ? 256 : 80 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="relative h-screen bg-white border-r border-gray-200 shadow-lg"
+      className="relative h-screen bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg transition-all duration-300"
     >
       {/* Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -right-3 top-6 bg-purple-600 rounded-full p-1.5 text-white shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 z-50"
+        className="absolute -right-3 top-6 bg-white rounded-full p-1.5 text-purple-700 shadow-lg hover:bg-gray-100 focus:outline-none z-50"
       >
         <motion.div
           animate={{ rotate: isExpanded ? 0 : 180 }}
@@ -56,15 +56,15 @@ const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is
       {/* Logo Section */}
       <div className={`p-6 ${isExpanded ? 'px-6' : 'px-4'}`}>
         <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg shadow-lg">
-            <Award className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-center w-10 h-10 bg-white rounded-lg shadow-md">
+            <Award className="w-6 h-6 text-purple-700" />
           </div>
           {isExpanded && (
             <motion.h1
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
-              className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
+              className="text-xl font-bold text-white"
             >
               Nexus Pro
             </motion.h1>
@@ -77,25 +77,28 @@ const Sidebar = ({ activeLink, setActiveLink }) => {  // Ensure setActiveLink is
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const IconComponent = item.icon;
+            const isActive = activeLink === item.name;
             return (
               <motion.li key={item.name}>
                 <a
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setActiveLink(item.name); // Correctly updates state
+                    setActiveLink(item.name);
                   }}
                   onMouseEnter={() => setHoveredLink(item.name)}
                   onMouseLeave={() => setHoveredLink(null)}
-                  className={`relative flex items-center px-3 py-3 rounded-lg transition-all duration-200 group
-                    ${activeLink === item.name
-                      ? 'text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-md'
-                      : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                  className={`relative flex items-center px-3 py-3 rounded-lg transition-all duration-200 group ${
+                    isActive
+                      ? 'bg-white text-purple-700 shadow-md'
+                      : 'text-white hover:bg-white hover:text-purple-700'
+                  }`}
                 >
                   <IconComponent
                     className={`w-5 h-5 ${
-                      activeLink === item.name ? 'text-white' : 'text-gray-500 group-hover:text-purple-600'
+                      isActive
+                        ? 'text-purple-700'
+                        : 'text-white group-hover:text-purple-700'
                     }`}
                   />
                   {isExpanded && (
