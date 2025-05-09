@@ -24,13 +24,19 @@ const Sidebar = ({ activeLink, setActiveLink }) => {
     { name: 'Admin', icon: Shield },
     { name: 'Employees', icon: Users },
     { name: 'Leave', icon: Calendar },
+
     { name: 'Recruitment', icon: UserPlus },
     { name: 'Performance', icon: BarChart2 },
     { name: "Payroll", icon: BarChart2 },
+
+    // { name: 'Recruitment', icon: UserPlus },
+    // { name: 'Performance', icon: BarChart2 },
+    { name: "Payroll",  icon: BarChart2 },
+
     { name: 'Time', icon: Clock },
     { name: 'My Info', icon: User },
     { name: 'Claims', icon: FileText },
-    { name: 'Settings', icon: Settings },
+    // { name: 'Settings', icon: Settings },
   ];
 
   return (

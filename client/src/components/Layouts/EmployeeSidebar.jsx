@@ -11,8 +11,7 @@ import {
   CogIcon,
   LogoutIcon // Import the logout icon
 } from '@heroicons/react/24/outline';
-import { useDispatch } from 'react-redux'; // If using Redux
-import { logout } from '../../slices/authSlice'; // Adjust the import according to your auth slice
+import { useDispatch } from 'react-redux'; // If using Redux// Adjust the import according to your auth slice
 import { useNavigate } from 'react-router-dom'; // Import navigate hook
 
 const EmployeeSidebar = ({ setActiveComponent }) => {

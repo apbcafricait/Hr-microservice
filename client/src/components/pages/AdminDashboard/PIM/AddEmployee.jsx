@@ -8,6 +8,8 @@ import { useGetOrganizationsQuery } from "../../../../slices/organizationSlice";
 import { useGetOrganisationByIdQuery } from "../../../../slices/organizationSlice";
 import { useSelector } from "react-redux";
 import { useGetEmployeeQuery } from "../../../../slices/employeeSlice";
+import {useCreateDepartmentMutation} from "../../../../slices/departmentsApiSlice";
+import { useGetDepartmentsQuery } from "../../../../slices/departmentsApiSlice";
 const AddEmployee = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -22,6 +24,8 @@ const AddEmployee = () => {
     role: "",
     organisationId: "", // Changed to empty string to require selection
   });
+  const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
+  const [newDepartmentName, setNewDepartmentName] = useState("");
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: employee } = useGetEmployeeQuery(id);
@@ -33,7 +37,8 @@ const AddEmployee = () => {
   const [createEmployee, { isLoading: isCreatingEmployee }] = useCreateEmployeeMutation();
   const { data: organizationsData, isLoading: isLoadingOrganizations, error: orgError } = useGetOrganizationsQuery();
   const {data: organization} = useGetOrganisationByIdQuery(organisationId);
-
+  const { data: departmentsData, refetch: refetchDepartments } = useGetDepartmentsQuery(organisationId);
+  const [createDepartment] = useCreateDepartmentMutation();
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -134,6 +139,28 @@ const AddEmployee = () => {
     setPreviewImage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
+  const handleCreateDepartment = async () => {
+    if (!newDepartmentName) {
+      toast.error("Please enter a department name");
+      return;
+    }
+
+    try {
+      const newDept = await createDepartment({
+        name: newDepartmentName,
+        organisationId: Number(organisationId)
+      }).unwrap();
+
+      toast.success("Department created successfully!");
+      setNewDepartmentName("");
+      setIsDepartmentModalOpen(false);
+      refetchDepartments(); // Refresh departments list
+      setFormData({ ...formData, departmentId: newDept.id }); // Auto-select new department
+    } catch (error) {
+      toast.error(`Failed to create department: ${error?.data?.message || error.message}`);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-4 sm:p-6 lg:p-8">
@@ -190,7 +217,7 @@ const AddEmployee = () => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   type="button"
-                  className="absolute bottom-2 right-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full p-2 text-white hover:from-indigo-700 hover:to-purple-700 transition-colors duration-200 shadow-md"
+                  className="absolute bottom-6 right-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full p-2 text-white hover:from-indigo-700 hover:to-purple-700 transition-colors duration-200 shadow-md"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Plus className="h-5 w-5" />
@@ -340,19 +367,36 @@ const AddEmployee = () => {
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-indigo-400 pointer-events-none" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-indigo-900 mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  placeholder="employee@example.com"
-                  className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
+                <div className="gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-indigo-900 mb-2">
+                      Department <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={formData.departmentId}
+                        onChange={(e) => {
+                          if (e.target.value === "new") {
+                            setIsDepartmentModalOpen(true);
+                          } else {
+                            setFormData({ ...formData, departmentId: e.target.value });
+                          }
+                        }}
+                        className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 shadow-sm appearance-none"
+                        required
+                      >
+                        <option value="">Select Department</option>
+                        {/* {departmentsData?.map((dept) => (
+                          <option key={dept.id} value={dept.id}>
+                            {dept.name}
+                          </option>
+                        ))} */}
+                        <option value="new">+ Add New Department</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-indigo-400 pointer-events-none" />
+                    </div>
+
+                  </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-indigo-900 mb-2">
@@ -368,6 +412,7 @@ const AddEmployee = () => {
                 />
               </div>
             </div>
+            
 
             {/* Required Field Note */}
             <div className="text-sm text-indigo-600">
@@ -405,8 +450,64 @@ const AddEmployee = () => {
                 )}
               </motion.button>
             </div>
+            </div>
           </form>
         </motion.div>
+        <AnimatePresence>
+          {isDepartmentModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            >
+              <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.95 }}
+                className="bg-white rounded-lg p-6 w-full max-w-md"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-indigo-900">Add New Department</h2>
+                  <button
+                    onClick={() => setIsDepartmentModalOpen(false)}
+                    className="text-gray-400 hover:text-indigo-600"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={newDepartmentName}
+                  onChange={(e) => setNewDepartmentName(e.target.value)}
+                  placeholder="Department Name"
+                  className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg mb-4"
+                />
+                <input
+                  type="text"
+                  value={newDepartmentName}
+                  onChange={(e) => setNewDepartmentName(e.target.value)}
+                  placeholder="Department Description"
+                  className="w-full px-4 py-3 border-2 border-indigo-100 rounded-lg mb-4"
+                />
+                <div className="flex justify-end gap-4">
+                  <button
+                    onClick={() => setIsDepartmentModalOpen(false)}
+                    className="px-4 py-2 border-2 border-indigo-200 text-indigo-600 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateDepartment}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                  >
+                    Create
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

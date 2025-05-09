@@ -6,13 +6,13 @@ import {
   useGetAttedanceOfEmployeeQuery,
 } from "../../../slices/attendanceSlice";
 import { useSelector } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TimeAtWork = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeAttendanceId, setActiveAttendanceId] = useState(null);
   const [clockOutMessage, setClockOutMessage] = useState("");
-  const [isClockInOn, setIsClockInOn] = useState(false); // Added missing state
-  const [isClockOutOn, setIsClockOutOn] = useState(false); // Added missing state
 
   const { userInfo } = useSelector((state) => state.auth);
   const employeeId = userInfo?.id;
@@ -21,31 +21,26 @@ const TimeAtWork = () => {
   const [clockOut, { isLoading: isClockingOut, error: clockOutError }] = useClockOutMutation();
   const { data: attendanceRecords, refetch } = useGetAttedanceOfEmployeeQuery(employeeId);
 
-  // Sync state with backend on load
   useEffect(() => {
     if (attendanceRecords) {
       const activeRecord = attendanceRecords.find((record) => record.clockIn && !record.clockOut);
       if (activeRecord) {
-        setIsClockInOn(true);
-        setIsClockOutOn(false);
         setActiveAttendanceId(activeRecord.id);
       } else {
-        setIsClockInOn(false);
-        setIsClockOutOn(true);
+        setActiveAttendanceId(null);
       }
     }
   }, [attendanceRecords]);
 
-  // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   const toggleClockIn = async () => {
-    if (!activeAttendanceId) {
+    if (!activeAttendanceId && !isClockingIn && !isClockingOut) {
       if (!employeeId) {
-        alert("Please log in to clock in.");
+        toast.error("Please log in to clock in.");
         return;
       }
       try {
@@ -55,41 +50,28 @@ const TimeAtWork = () => {
           location: "Office A",
         }).unwrap();
         setActiveAttendanceId(response.id);
-        setIsClockInOn(true);
-        setIsClockOutOn(false);
-        alert("Clocked in successfully!");
+        toast.success("Clocked in successfully!");
+        refetch();
       } catch (error) {
-        alert(`Failed to clock in: ${error.data?.message || "Unknown error"}`);
+        toast.error(`Failed to clock in: ${error.data?.message || "Unknown error"}`);
       }
     }
   };
 
   const toggleClockOut = async () => {
-    if (activeAttendanceId) {
+    if (activeAttendanceId && !isClockingIn && !isClockingOut) {
       try {
-        const response = await clockOut({
-          id: activeAttendanceId,
-          clockOutTime: currentTime.toISOString(),
-        }).unwrap();
-        console.log("Clock out successful, response:", response);
-        setIsClockOutOn(true);
-        setIsClockInOn(false);
+        await clockOut(activeAttendanceId).unwrap();
         setActiveAttendanceId(null);
-        setClockOutMessage("");
-        refetch(); // Refresh attendance records
-        alert("Clocked out successfully!");
+        toast.success("Clocked out successfully!");
+        refetch();
       } catch (error) {
-        console.error("Failed to clock out:", error);
         setClockOutMessage(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
-        alert(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
+        toast.error(`Failed to clock out: ${error.data?.message || "Unknown error"}`);
       }
     } else {
       setClockOutMessage("Cannot clock out: You are not clocked in or no active attendance record exists.");
-      console.log("Cannot clock out: Not clocked in or no active attendance ID.", {
-        isClockInOn,
-        isClockOutOn,
-        activeAttendanceId,
-      });
+      toast.error("Cannot clock out: You are not clocked in or no active attendance record exists.");
     }
   };
 
@@ -123,6 +105,7 @@ const TimeAtWork = () => {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <EmployeeHeader />
       <main className="flex-1 max-w-6xl mx-auto w-full p-6">
+        <ToastContainer position="top-right" autoClose={3000} />
         <div className="bg-white rounded-2xl shadow-lg p-6 w-full flex flex-col items-center">
           <div className="text-center mb-6">
             <h1 className="text-4xl font-bold text-blue-600">{formatTime(currentTime)}</h1>
@@ -138,7 +121,7 @@ const TimeAtWork = () => {
                   disabled={!!activeAttendanceId || isClockingIn || isClockingOut}
                   className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ease-in-out ${
                     activeAttendanceId ? "bg-blue-500" : "bg-gray-300"
-                  } ${(!!activeAttendanceId || isClockingIn || isClockingOut) ? "cursor-not-allowed opacity-50" : ""}`}
+                  } ${!!activeAttendanceId || isClockingIn || isClockingOut ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                 >
                   <span
                     className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
@@ -160,12 +143,12 @@ const TimeAtWork = () => {
                   onClick={toggleClockOut}
                   disabled={!activeAttendanceId || isClockingIn || isClockingOut}
                   className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ease-in-out ${
-                    !activeAttendanceId ? "bg-gray-300" : "bg-blue-500"
-                  } ${(!activeAttendanceId || isClockingIn || isClockingOut) ? "cursor-not-allowed opacity-50" : ""}`}
+                    activeAttendanceId ? "bg-blue-500" : "bg-gray-300"
+                  } ${!activeAttendanceId || isClockingIn || isClockingOut ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                 >
                   <span
                     className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
-                      !activeAttendanceId ? "translate-x-0" : "translate-x-6"
+                      activeAttendanceId ? "translate-x-0" : "translate-x-6"
                     }`}
                   ></span>
                 </button>
