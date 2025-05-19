@@ -27,16 +27,6 @@ const LeaveList = () => {
   console.log(leaveRequests, "leaveRequests");
   const [deleteLeaveRequest, { isLoading: isDeleting }] = useDeleteLeaveRequestMutation();
 
-  const handleReset = () => {
-    setDateRange({ from: '2025-01-01', to: '2025-12-31' });
-    setFilters({
-      status: '',
-      leaveType: '',
-      employeeName: '',
-      includePastEmployees: false,
-    });
-  };
-
   const handleDelete = async (id) => {
     try {
       await deleteLeaveRequest(id).unwrap();

@@ -1,89 +1,99 @@
-import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 import prisma from '../../db/prisma.js'
+import authenticatePassword  from './authenticatePassword.js'; // Import the standalone middleware
 
-dotenv.config() // Ensure environment variables are loaded
+dotenv.config(); // Ensure environment variables are loaded
 
 // Middleware to authenticate users
-const authenticated = (req, res, next) => {
-  const myToken = req.cookies.authToken
+const authenticated = async (req, res, next) => {
+  const myToken = req.cookies.authToken;
   if (!myToken) {
-    return res.status(401).json({ message: 'Not authorized' })
+    return res.status(401).json({ message: 'Not authorized' });
   }
 
   try {
-    const decoded = jwt.verify(myToken, process.env.JWT_SECRET)
-    req.user = decoded
-    next()
-  } catch (error) {
-    console.error('Error verifying token:', error)
-    return res.status(401).json({ message: 'Not authorized' })
-  }
-}
+    const decoded = jwt.verify(myToken, process.env.JWT_SECRET);
+    req.user = decoded;
 
-// The key issue is here - admin middleware needs to return a function
+    // Optionally call authenticatePassword as part of authentication logic
+    const passwordCheck = await authenticatePassword(req, res);
+    if (!passwordCheck) {
+      return res.status(401).json({ message: 'Invalid password' });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+};
+
+// Admin middleware
 const admin = () => {
   return async (req, res, next) => {
     try {
       if (!req.user || !req.user.id) {
-        return res.status(401).json({ message: 'User not authenticated' })
+        return res.status(401).json({ message: 'User not authenticated' });
       }
 
-      const id = req.user.id
-      console.log('Admin middleware - User ID:', id) // Debug
+      const id = req.user.id;
 
       const user = await prisma.users.findUnique({
-        where: { id }
-      })
+        where: { id },
+      });
 
       if (!user) {
-        return res.status(404).json({ message: 'User not found' })
+        return res.status(404).json({ message: 'User not found' });
       }
 
-      console.log('User from DB:', user) // Debug
-      const isAdmin = user.role === 'admin'
+      const isAdmin = user.role === 'admin';
       if (!isAdmin) {
-        return res.status(403).json({ message: 'Not authorized as Admin' })
+        return res.status(403).json({ message: 'Not authorized as Admin' });
       }
 
-      next()
+      next();
     } catch (error) {
-      console.error('Error verifying user role:', error)
-      return res.status(500).json({ message: 'Server error' })
+      console.error('Error verifying user role:', error);
+      return res.status(500).json({ message: 'Server error' });
     }
-  }
-}
+  };
+};
+
+
+// Manager middleware
+
 
 // Same fix for manager middleware
+
 const manager = () => {
   return async (req, res, next) => {
     try {
       if (!req.user || !req.user.id) {
-        return res.status(401).json({ message: 'User not authenticated' })
+        return res.status(401).json({ message: 'User not authenticated' });
       }
 
-      const id = req.user.id
-      console.log('Manager middleware - User ID:', id) // Debug
+      const id = req.user.id;
 
       const user = await prisma.users.findUnique({
-        where: { id }
-      })
+        where: { id },
+      });
 
       if (!user) {
-        return res.status(404).json({ message: 'User not found' })
+        return res.status(404).json({ message: 'User not found' });
       }
 
-      const isManager = user.role === 'manager'
+      const isManager = user.role === 'manager';
       if (!isManager) {
-        return res.status(403).json({ message: 'Not authorized as Manager' })
+        return res.status(403).json({ message: 'Not authorized as Manager' });
       }
 
-      next() // Proceed if user is manager
+      next();
     } catch (error) {
-      console.error('Error verifying user role:', error)
-      return res.status(500).json({ message: 'Server error' })
+      console.error('Error verifying user role:', error);
+      return res.status(500).json({ message: 'Server error' });
     }
-  }
-}
+  };
+};
 
-export { authenticated, admin, manager }
+export { authenticated, admin, manager };
