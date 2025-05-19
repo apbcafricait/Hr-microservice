@@ -105,15 +105,15 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="w-full font-['Inter'] bg-gray-50 antialiased">
+    <div className="w-full bg-gray-50 antialiased font-lato">
       <Header />
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="relative bg-gradient-to-br from-indigo-800 via-gray-900 to-gray-800 text-white overflow-hidden"
+        className="relative bg-gradient-to-br from-indigo-900 via-gray-900 to-gray-800 text-white overflow-hidden"
       >
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-15">
           <div className="absolute w-[600px] h-[600px] bg-gradient-to-r from-indigo-400/20 to-blue-400/20 animate-spin-slow blur-3xl" />
           <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-gradient-to-l from-blue-400/20 to-indigo-400/20 animate-pulse blur-3xl" />
         </div>
@@ -124,7 +124,7 @@ const LandingPage = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-['Poppins'] mb-6 leading-tight tracking-tight"
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-poppins mb-6 leading-tight tracking-tight"
             >
               Transform Your HR with{' '}
               <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
@@ -136,7 +136,7 @@ const LandingPage = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-lg sm:text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto font-light"
+              className="text-lg sm:text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto font-lato font-light"
             >
               A unified platform for HR management, payroll, and workforce analytics
             </motion.p>
@@ -153,7 +153,7 @@ const LandingPage = () => {
                 placeholder="Search features or solutions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-5 py-4 rounded-full border border-gray-200 focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 placeholder-gray-400 bg-white/90 shadow-md text-gray-800"
+                className="w-full px-5 py-4 rounded-full border border-gray-200 focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 placeholder-gray-400 bg-white/90 shadow-md text-gray-800 font-lato"
                 aria-label="Search features"
               />
               <Search className="absolute right-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
@@ -168,7 +168,7 @@ const LandingPage = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-xl transition-all duration-300 shadow-md shadow-indigo-600/30"
+                className="group bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-xl transition-all duration-300 shadow-md shadow-indigo-600/30 font-lato"
                 aria-label="Schedule a demo"
               >
                 Schedule Demo
@@ -177,7 +177,7 @@ const LandingPage = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group border-2 border-white/30 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/10 transition-all duration-300"
+                className="group border-2 border-white/30 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/10 transition-all duration-300 font-lato"
                 onClick={() => setShowVideo(true)}
                 aria-label="Watch demo video"
               >
@@ -198,11 +198,11 @@ const LandingPage = () => {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-['Poppins'] text-gray-900 mb-4"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-poppins text-gray-900 mb-4"
             >
               Enterprise-Grade HR Solutions
             </motion.h2>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto font-lato">
               Discover tools designed for modern workforce management
             </p>
           </div>
@@ -227,10 +227,10 @@ const LandingPage = () => {
                   <div className="mb-6 bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3 font-['Poppins']">
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3 font-poppins">
                     {feature.title}
                   </h3>
-                  <p className="text-base text-gray-600 leading-relaxed">
+                  <p className="text-base text-gray-600 leading-relaxed font-lato">
                     {feature.description}
                   </p>
                 </motion.div>
@@ -242,7 +242,7 @@ const LandingPage = () => {
                 feature.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 feature.description.toLowerCase().includes(searchQuery.toLowerCase())
             ).length === 0 && (
-              <p className="text-center text-gray-500 mt-8">No features found matching your search.</p>
+              <p className="text-center text-gray-500 mt-8 font-lato">No features found matching your search.</p>
             )}
         </div>
       </section>
@@ -256,7 +256,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-['Poppins'] text-gray-900 mb-4"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-poppins text-gray-900 mb-4"
             >
               Why Enterprises Choose Nexus
             </motion.h2>
@@ -276,10 +276,10 @@ const LandingPage = () => {
                 <div className="mb-6 bg-indigo-100 w-14 h-14 rounded-full flex items-center justify-center">
                   {benefit.icon}
                 </div>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-3 font-['Poppins']">
+                <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-3 font-poppins">
                   {benefit.title}
                 </h3>
-                <p className="text-base text-gray-600">{benefit.description}</p>
+                <p className="text-base text-gray-600 font-lato">{benefit.description}</p>
               </motion.div>
             ))}
           </div>
@@ -295,15 +295,15 @@ const LandingPage = () => {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 className="bg-white p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
               >
-                <p className="text-lg text-gray-600 italic mb-4">“{testimonial.quote}”</p>
+                <p className="text-lg text-gray-600 italic mb-4 font-lato">“{testimonial.quote}”</p>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 font-semibold">{testimonial.name[0]}</span>
+                    <span className="text-gray-500 font-semibold font-lato">{testimonial.name[0]}</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600">{testimonial.role}</p>
-                    <p className="text-sm text-gray-500">{testimonial.company}</p>
+                    <p className="font-semibold text-gray-900 font-poppins">{testimonial.name}</p>
+                    <p className="text-sm text-gray-600 font-lato">{testimonial.role}</p>
+                    <p className="text-sm text-gray-500 font-lato">{testimonial.company}</p>
                   </div>
                 </div>
               </motion.div>
@@ -313,21 +313,21 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 md:py-28 bg-gradient-to-r from-indigo-800 via-gray-900 to-gray-800">
+      <section className="py-20 md:py-28 bg-gradient-to-r from-indigo-900 via-gray-900 to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-['Poppins'] text-white mb-8"
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-poppins text-white mb-8"
           >
             Ready to Transform Your HR?
           </motion.h2>
 
           <motion.div whileHover={{ scale: 1.05 }} className="inline-block mb-6">
             <button
-              className="group bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-10 py-4 rounded-full font-semibold text-lg hover:shadow-2xl transition-all duration-300 shadow-md shadow-indigo-600/30"
+              className="group bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-10 py-4 rounded-full font-semibold text-lg hover:shadow-2xl transition-all duration-300 shadow-md shadow-indigo-600/30 font-lato"
               onClick={() => setShowVideo(true)}
               aria-label="Watch demo video"
             >
@@ -338,7 +338,7 @@ const LandingPage = () => {
 
           <motion.div whileHover={{ scale: 1.05 }} className="inline-block">
             <button
-              className="group bg-white text-indigo-600 px-10 py-4 rounded-full font-semibold text-lg hover:bg-indigo-50 hover:shadow-lg transition-all duration-300 border border-indigo-200"
+              className="group bg-white text-indigo-600 px-10 py-4 rounded-full font-semibold text-lg hover:bg-indigo-50 hover:shadow-lg transition-all duration-300 border border-indigo-200 font-lato"
               aria-label="Start free trial"
             >
               Start Free Trial
@@ -364,7 +364,7 @@ const LandingPage = () => {
               className="bg-white rounded-xl p-6 max-w-4xl w-full shadow-2xl"
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-800 font-['Poppins']">Nexus Demo Video</h3>
+                <h3 className="text-xl font-semibold text-gray-800 font-poppins">Nexus Demo Video</h3>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}

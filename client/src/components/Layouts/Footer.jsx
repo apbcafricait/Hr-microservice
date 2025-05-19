@@ -1,8 +1,8 @@
 import React from "react";
-import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
+import {
+  Facebook,
+  Twitter,
+  Instagram,
   Linkedin,
   Heart,
   ChevronUp,
@@ -50,7 +50,7 @@ const Footer = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8 }}
-      className="bg-gradient-to-r from-indigo-900 via-gray-900 to-gray-800 text-gray-300"
+      className="bg-gradient-to-r from-indigo-950 via-gray-900 to-gray-800 text-gray-300 font-lato"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
@@ -58,11 +58,11 @@ const Footer = () => {
           <div className="flex flex-col items-start">
             <motion.h2
               whileHover={{ scale: 1.05 }}
-              className="text-3xl font-extrabold font-['Poppins'] text-white mb-4"
+              className="text-3xl font-extrabold font-poppins tracking-poppins-tight text-white mb-4"
             >
               NEXUS
             </motion.h2>
-            <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+            <p className="text-sm text-gray-400 mb-6 leading-relaxed font-lato">
               Empowering HR excellence with innovative, unified solutions.
             </p>
             <div className="flex space-x-4 mb-4">
@@ -85,7 +85,7 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center text-sm text-indigo-400 hover:text-indigo-300 transition-colors duration-200"
+              className="flex items-center text-sm text-indigo-400 hover:text-indigo-300 transition-colors duration-200 font-lato"
               aria-label="Scroll to top"
             >
               <ChevronUp size={16} className="mr-1" />
@@ -95,13 +95,15 @@ const Footer = () => {
 
           {/* Company Links */}
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold font-['Poppins'] text-white mb-4">Company</h3>
+            <h3 className="text-lg font-semibold font-poppins tracking-poppins-tight text-white mb-4">
+              Company
+            </h3>
             <ul className="space-y-3">
               {companyLinks.map((link, index) => (
                 <motion.li
                   key={index}
                   whileHover={{ x: 5, color: "#4f46e5" }}
-                  className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200"
+                  className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200 font-lato"
                 >
                   <a href={link.href} aria-label={link.label}>
                     {link.label}
@@ -113,13 +115,15 @@ const Footer = () => {
 
           {/* Support Links */}
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold font-['Poppins'] text-white mb-4">Support</h3>
+            <h3 className="text-lg font-semibold font-poppins tracking-poppins-tight text-white mb-4">
+              Support
+            </h3>
             <ul className="space-y-3">
               {supportLinks.map((link, index) => (
                 <motion.li
                   key={index}
                   whileHover={{ x: 5, color: "#4f46e5" }}
-                  className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200"
+                  className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200 font-lato"
                 >
                   <a href={link.href} aria-label={link.label}>
                     {link.label}
@@ -131,8 +135,12 @@ const Footer = () => {
 
           {/* Newsletter Signup */}
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold font-['Poppins'] text-white mb-4">Stay Updated</h3>
-            <p className="text-sm text-gray-400 mb-4">Subscribe for the latest HR insights and updates.</p>
+            <h3 className="text-lg font-semibold font-poppins tracking-poppins-tight text-white mb-4">
+              Stay Updated
+            </h3>
+            <p className="text-sm text-gray-400 mb-4 font-lato">
+              Subscribe for the latest HR insights and updates.
+            </p>
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col space-y-3">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -144,7 +152,7 @@ const Footer = () => {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="w-full px-4 py-2 rounded-full bg-gray-800 border border-gray-700 text-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 placeholder-gray-500"
+                  className="w-full px-4 py-2 rounded-full bg-gray-800 border border-gray-700 text-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 placeholder-gray-500 font-lato"
                   aria-label="Email for newsletter"
                   required
                 />
@@ -154,7 +162,7 @@ const Footer = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300"
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-full font-semibold text-sm hover:shadow-lg transition-all duration-300 font-lato"
                 aria-label="Subscribe to newsletter"
               >
                 Subscribe
@@ -165,7 +173,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-8 border-t border-gray-800 pt-6">
-          <div className="flex flex-col md:flex-row items-center justify-between text-xs md:text-sm text-gray-400">
+          <div className="flex flex-col md:flex-row items-center justify-between text-xs md:text-sm text-gray-400 font-lato">
             <span>© {currentYear} Nexus. All rights reserved.</span>
             <motion.div
               className="flex items-center mt-4 md:mt-0"
@@ -178,7 +186,7 @@ const Footer = () => {
             <motion.a
               href="#sitemap"
               whileHover={{ color: "#4f46e5" }}
-              className="mt-4 md:mt-0 text-gray-400 hover:text-indigo-400 transition-colors duration-200"
+              className="mt-4 md:mt-0 text-gray-400 hover:text-indigo-400 transition-colors duration-200 font-lato"
               aria-label="View sitemap"
             >
               Sitemap

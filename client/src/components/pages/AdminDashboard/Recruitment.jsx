@@ -4,7 +4,6 @@ import {
   Eye,
   Trash2,
   Download,
-  ChevronDown,
   Search,
   RefreshCw,
   Plus,
@@ -26,23 +25,20 @@ import jsPDF from "jspdf";
 
 const Recruitment = () => {
   const [activeTab, setActiveTab] = useState("Candidates");
-  const [selectedJobTitle, setSelectedJobTitle] = useState("");
-  const [selectedVacancy, setSelectedVacancy] = useState("");
-  const [selectedHiringManager, setSelectedHiringManager] = useState("");
+  const [vacancySearch, setVacancySearch] = useState("");
+  const [hiringManagerSearch, setHiringManagerSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [keywords, setKeywords] = useState("");
   const [candidateName, setCandidateName] = useState("");
-  const [methodOfApplication, setMethodOfApplication] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editCandidateId, setEditCandidateId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [filteredCandidates, setFilteredCandidates] = useState([]);
 
   const [newCandidate, setNewCandidate] = useState({
-    jobTitle: "",
     vacancy: "",
     candidateName: "",
     hiringManager: "",
@@ -51,9 +47,6 @@ const Recruitment = () => {
     email: "",
     contactNumber: "",
     resume: null,
-    keywords: "",
-    methodOfApplication: "",
-    notes: "",
     from: "",
     to: "",
   });
@@ -63,26 +56,64 @@ const Recruitment = () => {
   const [updateCandidate, { isLoading: isUpdating }] = useUpdateCandidateMutation();
   const [deleteCandidate, { isLoading: isDeleting }] = useDeleteCandidateMutation();
 
+  // Filter logic
+  useEffect(() => {
+    const filtered = candidates.filter((candidate) => {
+      const matchesVacancy = vacancySearch
+        ? candidate.vacancy.toLowerCase().includes(vacancySearch.toLowerCase())
+        : true;
+      const matchesHiringManager = hiringManagerSearch
+        ? candidate.hiringManager.toLowerCase().includes(hiringManagerSearch.toLowerCase())
+        : true;
+      const matchesStatus = selectedStatus ? candidate.status === selectedStatus : true;
+      const matchesCandidateName = candidateName
+        ? candidate.candidateName.toLowerCase().includes(candidateName.toLowerCase())
+        : true;
+      const matchesDateRange =
+        dateFrom && dateTo
+          ? new Date(candidate.dateOfApplication) >= new Date(dateFrom) &&
+            new Date(candidate.dateOfApplication) <= new Date(dateTo)
+          : true;
+
+      return (
+        matchesVacancy &&
+        matchesHiringManager &&
+        matchesStatus &&
+        matchesCandidateName &&
+        matchesDateRange
+      );
+    });
+    setFilteredCandidates(filtered);
+    setCurrentPage(1);
+  }, [
+    candidates,
+    vacancySearch,
+    hiringManagerSearch,
+    selectedStatus,
+    candidateName,
+    dateFrom,
+    dateTo,
+  ]);
+
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = candidates.slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(candidates.length / recordsPerPage);
+  const currentRecords = filteredCandidates.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredCandidates.length / recordsPerPage);
 
   const handleReset = () => {
-    setSelectedJobTitle("");
-    setSelectedVacancy("");
-    setSelectedHiringManager("");
+    setVacancySearch("");
+    setHiringManagerSearch("");
     setSelectedStatus("");
     setDateFrom("");
     setDateTo("");
-    setKeywords("");
     setCandidateName("");
-    setMethodOfApplication("");
     setCurrentPage(1);
+    toast.info("Filters reset!", { theme: "light" });
   };
 
   const handleSearch = () => {
     setCurrentPage(1);
+    toast.info("Search applied!", { theme: "light" });
   };
 
   const formatDateForInput = (dateStr) => {
@@ -111,7 +142,6 @@ const Recruitment = () => {
       setIsEditMode(false);
       setEditCandidateId(null);
       setNewCandidate({
-        jobTitle: "",
         vacancy: "",
         candidateName: "",
         hiringManager: "",
@@ -120,9 +150,6 @@ const Recruitment = () => {
         email: "",
         contactNumber: "",
         resume: null,
-        keywords: "",
-        methodOfApplication: "",
-        notes: "",
         from: "",
         to: "",
       });
@@ -140,19 +167,17 @@ const Recruitment = () => {
     const requiredFields = [
       "candidateName",
       "vacancy",
-      "email",
+      "hiringManager",
       "dateOfApplication",
       "status",
+      "email",
       "contactNumber",
-      "jobTitle",
-      "hiringManager",
-      "methodOfApplication",
       "from",
       "to",
     ];
     const missingFields = requiredFields.filter((field) => !newCandidate[field]);
     if (missingFields.length > 0) {
-      toast.error(`Please fill in: ${missingFields.join(", ")}`);
+      toast.error(`Please fill in: ${missingFields.join(", ")}`, { theme: "light" });
       return false;
     }
     return true;
@@ -165,16 +190,16 @@ const Recruitment = () => {
     try {
       if (isEditMode) {
         await updateCandidate({ id: editCandidateId, candidateData: newCandidate }).unwrap();
-        toast.success("Candidate updated successfully!");
+        toast.success("Candidate updated successfully!", { theme: "light" });
       } else {
         await createCandidate(newCandidate).unwrap();
-        toast.success("Candidate created successfully!");
+        toast.success("Candidate created successfully!", { theme: "light" });
       }
       refetch();
       setCurrentPage(1);
       closeModal();
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to save candidate.");
+      toast.error(err?.data?.message || "Failed to save candidate.", { theme: "light" });
     }
   };
 
@@ -182,13 +207,13 @@ const Recruitment = () => {
     if (window.confirm("Are you sure you want to delete this candidate?")) {
       try {
         await deleteCandidate(id).unwrap();
-        toast.success("Candidate deleted successfully!");
+        toast.success("Candidate deleted successfully!", { theme: "light" });
         refetch();
         if (currentRecords.length === 1 && currentPage > 1) {
           setCurrentPage(currentPage - 1);
         }
       } catch (err) {
-        toast.error(err?.data?.message || "Failed to delete candidate.");
+        toast.error(err?.data?.message || "Failed to delete candidate.", { theme: "light" });
       }
     }
   };
@@ -196,52 +221,64 @@ const Recruitment = () => {
   const handleDownloadCandidateDetails = (candidate) => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.setTextColor(33, 150, 243); // Blue color
+    doc.setTextColor(55, 65, 81);
     doc.text("Candidate Details", 20, 20);
-    
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0); // Black color
+    doc.setTextColor(0, 0, 0);
     doc.text(`Name: ${candidate.candidateName}`, 20, 40);
-    doc.text(`Job Title: ${candidate.jobTitle}`, 20, 50);
-    doc.text(`Vacancy: ${candidate.vacancy}`, 20, 60);
-    doc.text(`Hiring Manager: ${candidate.hiringManager}`, 20, 70);
-    doc.text(`Application Date: ${formatDateForDisplay(candidate.dateOfApplication.split("T")[0])}`, 20, 80);
-    doc.text(`Status: ${candidate.status}`, 20, 90);
-    doc.text(`Email: ${candidate.email}`, 20, 100);
-    doc.text(`Contact Number: ${candidate.contactNumber}`, 20, 110);
-    doc.text(`Method of Application: ${candidate.methodOfApplication}`, 20, 120);
-    doc.text(`Keywords: ${candidate.keywords || "N/A"}`, 20, 130);
-    doc.text(`Notes: ${candidate.notes || "N/A"}`, 20, 140);
-
+    doc.text(`Vacancy: ${candidate.vacancy}`, 20, 50);
+    doc.text(`Hiring Manager: ${candidate.hiringManager}`, 20, 60);
+    doc.text(`Application Date: ${formatDateForDisplay(candidate.dateOfApplication.split("T")[0])}`, 20, 70);
+    doc.text(`Status: ${candidate.status}`, 20, 80);
+    doc.text(`Email: ${candidate.email}`, 20, 90);
+    doc.text(`Contact Number: ${candidate.contactNumber}`, 20, 100);
     doc.save(`${candidate.candidateName}_Details.pdf`);
+    toast.success(`Downloaded details for ${candidate.candidateName}`, { theme: "light" });
   };
 
-  const goToPreviousPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
-  const goToNextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      toast.info(`Navigated to page ${currentPage - 1}`, { theme: "light" });
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      toast.info(`Navigated to page ${currentPage + 1}`, { theme: "light" });
+    }
+  };
+
   const handleRecordsPerPageChange = (e) => {
-    setRecordsPerPage(Number(e.target.value));
+    const newRecordsPerPage = Number(e.target.value);
+    setRecordsPerPage(newRecordsPerPage);
     setCurrentPage(1);
+    toast.info(`Set ${newRecordsPerPage} records per page`, { theme: "light" });
   };
 
   if (isLoading) return <div className="text-center py-10 text-gray-600">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Tabs */}
-        <div className="mb-8 bg-white rounded-xl shadow-lg">
-          <nav className="flex space-x-2 p-4">
+        <div className="mb-8 bg-white rounded-2xl shadow-lg overflow-hidden">
+          <nav className="flex flex-wrap gap-2 p-4">
             {["Candidates", "Vacancy"].map((tab) => (
               <motion.button
                 key={tab}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-6 py-3 text-sm font-semibold rounded-lg transition-colors ${
+                className={`flex-1 sm:flex-none px-6 py-3 text-sm font-semibold rounded-lg transition-colors ${
                   activeTab === tab
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-700 hover:bg-blue-100"
+                    ? "bg-indigo-800 text-white shadow-md"
+                    : "text-gray-700 hover:bg-indigo-100"
                 }`}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  toast.info(`Switched to ${tab} tab`, { theme: "light" });
+                }}
               >
                 {tab}
               </motion.button>
@@ -253,68 +290,51 @@ const Recruitment = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-lg p-8"
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-lg p-6 sm:p-8"
         >
           {activeTab === "Candidates" ? (
             <>
               {/* Header */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Candidate Management</h2>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Candidate Management</h2>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => openModal()}
-                  className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                  className="flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-800 text-white rounded-lg hover:bg-indigo-900 transition-colors shadow-md text-sm sm:text-base"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Add Candidate
                 </motion.button>
               </div>
 
               {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
-                  <select
-                    value={selectedJobTitle}
-                    onChange={(e) => setSelectedJobTitle(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                  >
-                    <option value="">All</option>
-                    <option value="Software Development">Software Development</option>
-                    <option value="QA">Senior QA Lead</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Vacancy</label>
-                  <select
-                    value={selectedVacancy}
-                    onChange={(e) => setSelectedVacancy(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                  >
-                    <option value="">All</option>
-                    <option value="senior Software developer">Senior Software Developer</option>
-                    <option value="senior-qa-lead">Senior QA Lead</option>
-                  </select>
+                  <input
+                    value={vacancySearch}
+                    onChange={(e) => setVacancySearch(e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
+                    placeholder="Search by vacancy..."
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Hiring Manager</label>
-                  <select
-                    value={selectedHiringManager}
-                    onChange={(e) => setSelectedHiringManager(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                  >
-                    <option value="">All</option>
-                    <option value="HR">HR</option>
-                    <option value="manager2">Manager 2</option>
-                  </select>
+                  <input
+                    value={hiringManagerSearch}
+                    onChange={(e) => setHiringManagerSearch(e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
+                    placeholder="Search by manager..."
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                   >
                     <option value="">All</option>
                     <option value="Active">Active</option>
@@ -326,47 +346,47 @@ const Recruitment = () => {
                   <input
                     value={candidateName}
                     onChange={(e) => setCandidateName(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                     placeholder="Search by name..."
                   />
                 </div>
-                <div>
+                <div className="sm:col-span-2 lg:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <div className="flex space-x-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <input
                       type="date"
                       value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                     />
                     <input
                       type="date"
                       value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Filter Buttons */}
-              <div className="flex justify-end space-x-4 mb-8">
+              <div className="flex flex-col sm:flex-row justify-end gap-4 mb-6 sm:mb-8">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleReset}
-                  className="flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-white shadow-sm"
+                  className="flex items-center px-4 sm:px-6 py-2 sm:py-3 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm sm:text-base"
                 >
-                  <RefreshCw className="h-5 w-5 mr-2" />
+                  <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Reset
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSearch}
-                  className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md"
+                  className="flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-800 text-white rounded-lg hover:bg-indigo-900 shadow-md transition-all duration-200 hover:shadow-lg text-sm sm:text-base"
                 >
-                  <Search className="h-5 w-5 mr-2" />
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Search
                 </motion.button>
               </div>
@@ -374,108 +394,109 @@ const Recruitment = () => {
               {/* Table */}
               <div className="overflow-x-auto rounded-lg shadow-md">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-blue-50">
+                  <thead className="bg-indigo-50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Vacancy
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Candidate
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Manager
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Actions
-                      </th>
+                      {["Vacancy", "Candidate", "Manager", "Date", "Status", "Actions"].map((header) => (
+                        <th
+                          key={header}
+                          className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                        >
+                          {header}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentRecords.map((item) => (
-                      <motion.tr
-                        key={item.id}
-                        whileHover={{ backgroundColor: "#F9FAFB" }}
-                        className="transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.vacancy}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{item.candidateName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.hiringManager}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatDateForDisplay(item.dateOfApplication.split("T")[0])}
+                    {currentRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          No candidates found.
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                              item.status === "Active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap flex space-x-4">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            onClick={() => openModal(item)}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Eye className="h-5 w-5" />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            onClick={() => handleDeleteCandidate(item.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="h-5 w-5" />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            onClick={() => handleDownloadCandidateDetails(item)}
-                            className="text-teal-600 hover:text-teal-800"
-                          >
-                            <Download className="h-5 w-5" />
-                          </motion.button>
-                        </td>
-                      </motion.tr>
-                    ))}
+                      </tr>
+                    ) : (
+                      currentRecords.map((item) => (
+                        <motion.tr
+                          key={item.id}
+                          whileHover={{ backgroundColor: "#F9FAFB" }}
+                          className="transition-colors"
+                        >
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900">{item.vacancy}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{item.candidateName}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-700">{item.hiringManager}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900">
+                            {formatDateForDisplay(item.dateOfApplication.split("T")[0])}
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                item.status === "Active"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap flex gap-2 sm:gap-4">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              onClick={() => openModal(item)}
+                              className="text-indigo-600 hover:text-indigo-800"
+                              title="View/Edit"
+                            >
+                              <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              onClick={() => handleDeleteCandidate(item.id)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              onClick={() => handleDownloadCandidateDetails(item)}
+                              className="text-teal-600 hover:text-teal-700"
+                              title="Download PDF"
+                            >
+                              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </motion.button>
+                          </td>
+                        </motion.tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination */}
-              <div className="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                <div className="flex items-center space-x-3">
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
+                <div className="flex items-center gap-3">
                   <select
                     value={recordsPerPage}
                     onChange={handleRecordsPerPageChange}
-                    className="p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
+                    className="p-2 border border-gray-200 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all duration-200 hover:shadow-md text-sm"
                   >
                     {[5, 10, 25, 50].map((num) => (
                       <option key={num} value={num}>{num}</option>
                     ))}
                   </select>
                   <span className="text-sm text-gray-600">
-                    Showing {indexOfFirstRecord + 1} - {Math.min(indexOfLastRecord, candidates.length)} of {candidates.length}
+                    Showing {indexOfFirstRecord + 1} - {Math.min(indexOfLastRecord, filteredCandidates.length)} of {filteredCandidates.length}
                   </span>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex gap-3">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 bg-white shadow-sm"
+                    className="px-3 sm:px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 bg-white shadow-sm transition-all duration-200 hover:shadow-md"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                   </motion.button>
-                  <span className="px-4 py-2 text-sm text-gray-700 bg-white rounded-lg shadow-sm">
+                  <span className="px-3 sm:px-4 py-2 text-sm text-gray-700 bg-white rounded-lg shadow-sm">
                     Page {currentPage} of {totalPages}
                   </span>
                   <motion.button
@@ -483,9 +504,9 @@ const Recruitment = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 bg-white shadow-sm"
+                    className="px-3 sm:px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 bg-white shadow-sm transition-all duration-200 hover:shadow-md"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </motion.button>
                 </div>
               </div>
@@ -501,65 +522,45 @@ const Recruitment = () => {
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl"
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
                   {isEditMode ? "Edit Candidate" : "Add Candidate"}
                 </h3>
                 <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
-              <form onSubmit={handleCandidateSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div onSubmit={handleCandidateSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                     <input
                       value={newCandidate.candidateName}
                       onChange={(e) => setNewCandidate({ ...newCandidate, candidateName: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
-                    <select
-                      value={newCandidate.jobTitle}
-                      onChange={(e) => setNewCandidate({ ...newCandidate, jobTitle: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option value="Software Development">Software Development</option>
-                      <option value="QA">Senior QA Lead</option>
-                    </select>
-                  </div>
-                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Vacancy *</label>
-                    <select
+                    <input
                       value={newCandidate.vacancy}
                       onChange={(e) => setNewCandidate({ ...newCandidate, vacancy: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
-                    >
-                      <option value="">Select</option>
-                      <option value="senior Software developer">Senior Software Developer</option>
-                      <option value="senior-qa-lead">Senior QA Lead</option>
-                    </select>
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Hiring Manager *</label>
-                    <select
+                    <input
                       value={newCandidate.hiringManager}
                       onChange={(e) => setNewCandidate({ ...newCandidate, hiringManager: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
-                    >
-                      <option value="">Select</option>
-                      <option value="HR">HR</option>
-                      <option value="manager2">Manager 2</option>
-                    </select>
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Application Date *</label>
@@ -567,7 +568,7 @@ const Recruitment = () => {
                       type="date"
                       value={newCandidate.dateOfApplication}
                       onChange={(e) => setNewCandidate({ ...newCandidate, dateOfApplication: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     />
                   </div>
@@ -576,7 +577,7 @@ const Recruitment = () => {
                     <select
                       value={newCandidate.status}
                       onChange={(e) => setNewCandidate({ ...newCandidate, status: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     >
                       <option value="">Select</option>
@@ -590,7 +591,7 @@ const Recruitment = () => {
                       type="email"
                       value={newCandidate.email}
                       onChange={(e) => setNewCandidate({ ...newCandidate, email: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     />
                   </div>
@@ -600,7 +601,7 @@ const Recruitment = () => {
                       type="tel"
                       value={newCandidate.contactNumber}
                       onChange={(e) => setNewCandidate({ ...newCandidate, contactNumber: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     />
                   </div>
@@ -610,7 +611,7 @@ const Recruitment = () => {
                       type="date"
                       value={newCandidate.from}
                       onChange={(e) => setNewCandidate({ ...newCandidate, from: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     />
                   </div>
@@ -620,31 +621,10 @@ const Recruitment = () => {
                       type="date"
                       value={newCandidate.to}
                       onChange={(e) => setNewCandidate({ ...newCandidate, to: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                       required
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Method of Application *</label>
-                  <select
-                    value={newCandidate.methodOfApplication}
-                    onChange={(e) => setNewCandidate({ ...newCandidate, methodOfApplication: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                    required
-                  >
-                    <option value="">Select</option>
-                    <option value="Online">Online</option>
-                    <option value="referral">Referral</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
-                  <input
-                    value={newCandidate.keywords}
-                    onChange={(e) => setNewCandidate({ ...newCandidate, keywords: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                  />
                 </div>
                 {!isEditMode && (
                   <div>
@@ -652,48 +632,38 @@ const Recruitment = () => {
                     <input
                       type="file"
                       onChange={(e) => setNewCandidate({ ...newCandidate, resume: e.target.files[0] })}
-                      className="w-full p-3 border border-gray-300 rounded-lg bg-white shadow-sm"
+                      className="w-full p-3 border border-gray-200 rounded-lg bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm"
                     />
                   </div>
                 )}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <textarea
-                    value={newCandidate.notes}
-                    onChange={(e) => setNewCandidate({ ...newCandidate, notes: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-                    rows="4"
-                  />
-                </div>
-                <div className="flex justify-end space-x-4">
+                <div className="flex flex-col sm:flex-row justify-end gap-4">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={closeModal}
-                    className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 bg-white shadow-sm"
+                    className="px-4 sm:px-6 py-2 sm:py-3 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 bg-white shadow-sm transition-all duration-200 hover:shadow-md text-sm sm:text-base"
                   >
                     Cancel
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    type="submit"
+                    onClick={handleCandidateSubmit}
                     disabled={isCreating || isUpdating}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 shadow-md"
+                    className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-800 text-white rounded-lg hover:bg-indigo-900 disabled:bg-gray-400 shadow-md transition-all duration-200 hover:shadow-lg text-sm sm:text-base"
                   >
                     {isCreating || isUpdating ? "Saving..." : isEditMode ? "Update" : "Save"}
                   </motion.button>
                 </div>
-              </form>
+              </div>
             </motion.div>
           </div>
         )}
 
-        <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+        <ToastContainer position="top-right" autoClose={3000} theme="light" />
       </div>
     </div>
   );
 };
-
 export default Recruitment;
