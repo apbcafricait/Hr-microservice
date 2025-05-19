@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Home, Lightbulb, Gift, PieChart, DollarSign, BookOpen, Mail, } from "lucide-react";
+import { Menu, X, LogIn, Home, Lightbulb, Gift, PieChart, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {
@@ -25,7 +25,10 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
- 
+  const handleNavigate = (path) => {
+    navigate(path);
+    setIsOpen(false); // Close mobile menu after navigation
+  };
 
   return (
     <motion.header
@@ -34,9 +37,9 @@ const Header = () => {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className={`fixed w-full top-0 z-50 ${
         scrolled
-          ? "bg-white/90 backdrop-blur-lg shadow-md"
+          ? "bg-white/95 backdrop-blur-lg shadow-lg"
           : "bg-white"
-      } transition-all duration-300`}
+      } transition-all duration-300 font-lato`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
@@ -48,23 +51,23 @@ const Header = () => {
           >
             <a
               href="/"
-              className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent"
+              className="text-2xl md:text-3xl font-extrabold font-poppins tracking-poppins-tight bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent"
             >
               NEXUS
             </a>
           </motion.div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-8">
             {/* Navigation Links */}
-            <div className="flex space-x-6">
+            <div className="flex space-x-8">
               {navItems.map((item, index) => {
                 const Icon = item.icon;
                 return (
                   <motion.a
                     key={index}
                     onClick={() => handleNavigate(item.path)}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-indigo-600 font-medium transition-colors duration-200 text-sm md:text-base"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors duration-200 text-base font-lato"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -75,19 +78,16 @@ const Header = () => {
               })}
             </div>
 
-            {/* Search and Sign Up */}
-            <div className="flex items-center space-x-4">
-              
-              <motion.button
-                onClick={() => navigate("/login")}
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-200 text-sm md:text-base flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <LogIn className="h-5 w-5" />
-                <span>Sign In</span>
-              </motion.button>
-            </div>
+            {/* Sign In Button */}
+            <motion.button
+              onClick={() => navigate("/login")}
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold text-base hover:bg-indigo-700 transition-all duration-200 flex items-center gap-2 shadow-md font-lato"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <LogIn className="h-5 w-5" />
+              <span>Sign In</span>
+            </motion.button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,9 +97,9 @@ const Header = () => {
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? (
-              <X className="h-6 w-6 text-gray-600" />
+              <X className="h-6 w-6 text-gray-700" />
             ) : (
-              <Menu className="h-6 w-6 text-gray-600" />
+              <Menu className="h-6 w-6 text-gray-700" />
             )}
           </motion.button>
         </div>
@@ -121,7 +121,7 @@ const Header = () => {
                     <motion.a
                       key={index}
                       onClick={() => handleNavigate(item.path)}
-                      className="flex items-center space-x-2 px-4 py-3 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-gray-100 font-medium transition-colors duration-200 text-sm"
+                      className="flex items-center space-x-2 px-4 py-3 rounded-lg text-gray-700 hover:text-indigo-600 hover:bg-gray-100 font-medium transition-colors duration-200 text-sm font-lato"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -131,15 +131,14 @@ const Header = () => {
                   );
                 })}
                 <div className="px-4 py-3">
-                  
                   <motion.button
-                    onClick={() => navigate("/register")}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-200 text-sm flex items-center gap-2"
+                    onClick={() => navigate("/login")}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition-all duration-200 flex items-center gap-2 shadow-md font-lato"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <LogIn className="h-5 w-5" />
-                    <span>Sign Up</span>
+                    <span>Sign In</span>
                   </motion.button>
                 </div>
               </div>
