@@ -22,13 +22,10 @@ jobs:
       - name: Install root dependencies
         run: npm install
 
-      - name: Install frontend dependencies
+      - name: Install client dependencies
         run: cd client && npm install
 
-      - name: Install backend dependencies
-        run: cd backend && npm install
-
-      - name: Build frontend
+      - name: Build client
         run: cd client && npm run build
 
       - name: Deploy to DigitalOcean
@@ -48,21 +45,15 @@ jobs:
           # Test SSH connection (debugging step)
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no "$SSH_USER@$DROPLET_IP" "echo SSH connection successful"
 
-          # Deploy frontend files
-          scp -i ssh_key.pem -r client/dist/* "$SSH_USER@$DROPLET_IP:/home/Apbc/client/"
+          # Copy built client files to the server
+          scp -i ssh_key.pem -r client/dist/* "$SSH_USER@$DROPLET_IP:/var/www/hr-microservice-html/"
 
-          # Deploy backend and run migrations
+          # SSH into server and update backend services
           ssh -i ssh_key.pem "$SSH_USER@$DROPLET_IP" << 'EOF'
-            cd /home/Apbc
+            cd /var/www/hr-microservice
             git pull origin main
-            
-            # Backend setup
-            cd backend
-            npm install
-            npx prisma migrate deploy
-
-            # Restart services
-            pm2 restart backend-service
+            sudo chown -R www-data:www-data /var/www/hr-microservice-html
+            pm2 restart hr-backend
             sudo systemctl reload nginx
           EOF
 
