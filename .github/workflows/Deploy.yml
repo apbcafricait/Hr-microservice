@@ -49,7 +49,7 @@ jobs:
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no "$SSH_USER@$DROPLET_IP" "echo SSH connection successful"
 
           # Deploy frontend files
-          scp -i ssh_key.pem -r frontend/dist/* "$SSH_USER@$DROPLET_IP:/home/Apbc/frontend/"
+          scp -i ssh_key.pem -r client/dist/* "$SSH_USER@$DROPLET_IP:/home/Apbc/client/"
 
           # Deploy backend and run migrations
           ssh -i ssh_key.pem "$SSH_USER@$DROPLET_IP" << 'EOF'
