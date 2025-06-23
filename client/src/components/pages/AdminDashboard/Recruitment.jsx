@@ -93,8 +93,7 @@ const Recruitment = () => {
     candidateName,
     dateFrom,
     dateTo,
-  ]);
-
+  ])
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredCandidates.slice(indexOfFirstRecord, indexOfLastRecord);
