@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Mail, Calendar, Briefcase, Building,
-  CreditCard, IdCard, Edit, X, Camera, Activity, Sun, Moon
+  CreditCard, IdCard, Edit, X, Camera, Activity, 
 } from 'lucide-react';
 import { useGetEmployeeQuery, useUpdateEmployeeMutation } from '../../../slices/employeeSlice';
 import { toast } from 'react-toastify';
@@ -173,14 +173,7 @@ const MyInfo = () => {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <h1 className="text-3xl font-poppins font-bold text-gray-900 dark:text-white">My Profile</h1>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm shadow-md"
-          >
-            {isDarkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-indigo-600" />}
-          </motion.button>
+    
         </div>
 
         {/* Main Info Card */}
