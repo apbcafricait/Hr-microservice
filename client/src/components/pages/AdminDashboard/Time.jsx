@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, ChevronDown, Edit, Trash2, Download } from 'lucide-react';
+import { Calendar, Clock, ChevronDown, Edit, Trash2, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { 
   useClockInMutation, 
   useClockOutMutation, 
@@ -30,12 +30,13 @@ const AttendanceSystem = () => {
   const id = userInfo?.id;
   const { data: employee, isLoading, error } = useGetEmployeeQuery(id);
   const employeeId = employee?.data.employee.id;
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   const [note, setNote] = useState('');
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentAttendanceId, setCurrentAttendanceId] = useState(null);
   const [lastPunchTime, setLastPunchTime] = useState(null);
   const [page, setPage] = useState(1);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const recordsPerPage = 5;
 
   // API hooks
@@ -53,19 +54,25 @@ const AttendanceSystem = () => {
     { id: 2, customerName: 'Apache Software Foundation', project: 'ASF - Phase 1', projectAdmin: 'Jane Smith' },
   ]);
 
+  // Real-time clock update
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    }, 60000);
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
   const handlePunch = async () => {
+    setShowConfirmModal(true);
+  };
+
+  const confirmPunch = async () => {
     try {
       if (!isClockedIn) {
         const response = await clockIn({
           employeeId,
-          location: "Office"
+          location: "Office",
+          note
         }).unwrap();
         setIsClockedIn(true);
         setCurrentAttendanceId(response.attendance.id);
@@ -74,7 +81,7 @@ const AttendanceSystem = () => {
         toast.success('Clocked in successfully!');
         refetch();
       } else {
-        await clockOut(currentAttendanceId).unwrap();
+        await clockOut({ id: currentAttendanceId, note }).unwrap();
         setIsClockedIn(false);
         setCurrentAttendanceId(null);
         setLastPunchTime(new Date().toLocaleString());
@@ -82,9 +89,11 @@ const AttendanceSystem = () => {
         toast.success('Clocked out successfully!');
         refetch();
       }
+      setShowConfirmModal(false);
     } catch (error) {
       toast.error('Operation failed!');
       console.error('Error:', error);
+      setShowConfirmModal(false);
     }
   };
 
@@ -106,6 +115,17 @@ const AttendanceSystem = () => {
   );
   const totalPages = Math.ceil((attendanceRecords?.length || 0) / recordsPerPage);
 
+  // Calculate today's total hours
+  const todayRecords = attendanceRecords?.filter(record => 
+    new Date(record.clockIn).toDateString() === new Date().toDateString()
+  );
+  const totalHoursToday = todayRecords?.reduce((total, record) => {
+    if (record.clockOut) {
+      return total + (new Date(record.clockOut) - new Date(record.clockIn)) / 3600000;
+    }
+    return total;
+  }, 0).toFixed(2) || 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 font-sans">
       <style jsx global>{`
@@ -118,7 +138,7 @@ const AttendanceSystem = () => {
         }
       `}</style>
 
-      <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-10">
+      <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-4 py-4">
             {['attendance', 'projectInfo'].map((tab) => (
@@ -146,7 +166,7 @@ const AttendanceSystem = () => {
                 <button
                   key={section}
                   onClick={() => setActiveSection(section)}
-                  className={`px-6 py-2 rounded-xl font-poppins font-semibold text-sm transition-all duration-300 backdrop-blur-sm ${
+                  className={`px-6 py-2 rounded-xl font-ppoppins font-semibold text-sm transition-all duration-300 backdrop-blur-sm ${
                     activeSection === section
                       ? 'bg-indigo-600 text-white shadow-lg'
                       : 'bg-white/70 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700'
@@ -159,7 +179,7 @@ const AttendanceSystem = () => {
 
             {activeSection === 'records' && (
               <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div SalamclassName="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                   <h2 className="text-2xl font-poppins font-bold text-gray-900">My Attendance Records</h2>
                   <div className="flex flex-wrap items-center gap-3">
                     <input
@@ -244,66 +264,101 @@ const AttendanceSystem = () => {
             )}
 
             {activeSection === 'punchInOut' && (
-              <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30">
-                <h2 className="text-2xl font-poppins font-bold text-gray-900 mb-6">Punch {isClockedIn ? 'Out' : 'In'}</h2>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-3 text-gray-400" size={18} />
-                        <input
-                          type="date"
-                          value={selectedDate}
-                          disabled
-                          className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 bg-white/50 backdrop-blur-sm"
-                        />
+              <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white/30 min-h-[500px] flex flex-col">
+                <h2 className="text-3xl font-poppins font-bold text-gray-900 mb-6">Punch {isClockedIn ? 'Out' : 'In'}</h2>
+                <div className="flex flex-col md:flex-row gap-6 flex-grow">
+                  {/* Left Section: Punch Controls */}
+                  <div className="flex-1 space-y-6">
+                    <div className="bg-indigo-100/50 backdrop-blur-sm p-6 rounded-xl border border-indigo-200/30">
+                      <h3 className="text-lg font-poppins font-semibold text-indigo-700 mb-4">Current Time</h3>
+                      <div className="flex items-center gap-3">
+                        <Clock size={24} className="text-indigo-500" />
+                        <span className="text-2xl font-poppins font-semibold text-gray-800">{currentTime}</span>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                      <div className="relative">
-                        <Clock className="absolute left-3 top-3 text-gray-400" size={18} />
-                        <input
-                          type="time"
-                          value={currentTime}
-                          disabled
-                          className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 bg-white/50 backdrop-blur-sm"
-                        />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Note</label>
+                      <textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 h-32 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-all duration-300"
+                        placeholder="Add any notes for this punch..."
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handlePunch}
+                        disabled={isClockingIn || isClockingOut}
+                        className={`px-8 py-4 rounded-xl text-white font-poppins font-semibold text-lg transition-all duration-300 shadow-lg ${
+                          isClockedIn
+                            ? 'bg-red-600 hover:bg-red-700'
+                            : 'bg-green-600 hover:bg-green-700'
+                        } ${(isClockingIn || isClockingOut) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl hover:-translate-y-0.5'}`}
+                      >
+                        {isClockingIn || isClockingOut
+                          ? 'Processing...'
+                          : isClockedIn
+                            ? 'Punch Out'
+                            : 'Punch In'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Section: Punch Summary */}
+                  <div className="flex-1 space-y-6">
+                    <div className="bg-indigo-100/50 backdrop-blur-sm p-6 rounded-xl border border-indigo-200/30">
+                      <h3 className="text-lg font-poppins font-semibold text-indigo-700 mb-4">Today's Summary</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle size={20} className="text-green-500" />
+                          <p className="text-gray-700">Total Hours: <span className="font-semibold">{totalHoursToday} hrs</span></p>
+                        </div>
+                        {lastPunchTime && (
+                          <div className="flex items-center gap-3">
+                            <Clock size={20} className="text-indigo-500" />
+                            <p className="text-gray-700">Last Punch: <span className="font-semibold">{lastPunchTime}</span></p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-indigo-100/50 backdrop-blur-sm p-6 rounded-xl border border-indigo-200/30">
+                      <h3 className="text-lg font-poppins font-semibold text-indigo-700 mb-4">Quick Stats</h3>
+                      <div className="space-y-3">
+                        <p className="text-gray-700">Total Punches Today: <span className="font-semibold">{todayRecords?.length || 0}</span></p>
+                        <p className="text-gray-700">Status: <span className={`font-semibold ${isClockedIn ? 'text-green-600' : 'text-red-600'}`}>
+                          {isClockedIn ? 'Clocked In' : 'Clocked Out'}
+                        </span></p>
                       </div>
                     </div>
                   </div>
-                  {lastPunchTime && (
-                    <div className="bg-indigo-100/50 backdrop-blur-sm p-4 rounded-lg border border-indigo-200/30">
-                      <p className="text-indigo-700 font-medium">
-                        Last {isClockedIn ? 'Punch In' : 'Punch Out'}: {lastPunchTime}
-                      </p>
-                    </div>
-                  )}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Note</label>
-                    <textarea
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 h-24 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-                      placeholder="Add any notes here..."
-                    />
-                  </div>
-                  <div className="flex justify-end">
+                </div>
+              </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white/90 backdrop-blur-lg rounded-2xl p-6 max-w-md w-full border border-white/30">
+                  <h3 className="text-xl font-poppins font-semibold text-gray-900 mb-4">
+                    Confirm {isClockedIn ? 'Punch Out' : 'Punch In'}
+                  </h3>
+                  <p className="text-gray-700 mb-6">
+                    Are you sure you want to {isClockedIn ? 'punch out' : 'punch in'}? {note && `Note: "${note}"`}
+                  </p>
+                  <div className="flex justify-end gap-4">
                     <button
-                      onClick={handlePunch}
-                      disabled={isClockingIn || isClockingOut}
-                      className={`px-6 py-3 rounded-xl text-white font-poppins font-semibold transition-all duration-300 shadow-lg ${
-                        isClockedIn
-                          ? 'bg-red-600 hover:bg-red-700'
-                          : 'bg-green-600 hover:bg-green-700'
-                      } ${(isClockingIn || isClockingOut) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl hover:-translate-y-0.5'}`}
+                      onClick={() => setShowConfirmModal(false)}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                     >
-                      {isClockingIn || isClockingOut
-                        ? 'Processing...'
-                        : isClockedIn
-                          ? 'Punch Out'
-                          : 'Punch In'}
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmPunch}
+                      className={`px-4 py-2 rounded-lg text-white ${
+                        isClockedIn ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+                      } transition-colors`}
+                    >
+                      Confirm
                     </button>
                   </div>
                 </div>
