@@ -55,10 +55,10 @@ const Dashboard = () => {
   ]);
   const [tasks, setTasks] = useState(initialTasks);
 
-  // Theme toggle
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
+  // // Theme toggle
+  // const toggleTheme = () => {
+  //   setTheme(theme === "light" ? "dark" : "light");
+  // };
 
   // Drag-and-drop handler
   const onDragEnd = (result) => {
@@ -228,13 +228,13 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <div className="flex items-center space-x-4">
           <span className="text-sm font-medium">{userInfo?.name}</span>
-          <motion.button
+          {/* <motion.button
             whileHover={{ scale: 1.1 }}
             onClick={toggleTheme}
             className="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
           >
             {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </motion.button>
+          </motion.button> */}
         </div>
       </motion.header>
 
