@@ -66,48 +66,7 @@ const LeaveList = () => {
     );
   }, [leaveRequests, dateRange, filters]);
 
-  // Handle approve/reject actions
-  const handleApprove = useCallback(
-    async (id) => {
-      try {
-        await updateLeaveRequestStatus({ id, status: 'Approved' }).unwrap();
-        toast.success('Leave request approved!', {
-          position: 'top-right',
-          autoClose: 3000,
-          theme: 'colored',
-        });
-        refetch();
-      } catch (error) {
-        toast.error(`Failed to approve: ${error?.data?.message || 'Please try again.'}`, {
-          position: 'top-right',
-          autoClose: 3000,
-          theme: 'colored',
-        });
-      }
-    },
-    [updateLeaveRequestStatus, refetch]
-  );
-
-  const handleReject = useCallback(
-    async (id) => {
-      try {
-        await updateLeaveRequestStatus({ id, status: 'Rejected' }).unwrap();
-        toast.success('Leave request rejected!', {
-          position: 'top-right',
-          autoClose: 3000,
-          theme: 'colored',
-        });
-        refetch();
-      } catch (error) {
-        toast.error(`Failed to reject: ${error?.data?.message || 'Please try again.'}`, {
-          position: 'top-right',
-          autoClose: 3000,
-          theme: 'colored',
-        });
-      }
-    },
-    [updateLeaveRequestStatus, refetch]
-  );
+  
 
   // CSV download
   const handleDownloadCSV = useCallback(() => {
@@ -269,7 +228,7 @@ const LeaveList = () => {
                           aria-label="Select all leave requests"
                         />
                       </th>
-                      {['Date', 'Employee', 'Type', 'Days', 'Status', 'Actions'].map((header) => (
+                      {['Date', 'Employee', 'Type', 'Days', 'Status'].map((header) => (
                         <th
                           key={header}
                           className="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-tight"
