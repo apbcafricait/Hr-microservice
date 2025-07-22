@@ -50,47 +50,7 @@ const LeaveList = () => {
   });
   const { mutateAsync: updateLeaveRequestStatus, isLoading: isUpdating } = useUpdateLeaveRequestStatusMutation();
 
-  // Handle approve action
-  const handleApprove = async (id) => {
-    try {
-      await updateLeaveRequestStatus({ id, status: 'Approved' }).unwrap();
-      toast.success('Leave request approved successfully!', {
-        position: 'top-right',
-        autoClose: 3000,
-        theme: 'light',
-        className: 'bg-green-500 text-white rounded-lg shadow-lg font-lato',
-      });
-      refetch();
-    } catch (err) {
-      toast.error('Failed to approve leave request.', {
-        position: 'top-right',
-        autoClose: 3000,
-        theme: 'light',
-        className: 'bg-red-500 text-white rounded-lg shadow-lg font-lato',
-      });
-    }
-  };
 
-  // Handle reject action
-  const handleReject = async (id) => {
-    try {
-      await updateLeaveRequestStatus({ id, status: 'Rejected' }).unwrap();
-      toast.success('Leave request rejected successfully!', {
-        position: 'top-right',
-        autoClose: 3000,
-        theme: 'light',
-        className: 'bg-green-500 text-white rounded-lg shadow-lg font-lato',
-      });
-      refetch();
-    } catch (err) {
-      toast.error('Failed to reject leave request.', {
-        position: 'top-right',
-        autoClose: 3000,
-        theme: 'light',
-        className: 'bg-red-500 text-white rounded-lg shadow-lg font-lato',
-      });
-    }
-  };
 
   // CSV download
   const handleDownloadCSV = () => {
@@ -259,7 +219,7 @@ const LeaveList = () => {
                           aria-label="Select all leave requests"
                         />
                       </th>
-                      {['Date', 'Employee', 'Type', 'Days', 'Status', 'Actions'].map((header) => (
+                      {['Date', 'Employee', 'Type', 'Days', 'Status'].map((header) => (
                         <th
                           key={header}
                           className="px-6 py-4 text-left text-sm font-bold text-indigo-900 dark:text-indigo-100 uppercase tracking-wider font-poppins"
@@ -454,58 +414,9 @@ const LeaveList = () => {
         </div>
       </div>
 
-      {/* Help Modal */}
-      <AnimatePresence>
-        {showHelpModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className={`${glass} p-6 max-w-md w-full`}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 font-poppins">
-                  Quick Help Guide
-                </h3>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setShowHelpModal(false)}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  aria-label="Close help modal"
-                >
-                  <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                </motion.button>
-              </div>
-              <div className="space-y-4 text-gray-600 dark:text-gray-300 font-lato">
-                <p className="text-sm">Here's how to manage leave requests:</p>
-                <ul className="list-disc list-inside space-y-2 text-sm">
-                  <li>Use filters to narrow down leave requests by date, status, or employee</li>
-                  <li>View or edit requests using the action icons</li>
-                  <li>Approve or reject pending requests directly from the table</li>
-                  <li>Export the list as a CSV file for reporting</li>
-                </ul>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+     
 
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setShowHelpModal(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all duration-300"
-        aria-label="Open help guide"
-      >
-        <HelpCircle className="w-6 h-6" />
-      </motion.button>
+      
     </motion.div>
   );
 };
