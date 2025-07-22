@@ -1,5 +1,6 @@
 import express from "express"
 import dotenv from "dotenv"
+import cors from "cors"
 import employeeRoutes from "./Routes/employeeRoutes.js"
 import organisationRoutes from './Routes/organisationRoutes.js'
 import userRoute from "./Routes/userRoute.js"
@@ -30,6 +31,10 @@ dotenv.config()
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true,
+}))
 
 const PORT = process.env.PORT || 8100;
 

@@ -44,6 +44,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
+    "dotenv-cli": "^8.0.0",
     "prisma": "^6.4.1"
   }
 }

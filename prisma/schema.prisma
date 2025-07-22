@@ -56,21 +56,21 @@ model Employee {
 }
 
 model Organisation {
-  id                    Int          @id @default(autoincrement())
-  createdBy             Int          @map("created_by")
-  name                  String       @db.VarChar(255)
-  subdomain             String       @unique @db.VarChar(50)
-  mpesaPhone            String?      @map("mpesa_phone") @db.VarChar(20)
-  subscriptionStatus    String       @default("trial") @map("subscription_status") @db.VarChar(20)
-  createdAt             DateTime     @default(now()) @map("created_at")
-  updatedAt             DateTime     @updatedAt @map("updated_at")
+  id                  Int          @id @default(autoincrement())
+  createdBy           Int          @map("created_by")
+  name                String       @db.VarChar(255)
+  subdomain           String       @unique @db.VarChar(50)
+  mpesaPhone          String?      @map("mpesa_phone") @db.VarChar(20)
+  subscriptionStatus  String       @default("trial") @map("subscription_status") @db.VarChar(20)
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
   subscriptionEndDate DateTime?
-  Department            Department[]
-  employees             Employee[]
-  LeaveType             LeaveType[]
-  creator               users        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  Report                Report[]
-  Suggestion            Suggestion[]
+  Department          Department[]
+  employees           Employee[]
+  LeaveType           LeaveType[]
+  creator             users        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  Report              Report[]
+  Suggestion          Suggestion[]
 
   @@map("organisations")
 }
@@ -332,10 +332,6 @@ model Claim {
 
   @@map("claims")
 }
-
-// prisma/schema.prisma additions
-// Add this model to your existing schema.prisma file
-
 
 model Dependent {
   id           String   @id @default(uuid())
