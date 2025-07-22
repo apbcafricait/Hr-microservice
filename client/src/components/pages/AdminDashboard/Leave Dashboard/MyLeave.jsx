@@ -174,7 +174,7 @@ const MyLeaveList = () => {
                   placeholderText="Select start date"
                   aria-label="Select start date"
                 />
-                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
+               
               </div>
             </div>
 
@@ -193,7 +193,7 @@ const MyLeaveList = () => {
                   minDate={fromDate}
                   aria-label="Select end date"
                 />
-                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
+                
               </div>
             </div>
 
