@@ -308,12 +308,7 @@ const LeaveApplication = () => {
                       aria-invalid={!!errors.fromDate}
                       aria-describedby={errors.fromDate ? 'fromDate-error' : ''}
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
-                    {errors.fromDate && (
-                      <p id="fromDate-error" className="text-xs text-red-500 mt-1">
-                        {errors.fromDate}
-                      </p>
-                    )}
+                    
                   </div>
                 </div>
               </div>
@@ -351,12 +346,7 @@ const LeaveApplication = () => {
                       aria-invalid={!!errors.toDate}
                       aria-describedby={errors.toDate ? 'toDate-error' : ''}
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
-                    {errors.toDate && (
-                      <p id="toDate-error" className="text-xs text-red-500 mt-1">
-                        {errors.toDate}
-                      </p>
-                    )}
+                   
                   </div>
                 </div>
               </div>

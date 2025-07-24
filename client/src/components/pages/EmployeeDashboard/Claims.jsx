@@ -152,7 +152,9 @@ const Claim = () => {
           {isLoading ? (
             <p className="text-gray-600">Loading claims...</p>
           ) : error ? (
-            <p className="text-red-600">Error: {error.message}</p>
+            <p className="text-red-600">
+              Error: {error?.data?.message || error?.error || error?.message || "Failed to fetch claims"}
+            </p>
           ) : claimsData?.data?.claims.length === 0 ? (
             <p className="text-gray-600">No claims submitted yet</p>
           ) : (

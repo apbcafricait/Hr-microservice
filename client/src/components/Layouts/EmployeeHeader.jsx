@@ -27,35 +27,42 @@ const EmployeeHeader = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full flex justify-between items-center p-4 bg-white shadow-md z-50">
-        <div className="text-start flex-1">
-          <h1 className="text-2xl font-semibold text-gray-700">
+      <header className="fixed top-0 left-0 w-full flex items-center justify-between px-6 py-3 bg-white shadow z-50 h-16">
+        {/* Left: Logo/Org Name */}
+        <div className="flex items-center">
+          <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow">
+            <span className="text-white text-lg font-bold select-none">
+              {organisationName ? organisationName[0] : "O"}
+            </span>
+          </div>
+          <span className="ml-3 text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight select-none">
             {organisationName || "Unknown Organisation"}
-          </h1>
+          </span>
         </div>
+
+        {/* Right: User Dropdown */}
         <div className="relative">
           <button
             onClick={toggleDropdown}
-            className="flex items-center text-gray-700 focus:outline-none"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition focus:outline-none"
           >
-            <span className="mr-2">Hello, {employeeName}</span>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center shadow">
+              <span className="text-white font-semibold text-base">
+                {employeeName ? employeeName[0] : "U"}
+              </span>
+            </div>
+            <span className="font-medium text-gray-700">{employeeName || "Employee"}</span>
             <svg
-              className={`w-5 h-5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-gray-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="3"
-                d="M19 9 l-7 7 l-7 -7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+            <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <ul className="py-1">
                 {["Profile", "Settings", "About", "Change Password"].map((option) => (
                   <li key={option}>

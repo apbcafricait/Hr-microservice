@@ -25,12 +25,7 @@ const AdminImports = () => {
       id: "manage-users",
       component: User,
     },
-    // {
-    //   icon: Plus,
-    //   title: "Create Organization",
-    //   id: "create-org",
-    //   component: CreateOrganization,
-    // },
+   
     {
       icon: Building,
       title: "View My Organization",
