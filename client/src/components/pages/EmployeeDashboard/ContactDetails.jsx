@@ -5,13 +5,13 @@ import {  useGetEmployeeQuery } from "../../../slices/employeeSlice";
 
 const ContactDetails = () => {
   const { userInfo } = useSelector((state) => state.auth);
-  const id = userInfo?.id; // Ensure this matches the backend's expectations
+  const id = userInfo?.id;
   console.log(id, "id");
   const { data: orgEmpData } = useGetEmployeeQuery(id);
   const employeeId = orgEmpData?.data.employee.id;
 
   const [contact, setContact] = useState({
-    employeeId: employeeId, // Ensure it matches the "employee_id" field in Prisma
+    employeeId: employeeId,
     phone: "",
     email: "",
     emergencyContactName: "",

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   useGetAllQualificationsQuery,
   useCreateQualificationMutation,
@@ -8,6 +9,9 @@ import {
 import { FaGraduationCap } from "react-icons/fa";
 
 const Qualifications = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  const employeeId = userInfo?.id;
+
   const [qualificationData, setQualificationData] = useState({
     id: null,
     institution: "",
@@ -18,8 +22,9 @@ const Qualifications = () => {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch qualifications
-  const { data: qualifications, isLoading, isError } = useGetAllQualificationsQuery();
+  // Fetch qualifications with query args
+  const { data, isLoading, isError } = useGetAllQualificationsQuery({});
+  const qualifications = data?.data?.qualifications || [];
 
   // Mutations
   const [createQualification] = useCreateQualificationMutation();
@@ -36,15 +41,21 @@ const Qualifications = () => {
 
     try {
       if (isEditing) {
-        // Update qualification
         await updateQualification(qualificationData).unwrap();
         alert("Qualification updated successfully");
       } else {
-        // Create qualification
-        await createQualification(qualificationData).unwrap();
+        const payload = { ...qualificationData, employeeId };
+        await createQualification(payload).unwrap();
         alert("Qualification added successfully");
       }
-      setQualificationData({ id: null, institution: "", qualification: "", startDate: "", endDate: "" });
+
+      setQualificationData({
+        id: null,
+        institution: "",
+        qualification: "",
+        startDate: "",
+        endDate: "",
+      });
       setIsEditing(false);
     } catch (error) {
       console.error("Error submitting qualification:", error);
@@ -69,7 +80,13 @@ const Qualifications = () => {
 
   useEffect(() => {
     if (!isEditing) {
-      setQualificationData({ id: null, institution: "", qualification: "", startDate: "", endDate: "" });
+      setQualificationData({
+        id: null,
+        institution: "",
+        qualification: "",
+        startDate: "",
+        endDate: "",
+      });
     }
   }, [isEditing]);
 
@@ -144,12 +161,12 @@ const Qualifications = () => {
         Qualifications List
       </h2>
       <ul>
-        {qualifications?.map((qualification) => (
+        {qualifications.map((qualification) => (
           <li key={qualification.id}>
             <FaGraduationCap style={{ marginRight: "4px" }} />
-            <strong>{qualification.institution}</strong> - {qualification.qualification} ({
-              qualification.startDate
-            } to {qualification.endDate})
+            <strong>{qualification.institution}</strong> - {qualification.qualification} (
+              {new Date(qualification.startDate).toLocaleDateString()} to{" "}
+              {new Date(qualification.endDate).toLocaleDateString()})
             <button onClick={() => handleEdit(qualification)}>Edit</button>
             <button onClick={() => handleDelete(qualification.id)}>Delete</button>
           </li>

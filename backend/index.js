@@ -11,7 +11,7 @@ import mpesaRoutes from "./Routes/mpesa_routes.js"
 import leaveBalanceRoutes from './Routes/leaveBalanceRoutes.js'
 import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
 import employeeContactsRoutes from './Routes/employeeContactsRoutes.js'
-//import QualificationsRoutes from './Routes/QualificationsRoutes.js'
+import QualificationsRoutes from './Routes/QualificationsRoutes.js'
 import suggestionsRoutes from './Routes/suggestionsRoutes.js'
 import departmentRoutes from './Routes/departmentRoutes.js'
 import payrollRoutes from './Routes/payrollRoutes.js'
@@ -51,7 +51,7 @@ app.use('/api/time-attendance', timeAttendance)
 app.use('/api/leave-balances', leaveBalanceRoutes)
 app.use('/api/leave-requests', leaveRequestRoutes)
 app.use('/api/employee-contacts', employeeContactsRoutes)
-//app.use('/api/qualifications', QualificationsRoutes)
+app.use('/api/qualifications', QualificationsRoutes)
 
 app.use('/api/suggestions', suggestionsRoutes)
 
