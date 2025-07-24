@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { generateReferenceId } from '../utils/helpers.js';
 
 const prisma = new PrismaClient();
@@ -18,7 +18,7 @@ export class ClaimController {
         comment,
       } = req.body;
 
-      const submittingEmployeeId = req.user.employeeId;
+      const submittingEmployeeId = req.user?.employeeId ?? null;
       const targetEmployeeId = employeeId || submittingEmployeeId;
 
       const claim = await prisma.claim.create({
@@ -27,15 +27,15 @@ export class ClaimController {
           eventName,
           description,
           currency,
-          amount,
+          amount: new Prisma.Decimal(amount),
           fromDate: new Date(fromDate),
           toDate: new Date(toDate),
           employeeId: targetEmployeeId,
           comment,
         },
         include: {
-          employee: true,
-        },
+          employee: true
+        }
       });
 
       return res.status(201).json({

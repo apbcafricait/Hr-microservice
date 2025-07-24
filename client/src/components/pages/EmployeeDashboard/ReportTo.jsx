@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
   useGetAllReportsQuery,
@@ -22,25 +22,37 @@ const ReportTo = () => {
     error: employeeError,
   } = useGetEmployeeQuery(id);
 
-  const employeeId = employee?.data?.employee?.id || "";
-  const organisationId = employee?.data?.employee?.organisation?.id || "";
+  const employeeId = employee?.data?.employee?.id;
+  const organisationId = employee?.data?.employee?.organisation?.id;
 
-  // Fetch all reports
-  const { data: reports, isLoading: isReportsLoading } = useGetAllReportsQuery({
-    employeeId,
-    organisationId,
-  });
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
-  // Mutations
+  // Only trigger query when both IDs are available
+  const skipQuery = !employeeId || !organisationId;
+
+  const {
+    data: reports,
+    isLoading: isReportsLoading,
+    refetch,
+  } = useGetAllReportsQuery(
+    {
+      page,
+      limit,
+      employeeId,
+      organisationId,
+    },
+    { skip: skipQuery }
+  );
+
   const [createReport] = useCreateReportMutation();
   const [updateReport] = useUpdateReportMutation();
   const [deleteReport] = useDeleteReportMutation();
 
-  // State
   const [comment, setComment] = useState("");
   const [editReportId, setEditReportId] = useState(null);
 
-  // Handlers
   const handleSaveReport = async () => {
     if (!employeeId || !organisationId || !comment.trim()) {
       toast.error("Please ensure all fields are filled out before submitting.");
@@ -51,18 +63,20 @@ const ReportTo = () => {
 
     try {
       if (editReportId) {
-        // Update existing report
-        const response = await updateReport({ id: editReportId, ...reportData }).unwrap();
+        const response = await updateReport({
+          id: editReportId,
+          updatedData: reportData,
+        }).unwrap();
         toast.success("Report updated successfully!");
         console.log("Updated Report:", response);
       } else {
-        // Create new report
         const response = await createReport(reportData).unwrap();
         toast.success("Report saved successfully!");
         console.log("Created Report:", response);
       }
       setComment("");
-      setEditReportId(null); // Reset editing state
+      setEditReportId(null);
+      refetch(); // ✅ Refresh reports list
     } catch (error) {
       console.error("Failed to save the report:", error);
       toast.error("Error saving the report. Please try again.");
@@ -78,6 +92,7 @@ const ReportTo = () => {
     try {
       await deleteReport(reportId).unwrap();
       toast.success("Report deleted successfully!");
+      refetch(); 
     } catch (error) {
       console.error("Failed to delete the report:", error);
       toast.error("Error deleting the report. Please try again.");
@@ -119,8 +134,8 @@ const ReportTo = () => {
           <h3 className="text-md font-semibold mb-2">Reports</h3>
           {isReportsLoading ? (
             <p>Loading reports...</p>
-          ) : (
-            reports?.map((report) => (
+          ) : reports?.length ? (
+            reports.map((report) => (
               <div
                 key={report.id}
                 className="border border-gray-200 p-3 rounded mb-2"
@@ -144,6 +159,8 @@ const ReportTo = () => {
                 </div>
               </div>
             ))
+          ) : (
+            <p>No reports found.</p>
           )}
         </div>
       </div>

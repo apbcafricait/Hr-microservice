@@ -24,8 +24,7 @@ export const qualificationSlice = apiSlice.injectEndpoints({
       },
       providesTags: ["Qualifications"],
     }),
-    
-    // Create a new qualification
+
     createQualification: builder.mutation({
       query: (qualificationData) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -44,16 +43,17 @@ export const qualificationSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Qualifications"],
     }),
 
-    // Update an existing qualification
     updateQualification: builder.mutation({
-      query: ({ id, updatedData }) => {
+      query: (qualificationData) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const token = userInfo?.token;
+
+        const { id, ...updatedFields } = qualificationData;
 
         return {
           url: `${QUALIFICATIONS_URL}/${id}`,
           method: "PUT",
-          body: updatedData,
+          body: updatedFields,
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -63,7 +63,6 @@ export const qualificationSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Qualifications"],
     }),
 
-    // Delete a qualification
     deleteQualification: builder.mutation({
       query: (id) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -82,7 +81,6 @@ export const qualificationSlice = apiSlice.injectEndpoints({
   }),
 });
 
-// Export hooks for each endpoint
 export const {
   useGetAllQualificationsQuery,
   useCreateQualificationMutation,

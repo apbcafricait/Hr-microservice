@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import EmployeeHeader from "../../Layouts/EmployeeHeader"; // Import EmployeeHeader
+import { useSelector } from "react-redux";
 import {
   useGetMyClaimsQuery,
   useSubmitClaimMutation,
@@ -7,10 +8,11 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const Claim = () => {
+const Claim = () => { 
   const { data: claimsData, isLoading, error, refetch } = useGetMyClaimsQuery();
   const [submitClaim] = useSubmitClaimMutation();
-
+  const userInfo = useSelector((state) => state.auth.userInfo);
+  const id = userInfo?.id;
   const [formData, setFormData] = useState({
     eventName: "",
     description: "",

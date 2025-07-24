@@ -1,3 +1,4 @@
+// export const BASE_URL = 'http://localhost:8100'
 export const BASE_URL = ''
 export const EMPLOYEE_URL = '/api/employees'
 export const LEAVE_URL = '/api/leave-requests'
