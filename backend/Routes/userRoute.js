@@ -4,7 +4,7 @@ import { authenticated, admin, manager } from "../middleware/Authentication.js";
 
 const router = express.Router();
 
-router.get('/', authenticated, admin(), getAllUsers);
+router.get('/', authenticated, admin(), manager(), getAllUsers);
 router.post("/", RegisterUser);
 router.post("/login", loginUser);
 router.post("/logout", logout)

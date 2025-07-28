@@ -120,112 +120,127 @@ export class EmployeesController {
 
   // Create new employee
   
-    async createEmployee(req, res) {
-        try {
-            const {
-                email,
-                password, 
-                organisationId,
-                firstName,
-                lastName,
-                nationalId,
-                dateOfBirth,
-                position,
-                employmentDate,
-                salary,
-                role
-            } = req.body;
+async createEmployee(req, res) {
+  try {
+    const {
+      email,
+      password,
+      organisationId,
+      firstName,
+      lastName,
+      nationalId,
+      dateOfBirth,
+      position,
+      employmentDate,
+      salary,
+      role
+    } = req.body;
 
-            // First, check if email already exists
-            const existingUser = await prisma.users.findUnique({
-                where: { email: email.toLowerCase() }
-            });
+    const existingUser = await prisma.users.findUnique({
+      where: { email: email.toLowerCase() }
+    });
 
-            if (existingUser) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Email already registered'
-                });
-            }
-
-            // Start a transaction to ensure both user and employee are created or neither
-            const result = await prisma.$transaction(async (prisma) => {
-                // 1. Create user first
-                const encrypted_password = await encryptPassword(password);
-                const user = await prisma.users.create({
-                    data: {
-                        email: email.toLowerCase(),
-                        password_hash: encrypted_password,
-                        role
-                    }
-                });
-
-                // 2. Prepare employee data with the new user ID
-                const employeeData = {
-                    userId: user.id,
-                    organisationId: parseInt(organisationId),
-                    firstName,
-                    lastName,
-                    nationalId,
-                    dateOfBirth: new Date(dateOfBirth),
-                    position,
-                    employmentDate: new Date(employmentDate),
-                    salary: parseFloat(salary)
-                };
-
-                // Validate employee data
-                const validationError = validateEmployee(employeeData);
-                if (validationError) {
-                    // If validation fails, the transaction will be rolled back
-                    throw new Error('Validation failed: ' + validationError.join(', '));
-                }
-
-                // 3. Create employee
-                const employee = await prisma.employee.create({
-                    data: employeeData,
-                    include: {
-                        user: {
-                            select: {
-                                email: true,
-                                role: true
-                            }
-                        },
-                        organisation: {
-                            select: {
-                                name: true
-                            }
-                        }
-                    }
-                });
-
-                // 4. Create initial leave balance for the employee
-                await prisma.leaveBalance.create({
-                    data: {
-                        employeeId: employee.id,
-                        annualLeave: 21,
-                        sickLeave: 7,
-                        compassionateLeave: 3
-                    }
-                });
-
-                return employee;
-            });
-
-            return res.status(201).json({
-                status: 'success',
-                data: { employee: result }
-            });
-
-        } catch (error) {
-            return res.status(500).json({
-                status: 'error',
-                message: error.message.includes('Validation failed') 
-                    ? error.message 
-                    : 'Failed to create employee',
-                error: error.message
-            });
-        }
+    if (existingUser) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email already registered'
+      });
     }
+
+    const result = await prisma.$transaction(async (prisma) => {
+      const encrypted_password = await encryptPassword(password);
+      const user = await prisma.users.create({
+        data: {
+          email: email.toLowerCase(),
+          password_hash: encrypted_password,
+          role
+        }
+      });
+
+      // 🔁 Get or create default department for this organisation
+      let department = await prisma.department.findFirst({
+        where: {
+          organisationId: parseInt(organisationId)
+        }
+      });
+
+      if (!department) {
+        department = await prisma.department.create({
+          data: {
+            name: 'General',
+            organisationId: parseInt(organisationId)
+          }
+        });
+      }
+
+      const employeeData = {
+        userId: user.id,
+        organisationId: parseInt(organisationId),
+        departmentId: department.id, // ✅ Now dynamic
+        firstName,
+        lastName,
+        nationalId,
+        dateOfBirth: new Date(dateOfBirth),
+        position,
+        employmentDate: new Date(employmentDate),
+        salary: parseFloat(salary)
+      };
+
+      const validationError = validateEmployee(employeeData);
+      if (validationError) {
+        throw new Error('Validation failed: ' + validationError.join(', '));
+      }
+
+      const employee = await prisma.employee.create({
+        data: employeeData,
+        include: {
+          user: {
+            select: {
+              email: true,
+              role: true
+            }
+          },
+          organisation: {
+            select: {
+              name: true
+            }
+          },
+          department: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
+
+      await prisma.leaveBalance.create({
+        data: {
+          employeeId: employee.id,
+          annualLeave: 21,
+          sickLeave: 7,
+          compassionateLeave: 3
+        }
+      });
+
+      return employee;
+    });
+
+    return res.status(201).json({
+      status: 'success',
+      data: { employee: result }
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: error.message.includes('Validation failed') 
+        ? error.message 
+        : 'Failed to create employee',
+      error: error.message
+    });
+  }
+}
+
 
   // Update employee
   async updateEmployee (req, res) {
