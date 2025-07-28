@@ -1,56 +1,72 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { generateReferenceId } from '../utils/helpers.js';
+import {  generateSequentialReferenceId } from '../utils/helpers.js';
 
 const prisma = new PrismaClient();
 
 export class ClaimController {
   // Submit a new claim
-  async submitClaim(req, res) {
-    try {
-      const {
+async submitClaim(req, res) {
+  try {
+    const {
+      eventName,
+      description,
+      currency,
+      amount,
+      fromDate,
+      toDate,
+      employeeId,
+      comment,
+    } = req.body;
+
+    const submittingEmployeeId = req.user?.employeeId ?? null;
+    const targetEmployeeId = employeeId || submittingEmployeeId;
+
+    // 🧠 Step 1: Fetch employee with departmentId
+    const employee = await prisma.employee.findUnique({
+      where: { id: targetEmployeeId },
+      select: { departmentId: true }
+    });
+
+    if (!employee || !employee.departmentId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Employee not found or not assigned to a department',
+      });
+    }
+
+    // 🧠 Step 2: Create claim and link departmentId
+    const claim = await prisma.claim.create({
+      data: {
+        referenceId: generateSequentialReferenceId(),
         eventName,
         description,
         currency,
-        amount,
-        fromDate,
-        toDate,
-        employeeId,
+        amount: new Prisma.Decimal(amount),
+        fromDate: new Date(fromDate),
+        toDate: new Date(toDate),
+        employeeId: targetEmployeeId,
+        departmentId: employee.departmentId, // ✅ added here
         comment,
-      } = req.body;
+      },
+      include: {
+        employee: true,
+      },
+    });
 
-      const submittingEmployeeId = req.user?.employeeId ?? null;
-      const targetEmployeeId = employeeId || submittingEmployeeId;
-
-      const claim = await prisma.claim.create({
-        data: {
-          referenceId: generateReferenceId(),
-          eventName,
-          description,
-          currency,
-          amount: new Prisma.Decimal(amount),
-          fromDate: new Date(fromDate),
-          toDate: new Date(toDate),
-          employeeId: targetEmployeeId,
-          comment,
-        },
-        include: {
-          employee: true
-        }
-      });
-
-      return res.status(201).json({
-        status: 'success',
-        data: { claim },
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        status: 'error',
-        message: 'Failed to submit claim',
-        error: error.message,
-      });
-    }
+    return res.status(201).json({
+      status: 'success',
+      data: { claim },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to submit claim',
+      error: error.message,
+    });
   }
+}
+
 
   // Get claims for current employee
   async getMyClaims(req, res) {
@@ -82,6 +98,59 @@ export class ClaimController {
       });
     }
   }
+
+  // Get claims by organisation ID
+async getClaimsByOrganisation(req, res) {
+  try {
+    const organisationId = Number(req.params.organisationId);
+
+    if (isNaN(organisationId)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid organisation ID',
+      });
+    }
+
+    const claims = await prisma.claim.findMany({
+      where: {
+        employee: {
+          organisationId: organisationId,
+        },
+      },
+      include: {
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+            position: true,
+          },
+        },
+        assignedTo: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        submittedDate: 'desc',
+      },
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: { claims },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch organisation claims',
+      error: error.message,
+    });
+  }
+}
+
 
   // Admin: Get all claims
   async getAllClaims(req, res) {
@@ -167,6 +236,8 @@ export class ClaimController {
       });
     }
   }
+
+  
 
   // Admin: Assign claim
   async assignClaim(req, res) {
@@ -268,6 +339,28 @@ export class ClaimController {
       return res.status(500).json({
         status: 'error',
         message: 'Failed to fetch claims',
+        error: error.message,
+      });
+    }
+  }
+  // Delete a claim
+  async deleteClaim(req, res) {
+    try {
+      const { id } = req.params;
+
+      const claim = await prisma.claim.delete({
+        where: { id: Number(id) },
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Claim deleted successfully',
+        data: { claim },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to delete claim',
         error: error.message,
       });
     }
