@@ -5,7 +5,7 @@ import {
   Trash2,
   Download,
   Search,
-  Refresh2,
+  RefreshCw,
   Plus,
   X,
   ChevronLeft,
