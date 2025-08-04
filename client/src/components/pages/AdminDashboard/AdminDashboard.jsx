@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
 import {
-  UserCircle, LogOut, Lock, Menu as MenuIcon
+  UserCircle, LogOut, Lock, Menu as MenuIcon, Bell, Search, X
 } from 'lucide-react';
 import AdminSidebar from '../../Layouts/AdminSidebar';
 import Dashboard from './Dashboard';
@@ -28,7 +28,7 @@ const addFonts = () => {
   if (!document.getElementById(id)) {
     const link = document.createElement('link');
     link.id = id;
-    link.href = "https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Lato:wght@400;500;700&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
   }
@@ -56,23 +56,63 @@ const AdminDashboard = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeLink, setActiveLink] = useState('Dashboard');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [notifications, setNotifications] = useState([]);
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: employee, isLoading, error } = useGetEmployeeQuery(id);
 
   const ActiveComponent = componentMap[activeLink];
 
+  // Refs for focus management
+  const sidebarRef = useRef(null);
+  const searchRef = useRef(null);
+
   useEffect(() => {
     const handleScroll = () => {
       const mainContent = document.getElementById('main-content');
       setIsScrolled(mainContent?.scrollTop > 10);
     };
+
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
       mainContent.addEventListener('scroll', handleScroll);
       return () => mainContent.removeEventListener('scroll', handleScroll);
     }
   }, []);
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isSidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    if (isSidebarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
+
+  // Handle escape key to close sidebar
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isSidebarOpen]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -86,6 +126,7 @@ const AdminDashboard = () => {
         break;
       case 'Security':
         setActiveLink('Security');
+        setIsSidebarOpen(false); // Close sidebar on mobile
         break;
       default:
         break;
@@ -99,7 +140,7 @@ const AdminDashboard = () => {
     : `${employee?.data?.employee?.firstName || ''} ${employee?.data?.employee?.lastName || ''}`;
   const displayEmail = userInfo?.email || '';
 
-  // Greeting
+  // Greeting based on time
   const greetingText = (() => {
     const hours = new Date().getHours();
     if (hours < 12) return "Good morning";
@@ -107,31 +148,63 @@ const AdminDashboard = () => {
     return "Good evening";
   })();
 
-  // Short info (customize as needed)
-  const shortInfo = "";
-
-  // Dropdown animation variant
+  // Animation variants
   const menuVariants = {
-    open: { opacity: 1, y: 0, pointerEvents: 'auto' },
-    closed: { opacity: 0, y: -10, pointerEvents: 'none' }
+    open: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      pointerEvents: 'auto',
+      transition: { duration: 0.2, ease: "easeOut" }
+    },
+    closed: { 
+      opacity: 0, 
+      y: -10, 
+      scale: 0.95,
+      pointerEvents: 'none',
+      transition: { duration: 0.15, ease: "easeIn" }
+    }
   };
 
-  // For accessibility: focus the first element when menu opens
-  const menuFirstItem = useRef(null);
+  const sidebarVariants = {
+    open: { x: 0, opacity: 1 },
+    closed: { x: '-100%', opacity: 0 }
+  };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50 font-sans">
-      {/* Google Fonts import */}
+    <div className="h-screen flex overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 font-sans">
+      {/* Global Styles */}
       <style jsx="true" global="true">{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Lato:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
         h1, h2, h3, h4, h5, h6 { font-family: "Poppins", sans-serif; }
-        body, .font-sans { font-family: "Lato", sans-serif; }
-        .admin-greeting { font-family: 'Poppins',sans-serif; }
+        body, .font-sans { font-family: "Inter", sans-serif; }
+        .admin-greeting { font-family: 'Poppins', sans-serif; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+          width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        
+        /* Focus styles */
+        .focus-visible:focus {
+          outline: 2px solid #3b82f6;
+          outline-offset: 2px;
+        }
       `}</style>
 
-      {/* Static Sidebar for Desktop */}
-      <div className="hidden md:flex md:flex-shrink-0">
-        <div className="w-64">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex lg:flex-shrink-0">
+        <div className="w-72">
           <AdminSidebar
             isOpen={true}
             onClose={() => {}}
@@ -141,25 +214,33 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 z-50"
+            className="lg:hidden fixed inset-0 z-50"
           >
-            <div
-              className="absolute inset-0 bg-gray-600/50 backdrop-blur-sm"
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={toggleSidebar}
             />
+            
+            {/* Sidebar */}
             <motion.div 
-              initial={{ x: -300 }}
-              animate={{ x: 0 }}
-              exit={{ x: -300 }}
+              ref={sidebarRef}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={sidebarVariants}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl"
+              className="relative h-full w-80 max-w-[85vw] bg-white shadow-2xl"
             >
               <AdminSidebar
                 isOpen={isSidebarOpen}
@@ -174,56 +255,86 @@ const AdminDashboard = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Fixed Header */}
+        {/* Enhanced Header */}
         <header
-          className={`z-40 sticky top-0 transition-all duration-300 ${isScrolled
-              ? 'bg-white/90 backdrop-blur-md shadow-sm'
-              : 'bg-white'
-            }`}
+          className={`z-40 sticky top-0 transition-all duration-300 ${
+            isScrolled
+              ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50'
+              : 'bg-white shadow-sm'
+          }`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center h-20 md:h-24 gap-4 md:gap-6 justify-between">
-              {/* Left Side: Sidebar Toggle (Mobile) + Greeting */}
-              <div className="flex items-center gap-2 flex-1 md:flex-none min-w-0">
+            <div className="flex items-center h-16 md:h-20 gap-3 md:gap-4 justify-between">
+              
+              {/* Left Side: Mobile Menu + Greeting + Search */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {/* Mobile Menu Button */}
                 <button
                   onClick={toggleSidebar}
-                  className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   aria-label="Toggle sidebar"
                 >
-                  <MenuIcon className="w-6 h-6 text-gray-600" />
+                  <MenuIcon className="w-5 h-5 text-gray-600" />
                 </button>
-                {/* Greeting, now left-aligned */}
+
+                {/* Greeting Section */}
                 <motion.div
-                  initial={{ opacity: 0, x: -30 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1, duration: 0.4, type: "spring", stiffness: 90, damping: 16 }}
-                  className="flex flex-col items-start select-none min-w-0"
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="flex flex-col items-start min-w-0 flex-1"
                 >
-                  <span className="text-xs text-gray-500 md:text-sm font-medium admin-greeting">
+                  <span className="text-xs text-gray-500 font-medium admin-greeting">
                     {greetingText}
                   </span>
-                  <span className="text-lg md:text-xl font-bold text-gray-900 tracking-tight admin-greeting">
+                  <span className="text-base md:text-lg font-bold text-gray-900 tracking-tight admin-greeting truncate">
                     Welcome back!
                   </span>
-                  <span className="text-sm text-gray-600 mt-1 truncate w-full" style={{maxWidth:"250px"}}>
-                    {shortInfo}
-                  </span>
                 </motion.div>
+
+                {/* Search Bar - Hidden on small screens */}
+                <div className="hidden md:flex flex-1 max-w-md ml-4">
+                  <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      ref={searchRef}
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50 hover:bg-white transition-colors"
+                    />
+                  </div>
+                </div>
               </div>
-              {/* Right Side: Profile Icon with Name & Status Dot */}
-              <div className="flex items-center ml-auto">
+
+              {/* Right Side: Notifications + Profile */}
+              <div className="flex items-center gap-2 md:gap-3">
+                
+                {/* Notifications */}
+                <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+
+                {/* Profile Menu */}
                 <Menu as="div" className="relative">
                   {({ open }) => (
                     <>
-                      <Menu.Button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <div className="relative">
                           <UserCircle className="w-8 h-8 text-gray-700" />
-                          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-md" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm" />
                         </div>
-                        <span className="ml-2 font-semibold text-gray-900 text-base hidden sm:block admin-greeting">
+                        <span className="hidden sm:block font-medium text-gray-900 text-sm admin-greeting truncate max-w-[120px]">
                           {displayName}
                         </span>
                       </Menu.Button>
+
                       <AnimatePresence>
                         {open && (
                           <motion.div
@@ -231,57 +342,61 @@ const AdminDashboard = () => {
                             animate="open"
                             exit="closed"
                             variants={menuVariants}
-                            transition={{ duration: 0.15, type: 'spring', stiffness: 200, damping: 18 }}
-                            className="absolute right-0 mt-3 w-72 origin-top-right rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-100"
-                            style={{ fontFamily: 'Lato, sans-serif' }}
+                            className="absolute right-0 mt-2 w-80 origin-top-right rounded-xl shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-100"
                           >
-                            <div className="flex flex-col items-center px-6 pt-6 pb-3">
-                              <div className="relative mb-2">
-                                <UserCircle className="w-12 h-12 text-indigo-500" />
-                                <span className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-lg" />
+                            {/* Profile Header */}
+                            <div className="flex flex-col items-center px-6 pt-6 pb-4">
+                              <div className="relative mb-3">
+                                <UserCircle className="w-16 h-16 text-blue-500" />
+                                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-lg" />
                               </div>
-                              <div className="font-bold text-lg text-gray-900 mb-1 admin-greeting" ref={menuFirstItem} tabIndex={0}>
+                              <div className="font-bold text-lg text-gray-900 mb-1 admin-greeting text-center">
                                 {displayName}
                               </div>
-                              <div className="text-xs text-gray-500 mb-4 break-all text-center">{displayEmail}</div>
-                              <div className="w-full border-t border-gray-100 mb-2" />
+                              <div className="text-sm text-gray-500 text-center break-all">
+                                {displayEmail}
+                              </div>
+                              <div className="w-full border-t border-gray-100 mt-4" />
                             </div>
-                            <div className="py-1">
+
+                            {/* Menu Items */}
+                            <div className="py-2">
                               <Menu.Item>
                                 {({ active }) => (
                                   <button
                                     onClick={() => handleMenuAction('Security')}
                                     className={`${
                                       active ? 'bg-gray-50' : ''
-                                    } flex items-center w-full px-6 py-3 transition-colors text-left`}
+                                    } flex items-center w-full px-6 py-3 transition-colors text-left hover:bg-gray-50`}
                                   >
-                                    <Lock className="w-5 h-5 mr-3 text-indigo-500" />
+                                    <Lock className="w-5 h-5 mr-3 text-blue-500 flex-shrink-0" />
                                     <div>
                                       <div className="text-sm font-medium text-gray-700">
-                                        Security
+                                        Security Settings
                                       </div>
                                       <div className="text-xs text-gray-500">
-                                        Update password
+                                        Update password & security
                                       </div>
                                     </div>
                                   </button>
                                 )}
                               </Menu.Item>
+
                               <Menu.Item>
                                 {({ active }) => (
                                   <button
                                     onClick={() => handleMenuAction('Logout')}
                                     className={`${
                                       active ? 'bg-gray-50' : ''
-                                    } flex items-center w-full px-6 py-3 transition-colors text-left`}
+                                    } flex items-center w-full px-6 py-3 transition-colors text-left hover:bg-gray-50`}
                                   >
-                                    <LogOut className="w-5 h-5 mr-3 text-red-500" />
+                                    <LogOut className="w-5 h-5 mr-3 text-red-500 flex-shrink-0" />
                                     <div>
                                       <div className="text-sm font-medium text-gray-700">
-                                        Logout
+                                        Sign Out
                                       </div>
                                       <div className="text-xs text-gray-500">
-                                        Sign out of account
+                                        Logout from your account
                                       </div>
                                     </div>
                                   </button>
@@ -296,13 +411,27 @@ const AdminDashboard = () => {
                 </Menu>
               </div>
             </div>
+
+            {/* Mobile Search Bar */}
+            <div className="md:hidden pb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50 hover:bg-white transition-colors"
+                />
+              </div>
+            </div>
           </div>
         </header>
 
-        {/* Scrollable Content Area */}
+        {/* Enhanced Main Content */}
         <main 
           id="main-content" 
-          className="flex-1 overflow-y-auto focus:outline-none"
+          className="flex-1 overflow-y-auto focus:outline-none scroll-smooth"
           tabIndex="0"
         >
           <AnimatePresence mode="wait">
@@ -311,7 +440,13 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
+              transition={{ 
+                duration: 0.3, 
+                ease: "easeInOut",
+                type: "spring",
+                stiffness: 100,
+                damping: 20
+              }}
               className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
             >
               <ActiveComponent />
