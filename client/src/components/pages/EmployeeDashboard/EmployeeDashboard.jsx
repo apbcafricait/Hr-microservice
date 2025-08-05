@@ -32,11 +32,11 @@ import {
   Legend,
 } from 'chart.js';
 import { useGetLeaveBalanceQuery } from '../../../slices/leaveBalancesApiSlice';
-import { useGetDepartmentsQuery } from '../../../slices/departmentsApiSlice';
+//import { useGetDepartmentsQuery } from '../../../slices/departmentsApiSlice';
 import { useGetAllLeaveRequestsQuery } from '../../../slices/leaveApiSlice';
 import Dashboard from './Dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
-import EmployeeHeader from '../../Layouts/EmployeeHeader'; // <-- FIXED IMPORT
+import EmployeeHeader from '../../Layouts/EmployeeHeader'; // 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -66,7 +66,7 @@ const EmployeeDashboard = () => {
   const { data } = useGetAttedanceOfEmployeeQuery(employeeId);
   const attendanceData = data?.data || data || []; // Handle nested or flat response
   const { data: leavebalances } = useGetLeaveBalanceQuery(employeeId);
-  const { data: orgDepartments } = useGetDepartmentsQuery(organisationId);
+  // const { data: orgDepartments } = useGetDepartmentsQuery(organisationId);
   const { data: leaveRequests } = useGetAllLeaveRequestsQuery(employeeId);
 
   const {

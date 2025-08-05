@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import prisma from '../../db/prisma.js'
-import authenticatePassword  from './authenticatePassword.js'; // Import the standalone middleware
+import prisma from '../../db/prisma.js';
+import authenticatePassword from './authenticatePassword.js';
+dotenv.config();
 
-dotenv.config(); // Ensure environment variables are loaded
 
-// Middleware to authenticate users
+// AUTHENTICATED  ─ adds employeeId & organisationId to req.user
+
 const authenticated = async (req, res, next) => {
   const myToken = req.cookies.authToken;
   if (!myToken) {
@@ -13,10 +14,20 @@ const authenticated = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(myToken, process.env.JWT_SECRET);
-    req.user = decoded;
+    const decoded = jwt.verify(myToken, process.env.JWT_SECRET); //contains at least { id, role }
+    req.user = { ...decoded }; 
 
-    // Optionally call authenticatePassword as part of authentication logic
+    // Fetch the employee record linked to this user (if it exists)
+    const employee = await prisma.employee.findFirst({
+      where: { userId: decoded.id },
+      select: { id: true, organisationId: true },
+    });
+
+    if (employee) {
+      req.user.employeeId = employee.id;      
+      req.user.organisationId = employee.organisationId; 
+    }
+
     const passwordCheck = await authenticatePassword(req, res);
     if (!passwordCheck) {
       return res.status(401).json({ message: 'Invalid password' });
@@ -29,7 +40,9 @@ const authenticated = async (req, res, next) => {
   }
 };
 
-// Admin middleware
+
+// ADMIN  (unchanged)
+
 const admin = () => {
   return async (req, res, next) => {
     try {
@@ -38,20 +51,14 @@ const admin = () => {
       }
 
       const id = req.user.id;
-
-      const user = await prisma.users.findUnique({
-        where: { id },
-      });
+      const user = await prisma.users.findUnique({ where: { id } });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
-
-      const isAdmin = user.role === 'admin';
-      if (!isAdmin) {
+      if (user.role !== 'admin') {
         return res.status(403).json({ message: 'Not authorized as Admin' });
       }
-
       next();
     } catch (error) {
       console.error('Error verifying user role:', error);
@@ -60,11 +67,7 @@ const admin = () => {
   };
 };
 
-
-// Manager middleware
-
-
-// Same fix for manager middleware
+// MANAGER  (unchanged)
 
 const manager = () => {
   return async (req, res, next) => {
@@ -74,20 +77,14 @@ const manager = () => {
       }
 
       const id = req.user.id;
-
-      const user = await prisma.users.findUnique({
-        where: { id },
-      });
+      const user = await prisma.users.findUnique({ where: { id } });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
-
-      const isManager = user.role === 'manager';
-      if (!isManager) {
+      if (user.role !== 'manager') {
         return res.status(403).json({ message: 'Not authorized as Manager' });
       }
-
       next();
     } catch (error) {
       console.error('Error verifying user role:', error);

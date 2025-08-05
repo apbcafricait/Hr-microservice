@@ -54,14 +54,14 @@ const RegisterUser = asyncHandler(async (req, res) => {
       return res.status(400).json({
         message: 'Required fields missing',
         requiredFields: [
-          'email',
+           'email',
           'password',
           'firstName',
           'lastName',
           'nationalId',
           'dateOfBirth',
           'organisationName',
-          'organisationSubdomain'
+          'organisationSubdomain',
         ]
       })
     }

@@ -125,7 +125,7 @@ const Dashboard = ({
               <p className="text-purple-100">Leave Requests</p>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+            {/* <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-orange-400 bg-opacity-30 rounded-lg">
                   <UserGroupIcon className="w-8 h-8" />
@@ -136,7 +136,7 @@ const Dashboard = ({
               </div>
               <h3 className="text-2xl font-bold mb-2">12</h3>
               <p className="text-orange-100">Department Members</p>
-            </div>
+            </div> */}
           </div>
 
           <div className="grid grid-cols-1 gap-6 mb-8">

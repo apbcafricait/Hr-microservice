@@ -25,10 +25,10 @@ export const createLeaveType = async (req, res) => {
 
 export const getLeaveTypes = async (req, res) => {
   try {
-    const { organisationId } = req.query // Using query param for filtering
+    const { organisationId } = req.query; // Using query param for filtering
 
     if (!organisationId) {
-      return res.status(400).json({ error: 'organisationId is required' })
+      return res.status(400).json({ error: 'organisationId is required' });
     }
 
     const leaveTypes = await prisma.leaveType.findMany({
@@ -36,25 +36,29 @@ export const getLeaveTypes = async (req, res) => {
         organisationId: parseInt(organisationId)
       },
       include: {
-        Organisation: true
+        organisation: true // ⬅ changed from Organisation to organisation
       }
-    })
+    });
 
-    res.json(leaveTypes)
+    res.json(leaveTypes);
   } catch (error) {
     res
       .status(500)
-      .json({ error: 'Failed to fetch leave types', details: error.message })
+      .json({ error: 'Failed to fetch leave types', details: error.message });
   }
-}
+};
+
 
 export const getLeaveType = async (req, res) => {
   try {
-    const { id } = req.params
-    const { organisationId } = req.query
+    const { id } = req.params;
+    const { organisationId } = req.query;
 
     if (!organisationId) {
-      return res.status(400).json({ error: 'organisationId is required' })
+      return res.status(400).json({
+        status: 'error',
+        message: 'organisationId is required'
+      });
     }
 
     const leaveType = await prisma.leaveType.findFirst({
@@ -64,20 +68,58 @@ export const getLeaveType = async (req, res) => {
       },
       include: {
         leaveRequests: true,
-        Organisation: true
+        organisation: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       }
-    })
+    });
 
     if (!leaveType) {
       return res.status(404).json({
-        error: 'Leave type not found or not in specified organisation'
-      })
+        status: 'error',
+        message: 'Leave type not found or not in specified organisation'
+      });
     }
 
-    res.json(leaveType)
+    res.status(200).json({
+      status: 'success',
+      data: leaveType
+    });
+
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Failed to fetch leave type', details: error.message })
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch leave type',
+      error: error.message
+    });
   }
-}
+};
+
+export const getAllLeaveTypes = async (req, res) => {
+  try {
+    const leaveTypes = await prisma.leaveType.findMany({
+      include: {
+        organisation: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.status(200).json({ status: 'success', data: leaveTypes });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch all leave types',
+      error: error.message
+    });
+  }
+};

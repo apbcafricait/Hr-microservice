@@ -5,7 +5,7 @@ import { reportController } from '../controllers/reportController.js'
 const router = Router()
 
 // Get filtered reports by employeeId and organisationId (with pagination)
-router.get('/', reportController.getFilteredReports) // Must come before '/:id'
+router.get('/', reportController.getFilteredReports) // Keep this first
 
 // Get all reports for an organisation
 router.get('/organisation/:organisationId', reportController.getOrganisationReports)

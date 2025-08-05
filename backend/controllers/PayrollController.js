@@ -1,4 +1,4 @@
-// src/controllers/PayrollController.js
+// backend/controllers/PayrollController.js
 
 import { PrismaClient } from '@prisma/client'
 import { calculatePayroll } from '../utils/payrollCalculations.js'
@@ -279,11 +279,6 @@ async getPayrollSummaries(req, res) {
                     select: {
                         firstName: true,
                         lastName: true,
-                        department: {
-                            select: {
-                                name: true
-                            }
-                        }
                     }
                 }
             }
@@ -303,25 +298,24 @@ async getPayrollSummaries(req, res) {
                 nssf: payrolls.reduce((sum, p) => sum + Number(p.deductions.nssf.amount), 0),
                 housingLevy: payrolls.reduce((sum, p) => sum + Number(p.deductions.housingLevy), 0)
             },
-            departmentSummaries: {},
             averageSalary: 0,
             unprocessedEmployees: 0
         };
 
         // Calculate department summaries
-        payrolls.forEach(payroll => {
-            const deptName = payroll.employee.department?.name || 'Unassigned';
-            if (!summaries.departmentSummaries[deptName]) {
-                summaries.departmentSummaries[deptName] = {
-                    count: 0,
-                    totalGross: 0,
-                    totalNet: 0
-                };
-            }
-            summaries.departmentSummaries[deptName].count++;
-            summaries.departmentSummaries[deptName].totalGross += Number(payroll.grossSalary);
-            summaries.departmentSummaries[deptName].totalNet += Number(payroll.netSalary);
-        });
+        // payrolls.forEach(payroll => {
+        //     const deptName = payroll.employee.department?.name || 'Unassigned';
+        //     if (!summaries.departmentSummaries[deptName]) {
+        //         summaries.departmentSummaries[deptName] = {
+        //             count: 0,
+        //             totalGross: 0,
+        //             totalNet: 0
+        //         };
+        //     }
+        //     summaries.departmentSummaries[deptName].count++;
+        //     summaries.departmentSummaries[deptName].totalGross += Number(payroll.grossSalary);
+        //     summaries.departmentSummaries[deptName].totalNet += Number(payroll.netSalary);
+        // });
 
         // Calculate averages
         summaries.averageSalary = summaries.totalGrossSalary / (payrolls.length || 1);
@@ -342,79 +336,79 @@ async getPayrollSummaries(req, res) {
 
 
 // Get detailed department payroll summary
-async getDepartmentPayrollSummary(req, res) {
-    try {
-        const { organisationId, departmentId } = req.params;
-        const { monthYear } = req.query;
+// async getDepartmentPayrollSummary(req, res) {
+//     try {
+//         const { organisationId, departmentId } = req.params;
+//         const { monthYear } = req.query;
 
-        const payrollDate = monthYear ? new Date(monthYear) : null;
+//         const payrollDate = monthYear ? new Date(monthYear) : null;
 
-        const whereClause = {
-            employee: {
-                organisationId: parseInt(organisationId),
-                departmentId: parseInt(departmentId)
-            }
-        };
+//         const whereClause = {
+//             employee: {
+//                 organisationId: parseInt(organisationId),
+//                 departmentId: parseInt(departmentId)
+//             }
+//         };
 
-        if (payrollDate && !isNaN(payrollDate.getTime())) {
-            whereClause.monthYear = payrollDate;
-        }
+//         if (payrollDate && !isNaN(payrollDate.getTime())) {
+//             whereClause.monthYear = payrollDate;
+//         }
 
-        const payrolls = await prisma.payroll.findMany({
-            where: whereClause,
-            include: {
-                employee: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                        position: true
-                    }
-                }
-            }
-        });
+//         const payrolls = await prisma.payroll.findMany({
+//             where: whereClause,
+//             include: {
+//                 employee: {
+//                     select: {
+//                         firstName: true,
+//                         lastName: true,
+//                         position: true
+//                     }
+//                 }
+//             }
+//         });
 
-        const summary = {
-            totalEmployees: await prisma.employee.count({
-                where: {
-                    organisationId: parseInt(organisationId),
-                    departmentId: parseInt(departmentId)
-                }
-            }),
-            processedPayrolls: payrolls.length,
-            totalGrossSalary: payrolls.reduce((sum, p) => sum + Number(p.grossSalary), 0),
-            totalNetSalary: payrolls.reduce((sum, p) => sum + Number(p.netSalary), 0),
-            totalDeductions: {
-                paye: payrolls.reduce((sum, p) => sum + Number(p.deductions.paye), 0),
-                nhif: payrolls.reduce((sum, p) => sum + Number(p.deductions.nhif), 0),
-                nssf: payrolls.reduce((sum, p) => sum + Number(p.deductions.nssf.amount), 0),
-                housingLevy: payrolls.reduce((sum, p) => sum + Number(p.deductions.housingLevy), 0)
-            },
-            employeeDetails: payrolls.map(p => ({
-                name: `${p.employee.firstName} ${p.employee.lastName}`,
-                position: p.employee.position,
-                grossSalary: p.grossSalary,
-                netSalary: p.netSalary,
-                deductions: p.deductions
-            })),
-            averageSalary: 0,
-            unprocessedEmployees: 0
-        };
+//         const summary = {
+//             totalEmployees: await prisma.employee.count({
+//                 where: {
+//                     organisationId: parseInt(organisationId),
+//                     departmentId: parseInt(departmentId)
+//                 }
+//             }),
+//             processedPayrolls: payrolls.length,
+//             totalGrossSalary: payrolls.reduce((sum, p) => sum + Number(p.grossSalary), 0),
+//             totalNetSalary: payrolls.reduce((sum, p) => sum + Number(p.netSalary), 0),
+//             totalDeductions: {
+//                 paye: payrolls.reduce((sum, p) => sum + Number(p.deductions.paye), 0),
+//                 nhif: payrolls.reduce((sum, p) => sum + Number(p.deductions.nhif), 0),
+//                 nssf: payrolls.reduce((sum, p) => sum + Number(p.deductions.nssf.amount), 0),
+//                 housingLevy: payrolls.reduce((sum, p) => sum + Number(p.deductions.housingLevy), 0)
+//             },
+//             employeeDetails: payrolls.map(p => ({
+//                 name: `${p.employee.firstName} ${p.employee.lastName}`,
+//                 position: p.employee.position,
+//                 grossSalary: p.grossSalary,
+//                 netSalary: p.netSalary,
+//                 deductions: p.deductions
+//             })),
+//             averageSalary: 0,
+//             unprocessedEmployees: 0
+//         };
 
-        summary.averageSalary = summary.totalGrossSalary / (payrolls.length || 1);
-        summary.unprocessedEmployees = summary.totalEmployees - summary.processedPayrolls;
+//         summary.averageSalary = summary.totalGrossSalary / (payrolls.length || 1);
+//         summary.unprocessedEmployees = summary.totalEmployees - summary.processedPayrolls;
 
-        return res.status(200).json({
-            status: 'success',
-            data: summary
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: 'error',
-            message: 'Failed to fetch department payroll summary',
-            error: error.message
-        });
-    }
-}
+//         return res.status(200).json({
+//             status: 'success',
+//             data: summary
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: 'error',
+//             message: 'Failed to fetch department payroll summary',
+//             error: error.message
+//         });
+//     }
+// }
   // Download payslip
   async downloadPayslip (req, res) {
     try {
