@@ -18,12 +18,7 @@ export const reportController = {
               id: true,
               firstName: true,
               lastName: true,
-              position: true,
-              department: {
-                select: {
-                  name: true
-                }
-              }
+              position: true
             }
           }
         },
@@ -79,12 +74,7 @@ export const reportController = {
               id: true,
               firstName: true,
               lastName: true,
-              position: true,
-              department: {
-                select: {
-                  name: true
-                }
-              }
+              position: true
             }
           }
         }
@@ -196,12 +186,7 @@ export const reportController = {
               id: true,
               firstName: true,
               lastName: true,
-              position: true,
-              department: {
-                select: {
-                  name: true
-                }
-              }
+              position: true
             }
           }
         },

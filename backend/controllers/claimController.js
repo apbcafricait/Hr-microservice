@@ -1,72 +1,71 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import {  generateSequentialReferenceId } from '../utils/helpers.js';
+import { generateSequentialReferenceId } from '../utils/helpers.js';
 
 const prisma = new PrismaClient();
 
 export class ClaimController {
   // Submit a new claim
-async submitClaim(req, res) {
-  try {
-    const {
-      eventName,
-      description,
-      currency,
-      amount,
-      fromDate,
-      toDate,
-      employeeId,
-      comment,
-    } = req.body;
-
-    const submittingEmployeeId = req.user?.employeeId ?? null;
-    const targetEmployeeId = employeeId || submittingEmployeeId;
-
-    // 🧠 Step 1: Fetch employee with departmentId
-    const employee = await prisma.employee.findUnique({
-      where: { id: targetEmployeeId },
-      select: { departmentId: true }
-    });
-
-    if (!employee || !employee.departmentId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Employee not found or not assigned to a department',
-      });
-    }
-
-    // 🧠 Step 2: Create claim and link departmentId
-    const claim = await prisma.claim.create({
-      data: {
-        referenceId: generateSequentialReferenceId(),
+  async submitClaim(req, res) {
+    try {
+      const {
         eventName,
         description,
         currency,
-        amount: new Prisma.Decimal(amount),
-        fromDate: new Date(fromDate),
-        toDate: new Date(toDate),
-        employeeId: targetEmployeeId,
-        departmentId: employee.departmentId, // ✅ added here
+        amount,
+        fromDate,
+        toDate,
+        employeeId,
         comment,
-      },
-      include: {
-        employee: true,
-      },
-    });
+      } = req.body;
 
-    return res.status(201).json({
-      status: 'success',
-      data: { claim },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to submit claim',
-      error: error.message,
-    });
+      const submittingEmployeeId = req.user?.employeeId ?? null;
+      const targetEmployeeId = employeeId || submittingEmployeeId;
+
+      // 🧠 Step 1: Fetch employee
+      const employee = await prisma.employee.findUnique({
+        where: { id: targetEmployeeId },
+        // select: { departmentId: true } // 🟨 Commented out departmentId
+      });
+
+      if (!employee /* || !employee.departmentId */) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Employee not found',
+        });
+      }
+
+      // 🧠 Step 2: Create claim
+      const claim = await prisma.claim.create({
+        data: {
+          referenceId: generateSequentialReferenceId(),
+          eventName,
+          description,
+          currency,
+          amount: new Prisma.Decimal(amount),
+          fromDate: new Date(fromDate),
+          toDate: new Date(toDate),
+          employeeId: targetEmployeeId,
+          // departmentId: employee.departmentId, // 🟨 Removed
+          comment,
+        },
+        include: {
+          employee: true,
+        },
+      });
+
+      return res.status(201).json({
+        status: 'success',
+        data: { claim },
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to submit claim',
+        error: error.message,
+      });
+    }
   }
-}
-
 
   // Get claims for current employee
   async getMyClaims(req, res) {
@@ -100,57 +99,56 @@ async submitClaim(req, res) {
   }
 
   // Get claims by organisation ID
-async getClaimsByOrganisation(req, res) {
-  try {
-    const organisationId = Number(req.params.organisationId);
+  async getClaimsByOrganisation(req, res) {
+    try {
+      const organisationId = Number(req.params.organisationId);
 
-    if (isNaN(organisationId)) {
-      return res.status(400).json({
+      if (isNaN(organisationId)) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Invalid organisation ID',
+        });
+      }
+
+      const claims = await prisma.claim.findMany({
+        where: {
+          employee: {
+            organisationId: organisationId,
+          },
+        },
+        include: {
+          employee: {
+            select: {
+              firstName: true,
+              lastName: true,
+              position: true,
+            },
+          },
+          assignedTo: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          submittedDate: 'desc',
+        },
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        data: { claims },
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
         status: 'error',
-        message: 'Invalid organisation ID',
+        message: 'Failed to fetch organisation claims',
+        error: error.message,
       });
     }
-
-    const claims = await prisma.claim.findMany({
-      where: {
-        employee: {
-          organisationId: organisationId,
-        },
-      },
-      include: {
-        employee: {
-          select: {
-            firstName: true,
-            lastName: true,
-            position: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-      orderBy: {
-        submittedDate: 'desc',
-      },
-    });
-
-    return res.status(200).json({
-      status: 'success',
-      data: { claims },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch organisation claims',
-      error: error.message,
-    });
   }
-}
-
 
   // Admin: Get all claims
   async getAllClaims(req, res) {
@@ -210,7 +208,7 @@ async getClaimsByOrganisation(req, res) {
       const claim = await prisma.claim.update({
         where: { id: Number(claimId) },
         data: {
-          departmentHeadId: Number(departmentHeadId),
+          // departmentHeadId: Number(departmentHeadId), // 🟨 Removed
           status: 'ASSIGNED',
           comment,
         },
@@ -236,8 +234,6 @@ async getClaimsByOrganisation(req, res) {
       });
     }
   }
-
-  
 
   // Admin: Assign claim
   async assignClaim(req, res) {
@@ -317,17 +313,17 @@ async getClaimsByOrganisation(req, res) {
   // Filter claims by employee or department
   async getClaims(req, res) {
     try {
-      const { employeeId, departmentId, status } = req.query;
+      const { employeeId, /* departmentId, */ status } = req.query;
 
       const claims = await prisma.claim.findMany({
         where: {
           ...(employeeId && { employeeId: Number(employeeId) }),
-          ...(departmentId && { employee: { departmentId: Number(departmentId) } }),
+          // ...(departmentId && { employee: { departmentId: Number(departmentId) } }), // 🟨 Removed
           ...(status && { status }),
         },
         include: {
           employee: { select: { firstName: true, lastName: true } },
-          departmentHead: { select: { firstName: true, lastName: true } },
+          // departmentHead: { select: { firstName: true, lastName: true } }, // 🟨 Removed
         },
       });
 
@@ -343,6 +339,7 @@ async getClaimsByOrganisation(req, res) {
       });
     }
   }
+
   // Delete a claim
   async deleteClaim(req, res) {
     try {

@@ -18,7 +18,9 @@ model users {
   Employee      Employee?
   LeaveRequest  LeaveRequest[]
   Organisation  Organisation[]
+  
 }
+
 
 model Employee {
   id             Int      @id @default(autoincrement())
@@ -34,18 +36,13 @@ model Employee {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  // 👇 Required foreign key field
-  departmentId Int @map("department_id")
-
-  // 👇 Existing Relations
+  // 👇 Existing Relations (still valid)
   Dependent         Dependent[]
   Qualification     Qualification[]
   assignedClaims    Claim[]             @relation("AssignedClaims")
   submittedClaims   Claim[]             @relation("SubmittedClaims")
-  managedDepartment Department?         @relation("DepartmentManager")
   Document          Document[]
   EmployeeContact   EmployeeContact[]
-  department        Department          @relation("DepartmentEmployees", fields: [departmentId], references: [id])
   organisation      Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   user              users               @relation(fields: [userId], references: [id], onDelete: Cascade)
   LeaveBalance      LeaveBalance?
@@ -59,6 +56,7 @@ model Employee {
   @@map("employees")
 }
 
+
 model Organisation {
   id                  Int          @id @default(autoincrement())
   createdBy           Int          @map("created_by")
@@ -69,7 +67,6 @@ model Organisation {
   createdAt           DateTime     @default(now()) @map("created_at")
   updatedAt           DateTime     @updatedAt @map("updated_at")
   subscriptionEndDate DateTime?
-  Department          Department[]
   employees           Employee[]
   LeaveType           LeaveType[]
   creator             users        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
@@ -139,10 +136,11 @@ model LeaveType {
   createdAt      DateTime       @default(now()) @map("created_at")
   organisationId Int
   leaveRequests  LeaveRequest[]
-  Organisation   Organisation   @relation(fields: [organisationId], references: [id])
+  organisation   Organisation   @relation(fields: [organisationId], references: [id])
 
   @@map("leave_types")
 }
+
 
 model EmployeeContact {
   id                    Int      @id @default(autoincrement())
@@ -170,6 +168,7 @@ model Suggestion {
   @@map("suggestions")
 }
 
+/*
 model Department {
   id             Int      @id @default(autoincrement())
   organisationId Int      @map("organisation_id")
@@ -188,6 +187,7 @@ model Department {
   @@unique([organisationId, name])
   @@map("departments")
 }
+*/
 
 model Payroll {
   id                Int                @id @default(autoincrement())
@@ -324,15 +324,12 @@ model Claim {
   status        String   @default("SUBMITTED")
   comment       String?
   assignedToId  Int?
-  departmentId  Int
-
+ 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   assignedTo Employee? @relation("AssignedClaims", fields: [assignedToId], references: [id])
   employee   Employee  @relation("SubmittedClaims", fields: [employeeId], references: [id], onDelete: Cascade)
-
-  department Department @relation(fields: [departmentId], references: [id]) // ✅ this must exist
 
   @@map("claims")
 }

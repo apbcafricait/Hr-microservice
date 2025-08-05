@@ -17,7 +17,7 @@ router.post('/assign', authenticated, claimController.assignClaim)
 router.get('/organisation/:organisationId', authenticated, claimController.getClaimsByOrganisation)
 
 // Assign to a department head route
-router.post('/assign-department-head', authenticated, claimController.assignClaimToDepartmentHead)
+// router.post('/assign-department-head', authenticated, claimController.assignClaimToDepartmentHead)
 router.put('/status', authenticated, claimController.updateClaimStatus)
 
 export default router

@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 
 export class EmployeesController {
   // Get all employees with pagination, filtering and searching
-  async getAllEmployees (req, res) {
+  async getAllEmployees(req, res) {
     try {
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit) || 10
@@ -80,7 +80,7 @@ export class EmployeesController {
     try {
       const { id } = req.params;
       const employee = await prisma.employee.findUnique({
-        where: { userId: parseInt(id) }, // Match userId with the id from params
+        where: { userId: parseInt(id) },
         include: {
           user: {
             select: {
@@ -96,14 +96,14 @@ export class EmployeesController {
           },
         },
       });
-  
+
       if (!employee) {
         return res.status(404).json({
           status: 'error',
           message: 'Employee not found',
         });
       }
-  
+
       return res.status(200).json({
         status: 'success',
         data: { employee },
@@ -116,139 +116,113 @@ export class EmployeesController {
       });
     }
   }
-  
 
   // Create new employee
-  
-async createEmployee(req, res) {
-  try {
-    const {
-      email,
-      password,
-      organisationId,
-      firstName,
-      lastName,
-      nationalId,
-      dateOfBirth,
-      position,
-      employmentDate,
-      salary,
-      role
-    } = req.body;
-
-    const existingUser = await prisma.users.findUnique({
-      where: { email: email.toLowerCase() }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Email already registered'
-      });
-    }
-
-    const result = await prisma.$transaction(async (prisma) => {
-      const encrypted_password = await encryptPassword(password);
-      const user = await prisma.users.create({
-        data: {
-          email: email.toLowerCase(),
-          password_hash: encrypted_password,
-          role
-        }
-      });
-
-      // 🔁 Get or create default department for this organisation
-      let department = await prisma.department.findFirst({
-        where: {
-          organisationId: parseInt(organisationId)
-        }
-      });
-
-      if (!department) {
-        department = await prisma.department.create({
-          data: {
-            name: 'General',
-            organisationId: parseInt(organisationId)
-          }
-        });
-      }
-
-      const employeeData = {
-        userId: user.id,
-        organisationId: parseInt(organisationId),
-        departmentId: department.id, // ✅ Now dynamic
+  async createEmployee(req, res) {
+    try {
+      const {
+        email,
+        password,
+        organisationId,
         firstName,
         lastName,
         nationalId,
-        dateOfBirth: new Date(dateOfBirth),
+        dateOfBirth,
         position,
-        employmentDate: new Date(employmentDate),
-        salary: parseFloat(salary)
-      };
+        employmentDate,
+        salary,
+        role
+      } = req.body;
 
-      const validationError = validateEmployee(employeeData);
-      if (validationError) {
-        throw new Error('Validation failed: ' + validationError.join(', '));
+      const existingUser = await prisma.users.findUnique({
+        where: { email: email.toLowerCase() }
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Email already registered'
+        });
       }
 
-      const employee = await prisma.employee.create({
-        data: employeeData,
-        include: {
-          user: {
-            select: {
-              email: true,
-              role: true
-            }
-          },
-          organisation: {
-            select: {
-              name: true
-            }
-          },
-          department: {
-            select: {
-              name: true
+      const result = await prisma.$transaction(async (prisma) => {
+        const encrypted_password = await encryptPassword(password);
+        const user = await prisma.users.create({
+          data: {
+            email: email.toLowerCase(),
+            password_hash: encrypted_password,
+            role
+          }
+        });
+
+        const employeeData = {
+          userId: user.id,
+          organisationId: parseInt(organisationId),
+          firstName,
+          lastName,
+          nationalId,
+          dateOfBirth: new Date(dateOfBirth),
+          position,
+          employmentDate: new Date(employmentDate),
+          salary: parseFloat(salary)
+        };
+
+        const validationError = validateEmployee(employeeData);
+        if (validationError) {
+          throw new Error('Validation failed: ' + validationError.join(', '));
+        }
+
+        const employee = await prisma.employee.create({
+          data: employeeData,
+          include: {
+            user: {
+              select: {
+                email: true,
+                role: true
+              }
+            },
+            organisation: {
+              select: {
+                name: true
+              }
             }
           }
-        }
+        });
+
+        await prisma.leaveBalance.create({
+          data: {
+            employeeId: employee.id,
+            annualLeave: 21,
+            sickLeave: 7,
+            compassionateLeave: 3
+          }
+        });
+
+        return employee;
       });
 
-      await prisma.leaveBalance.create({
-        data: {
-          employeeId: employee.id,
-          annualLeave: 21,
-          sickLeave: 7,
-          compassionateLeave: 3
-        }
+      return res.status(201).json({
+        status: 'success',
+        data: { employee: result }
       });
 
-      return employee;
-    });
-
-    return res.status(201).json({
-      status: 'success',
-      data: { employee: result }
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      message: error.message.includes('Validation failed') 
-        ? error.message 
-        : 'Failed to create employee',
-      error: error.message
-    });
+    } catch (error) {
+      return res.status(500).json({
+        status: 'error',
+        message: error.message.includes('Validation failed')
+          ? error.message
+          : 'Failed to create employee',
+        error: error.message
+      });
+    }
   }
-}
-
 
   // Update employee
-  async updateEmployee (req, res) {
+  async updateEmployee(req, res) {
     try {
       const { id } = req.params
       const updateData = {}
 
-      // Only update fields that are provided
       if (req.body.firstName) updateData.firstName = req.body.firstName
       if (req.body.lastName) updateData.lastName = req.body.lastName
       if (req.body.position) updateData.position = req.body.position
@@ -287,12 +261,11 @@ async createEmployee(req, res) {
         message: 'Failed to update employee',
         error: error.message
       })
-      
     }
   }
 
   // Delete employee
-  async deleteEmployee (req, res) {
+  async deleteEmployee(req, res) {
     try {
       const { id } = req.params
       await prisma.employee.delete({
@@ -313,7 +286,7 @@ async createEmployee(req, res) {
   }
 
   // Get employees by organisation
-  async getEmployeesByOrganisation (req, res) {
+  async getEmployeesByOrganisation(req, res) {
     try {
       const { organisationId } = req.params
       const employees = await prisma.employee.findMany({
@@ -342,7 +315,7 @@ async createEmployee(req, res) {
   }
 
   // Get employee statistics
-  async getEmployeeStats (req, res) {
+  async getEmployeeStats(req, res) {
     try {
       const { organisationId } = req.params
       const stats = await prisma.$transaction([

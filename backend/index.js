@@ -13,7 +13,7 @@ import leaveRequestRoutes from './Routes/leaveRequestRoutes.js'
 import employeeContactsRoutes from './Routes/employeeContactsRoutes.js'
 import QualificationsRoutes from './Routes/QualificationsRoutes.js'
 import suggestionsRoutes from './Routes/suggestionsRoutes.js'
-import departmentRoutes from './Routes/departmentRoutes.js'
+//import departmentRoutes from './Routes/departmentRoutes.js'
 import payrollRoutes from './Routes/payrollRoutes.js'
 import PerformanceReviewsRoutes from './Routes/PerformanceReviewsRoutes.js'
 import recruitmentRoutes from './Routes/recruitmentRoutes.js'
@@ -55,7 +55,7 @@ app.use('/api/qualifications', QualificationsRoutes)
 
 app.use('/api/suggestions', suggestionsRoutes)
 
-app.use('/api/departments', departmentRoutes)
+// app.use('/api/departments', departmentRoutes)
 app.use('/api/payroll', payrollRoutes)
 app.use('/api/performance', PerformanceReviewsRoutes)
 app.use('/api/dependents', dependentsRoutes)

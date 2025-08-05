@@ -71,38 +71,39 @@ export class SuggestionsController {
   }
 
   // POST: Create a new suggestion
-  async createSuggestion (req, res) {
-    try {
-      const { organisationId,employeeId
-, content, isAnonymous } = req.body
-      if (!organisationId || !content) {
-        return res
-          .status(400)
-          .json({
-            status: 'error',
-            message: 'organisationId and content are required'
-          })
-      }
-      const suggestion = await prisma.suggestion.create({
-        data: {
-          organisationId: parseInt(organisationId),
-          employeeId: parseInt(employeeId),
-          content,
-          isAnonymous:
-            isAnonymous !== undefined ? Boolean(isAnonymous) : undefined // use provided value or default
-        }
-      })
-      return res.status(201).json({ status: 'success', data: suggestion })
-    } catch (error) {
-      return res
-        .status(500)
-        .json({
-          status: 'error',
-          message: 'Failed to create suggestion',
-          error: error.message
-        })
+async createSuggestion(req, res) {
+  try {
+    const employeeId = req.user?.employeeId;
+    const organisationId = req.user?.organisationId; 
+
+    const { content, isAnonymous } = req.body;
+
+    if (!employeeId || !organisationId || !content) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing required fields: employeeId, organisationId, or content',
+      });
     }
+
+    const suggestion = await prisma.suggestion.create({
+      data: {
+        organisationId,
+        content,
+        isAnonymous: isAnonymous !== undefined ? Boolean(isAnonymous) : true,
+        employee: { connect: { id: employeeId } },
+      },
+    });
+
+    return res.status(201).json({ status: 'success', data: suggestion });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to create suggestion',
+      error: error.message,
+    });
   }
+}
+
 
   // PUT: Update an existing suggestion (admin-only, if updates are allowed)
   async updateSuggestion (req, res) {
