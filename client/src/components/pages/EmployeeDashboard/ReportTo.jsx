@@ -7,7 +7,7 @@ import {
   useDeleteReportMutation,
 } from "../../../slices/ReportSlice";
 import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
-import EmployeeHeader from "../../Layouts/EmployeeHeader";
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -100,10 +100,8 @@ const ReportTo = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <EmployeeHeader />
-
-      <div className="pt-24 p-6 flex-1">
+    <div className="w-full">
+      <div className="p-6">
         <h2 className="text-lg font-semibold mb-4">Report To</h2>
         <div className="border border-gray-300 p-4 rounded">
           {isEmployeeLoading && <p>Loading employee data...</p>}

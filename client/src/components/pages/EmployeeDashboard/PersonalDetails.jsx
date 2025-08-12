@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUpdateEmployeeMutation, useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import { useSelector } from "react-redux";
-import EmployeeHeader from "../../Layouts/EmployeeHeader";
+
 
 const PersonalDetails = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -97,8 +97,7 @@ const PersonalDetails = () => {
 
   if (isFetchingEmployee) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <EmployeeHeader />
+      <div className="w-full">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-lg text-blue-600">Loading...</div>
         </div>
@@ -108,8 +107,7 @@ const PersonalDetails = () => {
 
   if (isError) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <EmployeeHeader />
+      <div className="w-full">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-lg text-red-600">Error: {error?.data?.message || 'Failed to fetch employee data'}</div>
         </div>
@@ -118,12 +116,9 @@ const PersonalDetails = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <EmployeeHeader />
-      
-      {/* Main Content with Offset for Fixed Header */}
-      <div className="pt-24 p-4 flex-1 flex items-center justify-center bg-gray-100">
+    <div className="w-full">
+      {/* Main Content */}
+      <div className="p-4 flex-1 flex items-center justify-center bg-gray-100">
         <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-3xl">
           <h2 className="text-2xl font-semibold text-center text-blue-600 mb-6">
             Personal Details

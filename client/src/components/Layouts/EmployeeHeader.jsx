@@ -1,11 +1,10 @@
-import { useState } from "react"; // Corrected from "React" to "react"
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetEmployeeQuery } from "../../slices/employeeSlice";
-import EmployeeSettingsModal from "../pages/EmployeeSettingsModal"; // Adjusted import path
 
-const EmployeeHeader = () => {
+const EmployeeHeader = ({ onMenuSelect }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: orgEmpData } = useGetEmployeeQuery(id);
@@ -18,17 +17,31 @@ const EmployeeHeader = () => {
   };
 
   const handleMenuClick = (option) => {
-    setIsDropdownOpen(false); // Close dropdown after selection
-    if (option === "Settings") {
-      setIsModalOpen(true); // Open the modal for settings
+    setIsDropdownOpen(false);
+    if (onMenuSelect) {
+      // Map dropdown options to section keys
+      switch (option) {
+        case "Profile":
+          onMenuSelect("profile");
+          break;
+        case "About":
+          onMenuSelect("about");
+          break;
+        case "Settings":
+          onMenuSelect("settings");
+          break;
+        case "Change Password":
+          onMenuSelect("changepassword");
+          break;
+        default:
+          break;
+      }
     }
-    // Handle other options as needed
   };
 
   return (
     <>
       <header className="fixed top-0 left-0 w-full flex items-center justify-between px-6 py-3 bg-white shadow z-50 h-16">
-        {/* Left: Logo/Org Name */}
         <div className="flex items-center">
           <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow">
             <span className="text-white text-lg font-bold select-none">
@@ -40,7 +53,6 @@ const EmployeeHeader = () => {
           </span>
         </div>
 
-        {/* Right: User Dropdown */}
         <div className="relative">
           <button
             onClick={toggleDropdown}
@@ -64,7 +76,7 @@ const EmployeeHeader = () => {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <ul className="py-1">
-                {["Profile", "Settings", "About", "Change Password"].map((option) => (
+                {["Profile", "About", "Settings", "Change Password"].map((option) => (
                   <li key={option}>
                     <button
                       onClick={() => handleMenuClick(option)}
@@ -79,9 +91,6 @@ const EmployeeHeader = () => {
           )}
         </div>
       </header>
-
-      {/* Modal Component for Employee Settings */}
-      <EmployeeSettingsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   );
 };
