@@ -5,10 +5,7 @@ import {
   CalendarIcon,
   UserIcon,
   DocumentTextIcon,
-  CogIcon,
-  XMarkIcon,
   ChevronLeftIcon,
-  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import ApplyLeave from './ApplyLeave';
 import EmployeeProfile from './EmployeeProfile';
@@ -21,24 +18,18 @@ import { useSelector } from 'react-redux';
 import { useGetAttedanceOfEmployeeQuery } from '../../../slices/attendanceSlice';
 import { useGetAllSuggestionsQuery } from '../../../slices/suggestionsApiSlice';
 import { skipToken } from '@reduxjs/toolkit/query';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
 import { useGetLeaveBalanceQuery } from '../../../slices/leaveBalancesApiSlice';
-//import { useGetDepartmentsQuery } from '../../../slices/departmentsApiSlice';
 import { useGetAllLeaveRequestsQuery } from '../../../slices/leaveApiSlice';
 import Dashboard from './Dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
-import EmployeeHeader from '../../Layouts/EmployeeHeader'; // 
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import EmployeeHeader from '../../Layouts/EmployeeHeader';
+import ChangePassword from './ChangePassword';
+import EmployeeSettings from './EmployeeSettings';
+import About from './About';
+import ContactDetails from './ContactDetails';
+import PersonalDetails from './PersonalDetails';
+import ReportTo from './ReportTo';
+import Qualifications from './Qualifications';
 
 const iconColors = [
   'text-blue-500',
@@ -49,8 +40,10 @@ const iconColors = [
 ];
 
 const EmployeeDashboard = () => {
-  const [activeSubComponent, setActiveSubComponent] = useState('Dashboard');
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  // Main section state: 'dashboard', 'profile', 'about', 'settings', 'changepassword'
+  const [mainSection, setMainSection] = useState('dashboard');
+  // Profile tab state
+  const [profileTab, setProfileTab] = useState('ContactDetails');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   const { userInfo } = useSelector((state) => state.auth);
@@ -64,9 +57,8 @@ const EmployeeDashboard = () => {
   const employeeId = employee?.data.employee.id;
 
   const { data } = useGetAttedanceOfEmployeeQuery(employeeId);
-  const attendanceData = data?.data || data || []; // Handle nested or flat response
+  const attendanceData = data?.data || data || [];
   const { data: leavebalances } = useGetLeaveBalanceQuery(employeeId);
-  // const { data: orgDepartments } = useGetDepartmentsQuery(organisationId);
   const { data: leaveRequests } = useGetAllLeaveRequestsQuery(employeeId);
 
   const {
@@ -137,16 +129,28 @@ const EmployeeDashboard = () => {
   };
 
   const subMenuItems = [
-    { name: 'Dashboard', icon: HomeIcon, component: 'Dashboard' },
+    { name: 'Dashboard', icon: HomeIcon, component: 'dashboard' },
     { name: 'Apply Leave', icon: CalendarIcon, component: 'ApplyLeave' },
     { name: 'Suggestion', icon: DocumentTextIcon, component: 'Suggestion' },
     { name: 'Time at Work', icon: ClockIcon, component: 'TimeAtWork' },
     { name: 'Claims', icon: DocumentTextIcon, component: 'Claims' },
+    { name: 'Profile', icon: UserIcon, component: 'profile' },
   ];
 
-  const renderSubComponent = () => {
-    switch (activeSubComponent) {
-      case 'Dashboard':
+  // Sidebar navigation handler
+  const handleSidebarNav = (component) => {
+    if (component === 'profile') {
+      setMainSection('profile');
+      setProfileTab('ContactDetails');
+    } else {
+      setMainSection(component.toLowerCase());
+    }
+  };
+
+  // Main content rendering
+  const renderMainContent = () => {
+    switch (mainSection) {
+      case 'dashboard':
         return (
           <Dashboard
             hideHeader={false}
@@ -162,16 +166,71 @@ const EmployeeDashboard = () => {
             isSuggestionsLoading={isSuggestionsLoading}
           />
         );
-      case 'ApplyLeave':
+      case 'applyleave':
         return <ApplyLeave hideHeader={false} />;
-      case 'EmployeeProfile':
-        return <EmployeeProfile />;
-      case 'TimeAtWork':
-        return <TimeAtWork hideHeader={false} />;
-      case 'Suggestion':
+      case 'suggestion':
         return <Suggestion hideHeader={false} />;
-      case 'Claims':
+      case 'timeatwork':
+        return <TimeAtWork hideHeader={false} />;
+      case 'claims':
         return <Claims hideHeader={false} />;
+      case 'profile':
+        return (
+          <div className="min-h-screen bg-gray-50 py-8">
+            <div className="max-w-6xl mx-auto px-6">
+              {/* Profile Header */}
+              <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <div className="flex items-center mb-6">
+                  <UserIcon className="w-8 h-8 text-blue-600 mr-3" />
+                  <h1 className="text-3xl font-bold text-gray-900">Employee Profile</h1>
+                </div>
+                <p className="text-gray-600">
+                  Manage your personal information, contact details, and professional qualifications.
+                </p>
+              </div>
+
+              {/* Profile Tabs */}
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="border-b border-gray-200">
+                  <nav className="flex space-x-8 px-8" aria-label="Profile tabs">
+                    {[
+                      { key: 'ContactDetails', label: 'Contact Details', icon: '📞' },
+                      { key: 'PersonalDetails', label: 'Personal Details', icon: '👤' },
+                      { key: 'ReportTo', label: 'Reports', icon: '📊' },
+                      { key: 'Qualifications', label: 'Qualifications', icon: '🎓' }
+                    ].map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setProfileTab(tab.key)}
+                        className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                          profileTab === tab.key
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <span className="mr-2">{tab.icon}</span>
+                        {tab.label}
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+                
+                <div className="p-8">
+                  {profileTab === 'ContactDetails' && <ContactDetails />}
+                  {profileTab === 'PersonalDetails' && <PersonalDetails />}
+                  {profileTab === 'ReportTo' && <ReportTo />}
+                  {profileTab === 'Qualifications' && <Qualifications />}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'about':
+        return <About />;
+      case 'settings':
+        return <EmployeeSettings />;
+      case 'changepassword':
+        return <ChangePassword />;
       default:
         return (
           <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -187,9 +246,9 @@ const EmployeeDashboard = () => {
 
   return (
     <>
-      <EmployeeHeader />
+      <EmployeeHeader onMenuSelect={setMainSection} />
       <div className="flex min-h-screen bg-gray-50" style={{ marginTop: '64px' }}>
-        {/* Sidebar - sticky and full height */}
+        {/* Sidebar */}
         <motion.aside
           initial={{ width: isSidebarExpanded ? 260 : 74 }}
           animate={{ width: isSidebarExpanded ? 260 : 74 }}
@@ -262,7 +321,7 @@ const EmployeeDashboard = () => {
             <ul className="space-y-1 mt-2">
               {subMenuItems.map((item, idx) => {
                 const IconComponent = item.icon;
-                const isActive = activeSubComponent === item.component;
+                const isActive = mainSection === item.component;
                 const iconColor =
                   isActive
                     ? 'text-white'
@@ -275,7 +334,7 @@ const EmployeeDashboard = () => {
                 return (
                   <motion.li key={item.name} layout>
                     <button
-                      onClick={() => setActiveSubComponent(item.component)}
+                      onClick={() => handleSidebarNav(item.component)}
                       className={`
                         group relative flex items-center w-full px-3 py-3
                         rounded-lg transition-all duration-200 outline-none
@@ -329,54 +388,6 @@ const EmployeeDashboard = () => {
               })}
             </ul>
           </nav>
-
-          {/* User/Compact Section (at bottom) */}
-          <div
-            className={`
-              mt-auto pb-5 px-4 w-full
-              flex ${isSidebarExpanded ? 'flex-row' : 'flex-col items-center'}
-              items-center gap-3 min-h-[70px] max-h-[100px]
-              transition-all duration-300
-            `}
-          >
-            <div
-              className={`
-                flex items-center justify-center w-11 h-11
-                bg-gradient-to-br from-indigo-400 to-blue-500
-                rounded-full shadow-lg
-                border-2 border-white dark:border-gray-900
-              `}
-            >
-              <UserIcon className="w-5 h-5 text-white drop-shadow" />
-            </div>
-            {isSidebarExpanded && (
-              <div className="overflow-hidden">
-                <div
-                  className="text-[15px] font-semibold text-gray-900 dark:text-gray-200"
-                >
-                  Employee
-                </div>
-                <div
-                  className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 truncate"
-                >
-                  {userInfo?.email || 'employee@nexuspro.com'}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Subtle noise overlay */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 opacity-60"
-            style={{
-              backgroundImage:
-                'url("https://www.transparenttextures.com/patterns/cubes.png")',
-              backgroundSize: '120px 120px',
-              mixBlendMode: 'overlay',
-              opacity: '0.06'
-            }}
-          />
         </motion.aside>
 
         {/* Main content area */}
@@ -386,45 +397,8 @@ const EmployeeDashboard = () => {
             minWidth: 0,
           }}
         >
-          {renderSubComponent()}
+          {renderMainContent()}
         </motion.div>
-
-        {/* Profile Modal (unchanged) */}
-        {showProfileModal && (
-          <div className="fixed inset-0 z-50 overflow-auto bg-gray-500 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white rounded-lg p-6 w-96">
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowProfileModal(false)}
-                  className="p-1 rounded-full hover:bg-gray-200"
-                >
-                  <XMarkIcon className="w-6 h-6 text-gray-800" />
-                </button>
-              </div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">User Options</h3>
-              <div className="mt-2">
-                <button
-                  onClick={() => {
-                    setActiveSubComponent('EmployeeProfile');
-                    setShowProfileModal(false);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 rounded"
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={() => {
-                    alert('Logging out...');
-                    setShowProfileModal(false);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 rounded mt-2"
-                >
-                  Log Out
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );

@@ -74,7 +74,7 @@ export class SuggestionsController {
 async createSuggestion(req, res) {
   try {
     const employeeId = req.user?.employeeId;
-    const organisationId = req.user?.organisationId; 
+    const organisationId = req.user?.organisationId;
 
     const { content, isAnonymous } = req.body;
 
@@ -87,10 +87,10 @@ async createSuggestion(req, res) {
 
     const suggestion = await prisma.suggestion.create({
       data: {
-        organisationId,
         content,
         isAnonymous: isAnonymous !== undefined ? Boolean(isAnonymous) : true,
         employee: { connect: { id: employeeId } },
+        organisation: { connect: { id: organisationId } },
       },
     });
 
@@ -103,6 +103,7 @@ async createSuggestion(req, res) {
     });
   }
 }
+
 
 
   // PUT: Update an existing suggestion (admin-only, if updates are allowed)

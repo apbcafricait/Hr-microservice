@@ -39,6 +39,11 @@ const ChangePassword = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      
+             // Show success message
+       setTimeout(() => {
+         setSuccessMessage("");
+       }, 2000);
     } catch (err) {
       // Handle error from the mutation
       setError(err.data?.message || "An error occurred while changing the password.");
@@ -46,105 +51,115 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="p-6 w-full h-full flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-center">Change Password</h2>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-6">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Change Password</h2>
+            <p className="text-gray-600">Update your password to keep your account secure</p>
+          </div>
+          
+          {/* Display Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm text-center">{error}</p>
+            </div>
+          )}
 
-        {/* Display Error Message */}
-        {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-        )}
+          {/* Display Success Message */}
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600 text-sm text-center">{successMessage}</p>
+            </div>
+          )}
 
-        {/* Display Success Message */}
-        {successMessage && (
-          <p className="text-green-500 text-sm mb-4 text-center">
-            {successMessage}
-          </p>
-        )}
+          <form className="space-y-6">
+            {/* Current Password */}
+            <div>
+              <label
+                htmlFor="current-password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Current Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="current-password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                required
+              />
+            </div>
 
-        <form>
-          {/* Current Password */}
-          <div className="mb-4">
-            <label
-              htmlFor="current-password"
-              className="block text-lg font-medium mb-1"
+            {/* New Password */}
+            <div>
+              <label
+                htmlFor="new-password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                New Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="new-password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                required
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Confirm Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="confirm-password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                required
+              />
+            </div>
+
+            {/* Show Password Checkbox */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="show-password"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+              />
+              <label htmlFor="show-password" className="ml-2 text-sm text-gray-700">
+                Show Password
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="button"
+              className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
+                isLoading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+              }`}
+              onClick={handlePasswordChange}
+              disabled={isLoading}
             >
-              Current Password
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="current-password"
-              className="w-full px-4 py-2 border rounded-lg text-base"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
-            />
-          </div>
-
-          {/* New Password */}
-          <div className="mb-4">
-            <label
-              htmlFor="new-password"
-              className="block text-lg font-medium mb-1"
-            >
-              New Password
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="new-password"
-              className="w-full px-4 py-2 border rounded-lg text-base"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-            />
-          </div>
-
-          {/* Confirm Password */}
-          <div className="mb-4">
-            <label
-              htmlFor="confirm-password"
-              className="block text-lg font-medium mb-1"
-            >
-              Confirm Password
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="confirm-password"
-              className="w-full px-4 py-2 border rounded-lg text-base"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-            />
-          </div>
-
-          {/* Show Password Checkbox */}
-          <div className="flex items-center mb-4">
-            <input
-              type="checkbox"
-              id="show-password"
-              className="mr-2"
-              checked={showPassword}
-              onChange={(e) => setShowPassword(e.target.checked)}
-            />
-            <label htmlFor="show-password" className="text-base">
-              Show Password
-            </label>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="button"
-            className={`w-full py-2 px-4 rounded-lg text-lg ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
-            }`}
-            onClick={handlePasswordChange}
-            disabled={isLoading}
-          >
-            {isLoading ? "Processing..." : "Change Password"}
-          </button>
-        </form>
+              {isLoading ? "Processing..." : "Change Password"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
