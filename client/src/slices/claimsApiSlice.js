@@ -51,12 +51,40 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Claims'],
     }),
 
-    // Update the status of a claim
+    // Update the status of a claim (CORRECTED URL STRUCTURE)
     updateClaimStatus: builder.mutation({
-      query: (statusData) => ({
-        url: `${CLAIM_URL}/status`,
+      query: ({ claimId, status, comment }) => ({
+        url: `${CLAIM_URL}/${claimId}/status`,
         method: "PUT",
-        body: statusData,
+        body: { status, comment },
+      }),
+      invalidatesTags: ['Claims'],
+    }),
+
+    // Alternative update claim mutation (if you need a different endpoint)
+    updateClaim: builder.mutation({
+      query: ({ claimId, ...updateData }) => ({
+        url: `${CLAIM_URL}/${claimId}`,
+        method: "PUT",
+        body: updateData,
+      }),
+      invalidatesTags: ['Claims'],
+    }),
+
+    // Get claim by ID (useful for viewing details)
+    getClaimById: builder.query({
+      query: (claimId) => ({
+        url: `${CLAIM_URL}/${claimId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, claimId) => [{ type: 'Claims', id: claimId }],
+    }),
+
+    // Delete claim (if needed)
+    deleteClaim: builder.mutation({
+      query: (claimId) => ({
+        url: `${CLAIM_URL}/${claimId}`,
+        method: "DELETE",
       }),
       invalidatesTags: ['Claims'],
     }),
@@ -70,4 +98,7 @@ export const {
   useSubmitClaimMutation,
   useAssignClaimMutation,
   useUpdateClaimStatusMutation,
+  useUpdateClaimMutation,
+  useGetClaimByIdQuery,
+  useDeleteClaimMutation,
 } = claimsApiSlice;
