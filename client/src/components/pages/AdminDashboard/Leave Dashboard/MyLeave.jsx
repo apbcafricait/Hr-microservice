@@ -44,25 +44,25 @@ const MyLeaveList = () => {
     { id: 'approved', label: 'Approved', color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' },
   ];
 
-  const handleAction = useCallback(
-    async (id, action) => {
+  const handleStatusChange = useCallback(
+    async (id, newStatus) => {
       try {
         const updatedRequest = {
           id,
           body: {
-            status: action.toLowerCase(),
+            status: newStatus,
             approvedBy: userInfo?.id || 1,
           },
         };
         await updateLeaveRequest(updatedRequest).unwrap();
-        toast.success(`Leave request ${action} successfully!`, {
+        toast.success(`Leave request updated to ${newStatus} successfully!`, {
           position: 'top-right',
           autoClose: 3000,
           className: 'bg-green-600 text-white rounded-xl shadow-lg p-4 font-inter text-sm',
         });
         refetch();
       } catch (error) {
-        toast.error(`Failed to ${action} leave request: ${error?.data?.message || error.message || 'Unknown error'}`, {
+        toast.error(`Failed to update leave request: ${error?.data?.message || error.message || 'Unknown error'}`, {
           position: 'top-right',
           autoClose: 3000,
           className: 'bg-red-600 text-white rounded-xl shadow-lg p-4 font-inter text-sm',
@@ -83,13 +83,12 @@ const MyLeaveList = () => {
 
   // CSV download
   const handleDownloadCSV = useCallback(() => {
-    const headers = ['Date', 'Employee', 'Type', 'Status', 'Comments'];
+    const headers = ['Date', 'Employee', 'Type', 'Status'];
     const data = filteredLeaves().map((leave) => [
       new Date(leave.startDate).toLocaleDateString(),
       `${leave.employee?.firstName || 'Unknown'} ${leave.employee?.lastName || ''}`,
       leave.type,
       statusOptions.find((s) => s.id === leave.status)?.label || leave.status,
-      leave.comments || '-',
     ]);
     const csvContent = [headers, ...data].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -263,7 +262,7 @@ const MyLeaveList = () => {
                           aria-label="Select all leave requests"
                         />
                       </th>
-                      {['Date', 'Employee', 'Type', 'Status', 'Comments', 'Actions'].map((header) => (
+                      {['Date', 'Employee', 'Type', 'Status', 'Actions'].map((header) => (
                         <th
                           key={header}
                           className="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-tight"
@@ -307,34 +306,23 @@ const MyLeaveList = () => {
                             {statusOptions.find((s) => s.id === leave.status)?.label || leave.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
-                          {leave.comments || '-'}
-                        </td>
                         <td className="px-4 py-3 text-sm">
-                          {leave.status === 'pending' && (
-                            <div className="flex gap-2">
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleAction(leave.id, 'Approved')}
-                                disabled={isUpdating}
-                                className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                aria-label="Approve leave request"
-                              >
-                                Approve
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleAction(leave.id, 'Rejected')}
-                                disabled={isUpdating}
-                                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                aria-label="Reject leave request"
-                              >
-                                Reject
-                              </motion.button>
-                            </div>
-                          )}
+                          <div className="relative">
+                            <select
+                              value={leave.status}
+                              onChange={(e) => handleStatusChange(leave.id, e.target.value)}
+                              disabled={isUpdating}
+                              className="px-3 py-1.5 text-xs font-medium border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed appearance-none pr-8 min-w-[120px]"
+                              aria-label="Change leave status"
+                            >
+                              {statusOptions.map((status) => (
+                                <option key={status.id} value={status.id}>
+                                  {status.label}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+                          </div>
                         </td>
                       </motion.tr>
                     ))}
@@ -368,30 +356,22 @@ const MyLeaveList = () => {
                             {statusOptions.find((s) => s.id === leave.status)?.label || leave.status}
                           </span>
                         </div>
-                        {leave.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleAction(leave.id, 'Approved')}
-                              disabled={isUpdating}
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                              aria-label="Approve leave request"
-                            >
-                              Approve
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleAction(leave.id, 'Rejected')}
-                              disabled={isUpdating}
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                              aria-label="Reject leave request"
-                            >
-                              Reject
-                            </motion.button>
-                          </div>
-                        )}
+                        <div className="relative">
+                          <select
+                            value={leave.status}
+                            onChange={(e) => handleStatusChange(leave.id, e.target.value)}
+                            disabled={isUpdating}
+                            className="px-3 py-1.5 text-xs font-medium border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed appearance-none pr-8"
+                            aria-label="Change leave status"
+                          >
+                            {statusOptions.map((status) => (
+                              <option key={status.id} value={status.id}>
+                                {status.label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+                        </div>
                       </div>
                       <div className="space-y-1 text-sm text-gray-900 dark:text-gray-200">
                         <p>
@@ -404,9 +384,6 @@ const MyLeaveList = () => {
                         </p>
                         <p>
                           <span className="font-medium">Type:</span> {leave.type}
-                        </p>
-                        <p>
-                          <span className="font-medium">Comments:</span> {leave.comments || '-'}
                         </p>
                       </div>
                     </motion.div>

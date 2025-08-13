@@ -36,11 +36,16 @@ const Recruitment = () => {
   const [recordsPerPage, setRecordsPerPage] = useState(5);
 
   const [newCandidate, setNewCandidate] = useState({
+    jobTitle: "",
     vacancy: "",
-    candidateName: "",
     hiringManager: "",
-    dateOfApplication: "",
     status: "",
+    candidateName: "",
+    keywords: "",
+    methodOfApplication: "",
+    dateOfApplication: "",
+    from: "",
+    to: "",
     email: "",
     resume: null,
   });
@@ -110,11 +115,16 @@ const Recruitment = () => {
       setIsEditMode(false);
       setEditCandidateId(null);
       setNewCandidate({
+        jobTitle: "",
         vacancy: "",
-        candidateName: "",
         hiringManager: "",
-        dateOfApplication: "",
         status: "",
+        candidateName: "",
+        keywords: "",
+        methodOfApplication: "",
+        dateOfApplication: "",
+        from: "",
+        to: "",
         email: "",
         resume: null,
       });
@@ -129,7 +139,7 @@ const Recruitment = () => {
   };
 
   const validateForm = () => {
-    const requiredFields = ["candidateName", "vacancy", "hiringManager", "dateOfApplication", "status", "email"];
+    const requiredFields = ["jobTitle", "vacancy", "candidateName", "keywords", "methodOfApplication", "hiringManager", "status", "dateOfApplication", "from", "to", "email"];
     const missingFields = requiredFields.filter((field) => !newCandidate[field]);
     if (missingFields.length > 0) {
       toast.error(`Please fill in: ${missingFields.join(", ")}`);
@@ -515,7 +525,7 @@ const Recruitment = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="glassmorphism rounded-xl p-6 w-full max-w-md"
+              className="glassmorphism rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-gray-800">
@@ -527,12 +537,12 @@ const Recruitment = () => {
               </div>
               <form onSubmit={handleCandidateSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
                   <input
-                    value={newCandidate.candidateName}
-                    onChange={(e) => setNewCandidate({ ...newCandidate, candidateName: e.target.value })}
+                    value={newCandidate.jobTitle}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, jobTitle: e.target.value })}
                     className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
-                    placeholder="e.g., John Doe"
+                    placeholder="e.g., Software Development"
                     required
                   />
                 </div>
@@ -542,9 +552,43 @@ const Recruitment = () => {
                     value={newCandidate.vacancy}
                     onChange={(e) => setNewCandidate({ ...newCandidate, vacancy: e.target.value })}
                     className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
-                    placeholder="e.g., Software Engineer"
+                    placeholder="e.g., senior Software developer"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Candidate Name *</label>
+                  <input
+                    value={newCandidate.candidateName}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, candidateName: e.target.value })}
+                    className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                    placeholder="e.g., Joe Maina"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Keywords *</label>
+                  <input
+                    value={newCandidate.keywords}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, keywords: e.target.value })}
+                    className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                    placeholder="e.g., Software development, Coding"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Method of Application *</label>
+                  <select
+                    value={newCandidate.methodOfApplication}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, methodOfApplication: e.target.value })}
+                    className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="Online">Online</option>
+                    <option value="In-person">In-person</option>
+                    <option value="Email">Email</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Hiring Manager *</label>
@@ -552,17 +596,7 @@ const Recruitment = () => {
                     value={newCandidate.hiringManager}
                     onChange={(e) => setNewCandidate({ ...newCandidate, hiringManager: e.target.value })}
                     className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
-                    placeholder="e.g., Jane Smith"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Application Date *</label>
-                  <input
-                    type="date"
-                    value={newCandidate.dateOfApplication}
-                    onChange={(e) => setNewCandidate({ ...newCandidate, dateOfApplication: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                    placeholder="e.g., HR"
                     required
                   />
                 </div>
@@ -578,6 +612,38 @@ const Recruitment = () => {
                     <option value="Active">Active</option>
                     <option value="rejected">Rejected</option>
                   </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">From Date *</label>
+                    <input
+                      type="date"
+                      value={newCandidate.from}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, from: e.target.value })}
+                      className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">To Date *</label>
+                    <input
+                      type="date"
+                      value={newCandidate.to}
+                      onChange={(e) => setNewCandidate({ ...newCandidate, to: e.target.value })}
+                      className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Application Date *</label>
+                  <input
+                    type="date"
+                    value={newCandidate.dateOfApplication}
+                    onChange={(e) => setNewCandidate({ ...newCandidate, dateOfApplication: e.target.value })}
+                    className="w-full p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm bg-white"
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>

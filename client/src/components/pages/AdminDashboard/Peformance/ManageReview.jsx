@@ -14,11 +14,12 @@ import EmployeeTracker from "../Peformance/EmployeeTracker";
 import {
   useGetAllPerformanceReviewsQuery,
   useCreatePerformanceReviewMutation,
-} from "../../../../slices/performanceApiSlice"; // Update this path
+} from "../../../../slices/performanceApiSlice";
+import { useGetAllEmployeesQuery } from "../../../../slices/employeeSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const PerformanceReviewPage = () => {
+const ManageReview = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedJob, setSelectedJob] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -44,13 +45,17 @@ const PerformanceReviewPage = () => {
     error,
     refetch,
   } = useGetAllPerformanceReviewsQuery();
-  console.log(reviewsData, "reviewes data")
+
+  // Fetch employees for dropdowns
+  const { data: employeesData } = useGetAllEmployeesQuery();
+  const employees = employeesData?.data?.employees || [];
+
+  // Filter employees who can be reviewers (admin or manager roles)
+  const reviewers = employees.filter(emp => 
+    emp.role === 'admin' || emp.role === 'manager' || emp.jobTitle?.toLowerCase().includes('manager')
+  );
 
   const [createPerformanceReview, { isLoading: isCreating }] = useCreatePerformanceReviewMutation();
-
-  // Ensure reviews is always an array
-  const reviews = Array.isArray(reviewsData) ? reviewsData : [];
-  console.log(reviews, "reviews")
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -91,10 +96,44 @@ const PerformanceReviewPage = () => {
     setIsModalOpen(false);
   };
 
+  const validateForm = () => {
+    const requiredFields = ["employeeId", "jobTitle", "reviewer", "fromDate", "toDate"];
+    const missingFields = requiredFields.filter((field) => !newReview[field]);
+    
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in: ${missingFields.join(", ")}`);
+      return false;
+    }
+    
+    // Validate date range
+    if (new Date(newReview.fromDate) >= new Date(newReview.toDate)) {
+      toast.error("To Date must be after From Date");
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    // Format data to match backend expectations
+    const reviewData = {
+      employeeId: newReview.employeeId,
+      jobTitle: newReview.jobTitle,
+      reviewStatus: newReview.reviewStatus,
+      reviewer: newReview.reviewer, // This is now an ID
+      fromDate: formatDateForBackend(newReview.fromDate),
+      toDate: formatDateForBackend(newReview.toDate),
+      reviewMessage: newReview.reviewMessage,
+    };
+
+    console.log("Sending review data:", reviewData);
+
     try {
-      await createPerformanceReview(newReview).unwrap();
+      await createPerformanceReview(reviewData).unwrap();
       toast.success("Review created successfully!", {
         position: "top-right",
         autoClose: 3000,
@@ -103,6 +142,7 @@ const PerformanceReviewPage = () => {
       refetch();
       closeModal();
     } catch (err) {
+      console.error("Error creating review:", err);
       toast.error(err?.data?.message || "Failed to create review", {
         position: "top-right",
         autoClose: 3000,
@@ -111,10 +151,28 @@ const PerformanceReviewPage = () => {
     }
   };
 
+  const formatDateForBackend = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const formatDateForDisplay = (dateStr) => {
     if (!dateStr) return "";
-    const [day, month, year] = dateStr.split("-");
-    return `${day}-${month}-${year}`;
+    return dateStr; // Backend already returns in DD-MM-YYYY format
+  };
+
+  const getEmployeeName = (employeeId) => {
+    const employee = employees.find(emp => emp.id === parseInt(employeeId));
+    return employee ? `${employee.firstName} ${employee.lastName}` : `Employee ${employeeId}`;
+  };
+
+  const getReviewerName = (reviewerId) => {
+    const reviewer = employees.find(emp => emp.id === parseInt(reviewerId));
+    return reviewer ? `${reviewer.firstName} ${reviewer.lastName}` : `Reviewer ${reviewerId}`;
   };
 
   if (error) {
@@ -292,7 +350,6 @@ const PerformanceReviewPage = () => {
                         <input
                           type="date"
                           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm"
-                          onChange={(e) => setNewReview({ ...newReview, fromDate: e.target.value })}
                         />
                         <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
                       </div>
@@ -306,7 +363,6 @@ const PerformanceReviewPage = () => {
                         <input
                           type="date"
                           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm"
-                          onChange={(e) => setNewReview({ ...newReview, toDate: e.target.value })}
                         />
                         <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
                       </div>
@@ -357,7 +413,7 @@ const PerformanceReviewPage = () => {
                           />
                         </th>
                         {[
-                          "Employee ID",
+                          "Employee",
                           "Job Title",
                           "Review Period",
                           "Reviewer",
@@ -387,9 +443,9 @@ const PerformanceReviewPage = () => {
                           </td>
                         </tr>
                       ) : (
-                        reviewsData?.data.map((review) => (
+                        reviewsData?.data?.map((review) => (
                           <motion.tr
-                            key={review.employeeId}
+                            key={review.id}
                             whileHover={{ backgroundColor: "#F9FAFB" }}
                             transition={{ duration: 0.2 }}
                           >
@@ -399,12 +455,16 @@ const PerformanceReviewPage = () => {
                                 className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               />
                             </td>
-                            <td className="px-4 py-4 text-sm text-gray-900">{review.employeeId}</td>
+                            <td className="px-4 py-4 text-sm text-gray-900">
+                              {getEmployeeName(review.employeeId)}
+                            </td>
                             <td className="px-4 py-4 text-sm text-gray-900">{review.jobTitle}</td>
                             <td className="px-4 py-4 text-sm text-gray-700">
                               {formatDateForDisplay(review.fromDate)} - {formatDateForDisplay(review.toDate)}
                             </td>
-                            <td className="px-4 py-4 text-sm text-gray-700">{review.reviewer}</td>
+                            <td className="px-4 py-4 text-sm text-gray-700">
+                              {getReviewerName(review.reviewer)}
+                            </td>
                             <td className="px-4 py-4 text-sm">
                               <span
                                 className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full ${
@@ -481,15 +541,28 @@ const PerformanceReviewPage = () => {
               <form onSubmit={handleReviewSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Employee ID *
+                    Employee *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={newReview.employeeId}
-                    onChange={(e) => setNewReview({ ...newReview, employeeId: e.target.value })}
+                    onChange={(e) => {
+                      const selectedEmployee = employees.find(emp => emp.id === parseInt(e.target.value));
+                      setNewReview({ 
+                        ...newReview, 
+                        employeeId: e.target.value,
+                        jobTitle: selectedEmployee?.jobTitle || ""
+                      });
+                    }}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                     required
-                  />
+                  >
+                    <option value="">Select Employee</option>
+                    {employees.map((employee) => (
+                      <option key={employee.id} value={employee.id}>
+                        {employee.firstName} {employee.lastName} - {employee.jobTitle}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -501,6 +574,7 @@ const PerformanceReviewPage = () => {
                     value={newReview.jobTitle}
                     onChange={(e) => setNewReview({ ...newReview, jobTitle: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                    placeholder="e.g., Software Developer"
                     required
                   />
                 </div>
@@ -523,15 +597,21 @@ const PerformanceReviewPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Reviewer *
+                    Reviewer (Admin/Manager Only) *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={newReview.reviewer}
                     onChange={(e) => setNewReview({ ...newReview, reviewer: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                     required
-                  />
+                  >
+                    <option value="">Select Reviewer</option>
+                    {reviewers.map((reviewer) => (
+                      <option key={reviewer.id} value={reviewer.id}>
+                        {reviewer.firstName} {reviewer.lastName} - {reviewer.role || reviewer.jobTitle}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -569,7 +649,7 @@ const PerformanceReviewPage = () => {
                     onChange={(e) => setNewReview({ ...newReview, reviewMessage: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                     rows="4"
-                    placeholder="Enter review comments..."
+                    placeholder="e.g., work done well"
                   />
                 </div>
 
@@ -604,4 +684,4 @@ const PerformanceReviewPage = () => {
   );
 };
 
-export default PerformanceReviewPage;
+export default ManageReview;

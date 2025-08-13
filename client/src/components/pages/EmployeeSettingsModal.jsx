@@ -1,5 +1,3 @@
-import React from "react";
-
 const EmployeeSettingsModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
