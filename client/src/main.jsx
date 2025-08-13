@@ -1,11 +1,16 @@
 import React from 'react';
 import './index.css';
+
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store.js';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+// Import SettingsProvider
+import { SettingsProvider } from './context/SettingsContext.jsx';
+
 
 // Import leave from admin dashboard
 import AssignLeave from './components/pages/AdminDashboard/Leave Dashboard/AssignLeave.jsx';
@@ -34,7 +39,8 @@ import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDash
 import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
 import Subscribe from './components/common/Subscribe.jsx';
-import { ProtectedRoute } from './ProtectedRoute.jsx';  
+import { ProtectedRoute } from './ProtectedRoute.jsx';
+
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -160,18 +166,20 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <RouterProvider router={routes} />
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <SettingsProvider> {/* ✅ Wrap all app logic here */}
+        <RouterProvider router={routes} />
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </SettingsProvider>
     </Provider>
   </React.StrictMode>
 );

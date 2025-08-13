@@ -10,6 +10,16 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: filters,
       }),
+      providesTags: ['Claims'],
+    }),
+
+    // Fetch claims by organization ID (NEW - for Admin Dashboard)
+    getClaimsByOrganisation: builder.query({
+      query: (organisationId) => ({
+        url: `${CLAIM_URL}/organisation/${organisationId}`,
+        method: "GET",
+      }),
+      providesTags: ['Claims'],
     }),
 
     // Fetch claims for the logged-in employee
@@ -18,6 +28,7 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
         url: `${CLAIM_URL}/my-claims`,
         method: "GET",
       }),
+      providesTags: ['Claims'],
     }),
 
     // Submit a new claim
@@ -27,6 +38,7 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: claimData,
       }),
+      invalidatesTags: ['Claims'],
     }),
 
     // Assign a claim to an employee
@@ -36,6 +48,7 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: assignmentData,
       }),
+      invalidatesTags: ['Claims'],
     }),
 
     // Update the status of a claim
@@ -45,15 +58,14 @@ export const claimsApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: statusData,
       }),
-
+      invalidatesTags: ['Claims'],
+    }),
   }),
-})
 });
-
-
 
 export const {
   useGetAllClaimsQuery,
+  useGetClaimsByOrganisationQuery,
   useGetMyClaimsQuery,
   useSubmitClaimMutation,
   useAssignClaimMutation,
