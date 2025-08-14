@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Search, Plus, FileText, Users, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { Calendar, Search, Plus, FileText, Users, ChevronDown, ArrowUpDown, X, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -8,7 +8,8 @@ import {
   useGetMyClaimsQuery,
   useGetClaimsByOrganisationQuery, 
   useSubmitClaimMutation,
-  useAssignClaimMutation
+  useAssignClaimMutation,
+  useUpdateClaimStatusMutation
 } from '../../../slices/claimsApiSlice';
 import { useGetAllEmployeesQuery } from '../../../slices/employeeSlice';
 import { useSelector } from 'react-redux';
@@ -56,6 +57,274 @@ const Claims = () => {
           {activeTab === 'employeeClaims' && <EmployeeClaimsPage />}
           {activeTab === 'assignClaim' && <AssignClaimPage />}
         </motion.div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * ClaimViewModal Component - ENHANCED WITH BETTER DEBUGGING AND VALIDATION
+ */
+const ClaimViewModal = ({ claim, isOpen, onClose, onStatusUpdate }) => {
+  const [selectedStatus, setSelectedStatus] = useState(claim?.status || '');
+  const [comment, setComment] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [updateClaimStatus] = useUpdateClaimStatusMutation();
+
+  useEffect(() => {
+    if (claim) {
+      setSelectedStatus(claim.status || '');
+      setComment('');
+    }
+  }, [claim]);
+
+  const handleStatusUpdate = async () => {
+    if (!selectedStatus || !comment.trim()) {
+      toast.error('Please select a status and provide a comment');
+      return;
+    }
+
+    // Validate that status is different from current
+    if (selectedStatus === claim.status) {
+      toast.warning('Please select a different status to update');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      console.log('Updating claim status:', {
+        claimId: claim.id,
+        currentStatus: claim.status,
+        newStatus: selectedStatus,
+        comment: comment.trim()
+      });
+
+      const result = await updateClaimStatus({
+        claimId: claim.id,
+        status: selectedStatus,
+        comment: comment.trim()
+      }).unwrap();
+
+      console.log('Status update result:', result);
+
+      toast.success('Claim status updated successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+      
+      onStatusUpdate(); // Refresh the claims list
+      onClose(); // Close the modal
+    } catch (err) {
+      console.error('Status update error:', err);
+      
+      // Enhanced error message handling
+      let errorMessage = 'Failed to update claim status';
+      if (err?.data?.message) {
+        errorMessage += ': ' + err.data.message;
+      } else if (err?.message) {
+        errorMessage += ': ' + err.message;
+      } else if (err?.status) {
+        errorMessage += ` (HTTP ${err.status})`;
+      }
+      
+      toast.error(errorMessage, {
+        position: 'top-right',
+        autoClose: 5000,
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  if (!isOpen || !claim) return null;
+
+  const statusOptions = [
+    { value: 'CLAIM_SUBMITTED', label: 'Claim Submitted', color: 'bg-blue-100 text-blue-800' },
+    { value: 'IN_REVIEW', label: 'In Review', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'ASSIGNED', label: 'Assigned', color: 'bg-purple-100 text-purple-800' },
+    { value: 'APPROVED', label: 'Approved', color: 'bg-green-100 text-green-800' },
+    { value: 'REJECTED', label: 'Rejected', color: 'bg-red-100 text-red-800' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800">Claim Details & Status Update</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Claim Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reference ID</label>
+              <p className="text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">{claim.referenceId}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
+              <p className="text-gray-900">
+                {claim.employee 
+                  ? `${claim.employee.firstName} ${claim.employee.lastName}` 
+                  : `Employee ID: ${claim.employeeId}`
+                }
+                {claim.employee?.email && (
+                  <span className="text-sm text-gray-500 block">{claim.employee.email}</span>
+                )}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
+              <p className="text-gray-900">{claim.eventName}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+              <p className="text-gray-900 font-semibold text-lg">
+                {claim.currency} {claim.amount?.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+              <p className="text-gray-900">{new Date(claim.fromDate).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+              <p className="text-gray-900">{new Date(claim.toDate).toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <p className="text-gray-900 bg-gray-50 p-3 rounded-md min-h-[60px]">
+              {claim.description || 'No description provided'}
+            </p>
+          </div>
+
+          {/* Comments (if any) */}
+          {claim.comment && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Existing Comments</label>
+              <p className="text-gray-900 bg-blue-50 p-3 rounded-md border-l-4 border-blue-400">
+                {claim.comment}
+              </p>
+            </div>
+          )}
+
+          {/* Current Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current Status</label>
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                statusOptions.find(s => s.value === claim.status)?.color || 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {statusOptions.find(s => s.value === claim.status)?.label || claim.status}
+            </span>
+          </div>
+
+          {/* Status Update Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
+              <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+              Update Status
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isUpdating}
+                >
+                  <option value="">-- Select New Status --</option>
+                  {statusOptions.map((status) => (
+                    <option 
+                      key={status.value} 
+                      value={status.value}
+                      disabled={status.value === claim.status}
+                    >
+                      {status.label} {status.value === claim.status ? '(Current)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Comment <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="Provide a reason for the status change..."
+                  disabled={isUpdating}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Explain why you're changing the status (required for audit trail)
+                </p>
+              </div>
+
+              {/* Preview of change */}
+              {selectedStatus && selectedStatus !== claim.status && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Status Change Preview:</strong><br/>
+                    From: <span className="font-mono">{claim.status}</span><br/>
+                    To: <span className="font-mono">{selectedStatus}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-center p-6 border-t border-gray-200 bg-gray-50">
+          <div className="text-xs text-gray-500">
+            Last updated: {claim.updatedAt ? new Date(claim.updatedAt).toLocaleString() : 'N/A'}
+          </div>
+          <div className="flex space-x-4">
+            <button
+              onClick={onClose}
+              disabled={isUpdating}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleStatusUpdate}
+              disabled={isUpdating || !selectedStatus || !comment.trim() || selectedStatus === claim.status}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors flex items-center"
+            >
+              {isUpdating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <span className="mr-1">✓</span>
+                  Update Status
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -172,9 +441,9 @@ const SearchBar = ({ title, onSearch }) => {
 };
 
 /**
- * ClaimsTable Component
+ * ClaimsTable Component - UPDATED WITH VIEW FUNCTIONALITY
  */
-const ClaimsTable = ({ data, isLoading, onAssign }) => {
+const ClaimsTable = ({ data, isLoading, onAssign, onView }) => {
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -283,7 +552,11 @@ const ClaimsTable = ({ data, isLoading, onAssign }) => {
                 </td>
                 <td className="px-4 py-3 text-sm">
                   <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                    <button 
+                      onClick={() => onView && onView(claim)}
+                      className="text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
                       View
                     </button>
                     {onAssign && (
@@ -543,10 +816,12 @@ const SubmitClaimForm = () => {
 };
 
 /**
- * MyClaimsPage Component - FIXED FOR ADMIN USERS
+ * MyClaimsPage Component - UPDATED WITH VIEW MODAL
  */
 const MyClaimsPage = () => {
   const [filters, setFilters] = useState({});
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   
   // Check if user is admin
@@ -587,17 +862,18 @@ const MyClaimsPage = () => {
     return true;
   });
 
+  const handleViewClaim = (claim) => {
+    setSelectedClaim(claim);
+    setIsModalOpen(true);
+  };
+
+  const handleStatusUpdate = () => {
+    refetch();
+  };
+
   useEffect(() => {
     refetch();
   }, [refetch]);
-
-  // Debug logging for admin users
-  if (isAdmin) {
-    console.log('MyClaimsPage - Admin Mode');
-    console.log('User Info:', userInfo);
-    console.log('Organization ID:', organisationId);
-    console.log('Claims Data:', data);
-  }
 
   if (isLoading) return <div className="text-center py-4 text-gray-600">Loading claims...</div>;
   
@@ -634,16 +910,25 @@ const MyClaimsPage = () => {
           </div>
         </div>
       )}
-      <ClaimsTable data={filteredClaims} isLoading={isLoading} />
+      <ClaimsTable data={filteredClaims} isLoading={isLoading} onView={handleViewClaim} />
+      
+      <ClaimViewModal
+        claim={selectedClaim}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onStatusUpdate={handleStatusUpdate}
+      />
     </>
   );
 };
 
 /**
- * EmployeeClaimsPage Component - UPDATED TO HANDLE ADMIN USER STRUCTURE
+ * EmployeeClaimsPage Component - UPDATED WITH VIEW MODAL
  */
 const EmployeeClaimsPage = () => {
   const [filters, setFilters] = useState({});
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   
   // Get organization ID from different possible sources
@@ -691,17 +976,20 @@ const EmployeeClaimsPage = () => {
     return true;
   });
 
+  const handleViewClaim = (claim) => {
+    setSelectedClaim(claim);
+    setIsModalOpen(true);
+  };
+
+  const handleStatusUpdate = () => {
+    refetch();
+  };
+
   useEffect(() => {
     if (organisationId) {
       refetch();
     }
   }, [refetch, organisationId]);
-
-  // Debug logging
-  console.log('Admin Dashboard - Full userInfo:', userInfo);
-  console.log('Admin Dashboard - Extracted Organization ID:', organisationId);
-  console.log('Admin Dashboard - Claims data:', data);
-  console.log('Admin Dashboard - All claims:', allClaims);
 
   if (!organisationId) {
     return (
@@ -710,12 +998,6 @@ const EmployeeClaimsPage = () => {
           <div className="text-red-600 mb-4">
             <h3 className="font-semibold text-lg">Organization ID Not Found</h3>
             <p className="text-sm mt-2">Unable to determine your organization. Please contact support.</p>
-          </div>
-          <div className="bg-gray-100 p-3 rounded text-xs text-gray-600 mt-4">
-            <strong>Debug Info:</strong>
-            <pre className="mt-1 whitespace-pre-wrap">
-              {JSON.stringify(userInfo, null, 2)}
-            </pre>
           </div>
         </div>
       </div>
@@ -756,16 +1038,25 @@ const EmployeeClaimsPage = () => {
           </button>
         </div>
       </div>
-      <ClaimsTable data={filteredClaims} isLoading={isLoading} />
+      <ClaimsTable data={filteredClaims} isLoading={isLoading} onView={handleViewClaim} />
+      
+      <ClaimViewModal
+        claim={selectedClaim}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onStatusUpdate={handleStatusUpdate}
+      />
     </>
   );
 };
 
 /**
- * AssignClaimPage Component - UPDATED TO HANDLE ADMIN USER STRUCTURE
+ * AssignClaimPage Component - UPDATED WITH VIEW MODAL
  */
 const AssignClaimPage = () => {
   const [filters, setFilters] = useState({});
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { userInfo } = useSelector((state) => state.auth);
   
   // Get organization ID from different possible sources
@@ -814,6 +1105,15 @@ const AssignClaimPage = () => {
     return true;
   });
 
+  const handleViewClaim = (claim) => {
+    setSelectedClaim(claim);
+    setIsModalOpen(true);
+  };
+
+  const handleStatusUpdate = () => {
+    refetch();
+  };
+
   const handleAssign = async (claimId) => {
     try {
       const employeeId = prompt('Enter Employee ID to assign:');
@@ -846,10 +1146,6 @@ const AssignClaimPage = () => {
     }
   }, [refetch, organisationId]);
 
-  // Debug logging
-  console.log('Assign Page - Full userInfo:', userInfo);
-  console.log('Assign Page - Extracted Organization ID:', organisationId);
-
   if (!organisationId) {
     return (
       <div className="text-center py-8">
@@ -857,12 +1153,6 @@ const AssignClaimPage = () => {
           <div className="text-red-600 mb-4">
             <h3 className="font-semibold text-lg">Organization ID Not Found</h3>
             <p className="text-sm mt-2">Unable to determine your organization. Please contact support.</p>
-          </div>
-          <div className="bg-gray-100 p-3 rounded text-xs text-gray-600 mt-4">
-            <strong>Debug Info:</strong>
-            <pre className="mt-1 whitespace-pre-wrap">
-              {JSON.stringify(userInfo, null, 2)}
-            </pre>
           </div>
         </div>
       </div>
@@ -905,7 +1195,15 @@ const AssignClaimPage = () => {
       <ClaimsTable 
         data={filteredClaims} 
         isLoading={isLoading || isAssigning} 
-        onAssign={handleAssign} 
+        onAssign={handleAssign}
+        onView={handleViewClaim}
+      />
+      
+      <ClaimViewModal
+        claim={selectedClaim}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onStatusUpdate={handleStatusUpdate}
       />
     </>
   );
