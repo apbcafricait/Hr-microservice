@@ -61,11 +61,19 @@ export const makeStkPushRequest = expressAsyncHandler(async (req, res) => {
       CheckoutRequestID
     )
     if (!paymentVerificationResponse || !paymentVerificationResponse.success) {
-      res.status(400).json({
+      // Check if the transaction is pending
+      if (paymentVerificationResponse?.pending) {
+        return res.status(202).json({
+          status: 'pending',
+          message: paymentVerificationResponse.data,
+          checkoutRequestId: CheckoutRequestID
+        })
+      }
+      // If not pending, then it's an error
+      return res.status(400).json({
+        status: 'error',
         message: 'There was an error completing your payment request'
       })
-      // DB LOGIC
-      console.log('error verifying payment')
     }
 
   if (paymentVerificationResponse.success) {
@@ -178,14 +186,33 @@ export const stkCallBackUrl = expressAsyncHandler(async (req, res) => {
     console.log(req.body.Body)
     console.log('################### MPESA CALLBACK ###############')
     const mpesaDumpedData = req.body.Body.stkCallback.CallbackMetadata.Item
-    const { Amount, PhoneNumber, MpesaReceiptNumber, TransactionDate } =
-      reduceMpesaMetadata(mpesaDumpedData)
+    const { Amount, PhoneNumber, MpesaReceiptNumber, TransactionDate } = reduceMpesaMetadata(mpesaDumpedData)
     console.log('Amount Paid', Amount)
     console.log('PhoneNumber Paying', PhoneNumber)
     console.log('Transaction Date', TransactionDate)
     console.log('Mpesa Receipt', MpesaReceiptNumber)
-    // Transaction table update
-    //update the db
+
+    // Find the organisation by phone number (or use a better identifier if available)
+    const organisation = await prisma.organisation.findFirst({
+      where: { mpesaPhone: PhoneNumber }
+    });
+
+    if (organisation) {
+      // Update subscription status and end date
+      const subscriptionEndDate = new Date();
+      subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 30);
+
+      await prisma.organisation.update({
+        where: { id: organisation.id },
+        data: {
+          subscriptionStatus: 'active',
+          subscriptionEndDate: subscriptionEndDate
+        }
+      });
+      console.log('Organisation subscription updated after payment');
+    }
+
+    res.status(200).json({ message: 'Callback processed' });
   } catch (error) {
     console.log(`Error in Callback Function :${error}`)
     return res.status(500).json({ message: 'Error in callback function' })
