@@ -1,62 +1,50 @@
-import React from "react";
+import { useEffect } from 'react';
 import { useSelector } from "react-redux";
 import { useGetClaimsByOrganisationQuery, useUpdateClaimStatusMutation } from "../../../slices/claimsApiSlice";
-import { useGetEmployeeQuery } from "../../../slices/employeeSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CSVLink } from "react-csv";
 
+import { getStatusBadgeConfig,getUserDisplayName,getOrganizationId } from '../../../../../backend/utils/organiationUtils';
 const Claim = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const isManager = userInfo?.role === "manager";
 
-  // Get organization ID (same logic as Admin)
-  const getOrganisationId = () => {
-    if (userInfo?.organisationId) return userInfo.organisationId;
-    if (userInfo?.user?.organisationId) return userInfo.user.organisationId;
-    if (userInfo?.organisation?.id) return userInfo.organisation.id;
-    if (userInfo?.organization?.id) return userInfo.organization.id;
-    if (userInfo?.orgId) return userInfo.orgId;
-    
-    return null;
-  };
+  // Debug: Log userInfo structure
+  console.log('UserInfo structure:', userInfo);
 
-  const organisationId = getOrganisationId();
+  // Get organisation ID using utility function
+  const organisationId = getOrganizationId(userInfo);
+  
+  // Debug: Log resolved organisation ID
+  console.log('Resolved organisationId:', organisationId);
 
-  // Add a query to get manager's employee data to find organization
-  const { data: managerData } = useGetEmployeeQuery(userInfo?.id, { 
-    skip: !userInfo?.id || organisationId !== null 
+  const { 
+    data: claimsData, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useGetClaimsByOrganisationQuery(organisationId, { 
+    skip: !organisationId,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
   });
-
-  // Use organization ID from manager data if not found in userInfo
-  const finalOrganisationId = organisationId || 
-                              managerData?.data?.employee?.organisationId || 
-                              managerData?.data?.employee?.organisation?.id;
-
-  // FIXED: Use finalOrganisationId instead of organisationId
-  const { data: claimsData, isLoading, error, refetch } = useGetClaimsByOrganisationQuery(
-    finalOrganisationId, 
-    { skip: !finalOrganisationId }
-  );
   
   const [updateClaimStatus] = useUpdateClaimStatusMutation();
 
-  // Extract claims data
+  // Auto-refetch every 30 seconds for real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (organisationId) {
+        refetch();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refetch, organisationId]);
+
   const allClaims = claimsData?.data?.claims || [];
 
-  // Debug console log
-  console.log('Manager Claims Debug:', { 
-    organisationId, 
-    finalOrganisationId,
-    managerData,
-    claimsData, 
-    allClaims,
-    isLoading, 
-    error,
-    userInfo
-  });
-
-  // Handle claim status update
   const handleStatusUpdate = async (claimId, status) => {
     try {
       await updateClaimStatus({ 
@@ -65,38 +53,45 @@ const Claim = () => {
         comment: `Status updated to ${status} by manager` 
       }).unwrap();
       toast.success(`Claim ${status.toLowerCase()} successfully`);
-      refetch();
+      // Refetch will happen automatically due to cache invalidation
     } catch (error) {
       toast.error(`Failed to update claim status: ${error?.data?.message || error.message}`);
     }
   };
 
-  // Prepare data for CSV download - FIXED: Safe access
   const csvData = allClaims.map((claim) => ({
     ReferenceID: claim.referenceId,
-    EmployeeName: `${claim.employee?.firstName || ''} ${claim.employee?.lastName || ''}`,
+    EmployeeName: getUserDisplayName(claim.employee),
     EventName: claim.eventName,
     Amount: claim.amount?.toLocaleString("en-US", { 
       style: "currency", 
       currency: claim.currency || "USD" 
     }),
-    Status: claim.status,
+    Status: getStatusBadgeConfig(claim.status).label,
     SubmittedDate: claim.submittedDate ? new Date(claim.submittedDate).toLocaleDateString() : 'N/A',
   })) || [];
 
   if (!isManager) {
-    return <p className="text-center text-red-500">Unauthorized Access</p>;
+    return (
+      <div className="container mx-auto p-6 max-w-5xl">
+        <div className="text-center py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-red-800 mb-2">Access Denied</h2>
+            <p className="text-red-700">You don't have manager permissions to access this page.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  // UPDATED: Organization ID validation using finalOrganisationId
-  if (!finalOrganisationId) {
+  if (!organisationId) {
     return (
       <div className="container mx-auto p-6 max-w-5xl">
         <div className="text-center py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
             <div className="text-red-600 mb-4">
-              <h3 className="font-semibold text-lg">Organization ID Not Found</h3>
-              <p className="text-sm mt-2">Unable to determine your organization. Please contact support.</p>
+              <h3 className="font-semibold text-lg">organisation ID Not Found</h3>
+              <p className="text-sm mt-2">Unable to determine your organisation. Please contact support.</p>
             </div>
           </div>
         </div>
@@ -108,18 +103,19 @@ const Claim = () => {
     <div className="container mx-auto p-6 max-w-5xl">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Header */}
       <header className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-green-600 to-teal-600 p-4 rounded-lg shadow-md">
             Manage Claims
           </h1>
-          <p className="text-sm text-gray-600 mt-2">Organization ID: {finalOrganisationId}</p>
+          <p className="text-sm text-gray-600 mt-2">
+            organisation ID: {organisationId} | Total Claims: {allClaims.length}
+          </p>
         </div>
         {allClaims.length > 0 && (
           <CSVLink
             data={csvData}
-            filename={`claims_${new Date().toISOString().split("T")[0]}.csv`}
+            filename={`claims_org_${organisationId}_${new Date().toISOString().split("T")[0]}.csv`}
             className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
           >
             Download Claims
@@ -127,7 +123,6 @@ const Claim = () => {
         )}
       </header>
 
-      {/* Claims Table */}
       <div className="bg-white shadow-lg rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">All Claims</h2>
@@ -139,11 +134,11 @@ const Claim = () => {
           </button>
         </div>
 
-        {/* Debug info */}
         <div className="mb-4 p-4 bg-green-50 rounded-lg">
           <p className="text-sm text-green-700">
-            <strong>Manager Mode:</strong> Organization ID: {finalOrganisationId} | 
-            <strong> Total Claims:</strong> {allClaims.length}
+            <strong>Manager Mode:</strong> organisation: {organisationId} | 
+            <strong> Total Claims:</strong> {allClaims.length} | 
+            <strong> Last Updated:</strong> {new Date().toLocaleTimeString()}
           </p>
         </div>
 
@@ -166,7 +161,7 @@ const Claim = () => {
           </div>
         ) : allClaims.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">No claims found for organization {finalOrganisationId}</p>
+            <p className="text-gray-600">No claims found for organisation {organisationId}</p>
             <p className="text-sm text-gray-500 mt-2">Claims will appear here once employees submit them</p>
           </div>
         ) : (
@@ -180,70 +175,79 @@ const Claim = () => {
                   <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Reference ID</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Employee Name</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Event Name</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Description</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Amount</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Date Range</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Status</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {allClaims.map((claim) => (
-                  <tr key={claim.id || claim.referenceId} className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-2 text-sm text-gray-600">{claim.referenceId}</td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      {claim.employee?.firstName && claim.employee?.lastName
-                        ? `${claim.employee.firstName} ${claim.employee.lastName}`
-                        : `Employee ID: ${claim.employeeId}`
-                      }
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600">{claim.eventName}</td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      {/* FIXED: Safe access to amount */}
-                      {claim.amount?.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: claim.currency || "USD",
-                      })}
-                    </td>
-                    <td className="px-4 py-2 text-sm">
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          claim.status === "APPROVED"
-                            ? "bg-green-100 text-green-800"
-                            : claim.status === "REJECTED"
-                            ? "bg-red-100 text-red-800"
-                            : claim.status === "IN_REVIEW" || claim.status === "ASSIGNED"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {claim.status === "CLAIM_SUBMITTED"
-                          ? "Claim Submitted"
-                          : claim.status === "IN_REVIEW"
-                          ? "In Review"
-                          : claim.status === "ASSIGNED"
-                          ? "Assigned"
-                          : claim.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-sm flex gap-2">
-                      {claim.status !== "APPROVED" && claim.status !== "REJECTED" && (
-                        <>
-                          <button
-                            onClick={() => handleStatusUpdate(claim.id, "APPROVED")}
-                            className="bg-green-600 text-white py-1 px-3 rounded-md hover:bg-green-700 transition-colors text-sm"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleStatusUpdate(claim.id, "REJECTED")}
-                            className="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition-colors text-sm"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {allClaims.map((claim) => {
+                  const statusConfig = getStatusBadgeConfig(claim.status);
+                  return (
+                    <tr key={claim.id || claim.referenceId} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-2 text-sm text-gray-600 font-mono">{claim.referenceId}</td>
+                      <td className="px-4 py-2 text-sm text-gray-600">
+                        <div>
+                          <div className="font-medium">{getUserDisplayName(claim.employee)}</div>
+                          {claim.employee?.email && (
+                            <div className="text-xs text-gray-500">{claim.employee.email}</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600">{claim.eventName}</td>
+                      <td className="px-4 py-2 text-sm text-gray-600">
+                        <div className="max-w-xs truncate" title={claim.description}>
+                          {claim.description || '-'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600 font-semibold">
+                        {claim.amount?.toLocaleString("en-US", {
+                          style: "currency",
+                          currency: claim.currency || "USD",
+                        })}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600">
+                        {claim.fromDate && claim.toDate ? (
+                          <div className="text-xs">
+                            <div>{new Date(claim.fromDate).toLocaleDateString()}</div>
+                            <div className="text-gray-400">to</div>
+                            <div>{new Date(claim.toDate).toLocaleDateString()}</div>
+                          </div>
+                        ) : 'N/A'}
+                      </td>
+                      <td className="px-4 py-2 text-sm">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text}`}>
+                          {statusConfig.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-sm flex gap-2">
+                        {claim.status !== "APPROVED" && claim.status !== "REJECTED" && (
+                          <>
+                            <button
+                              onClick={() => handleStatusUpdate(claim.id, "APPROVED")}
+                              className="bg-green-600 text-white py-1 px-3 rounded-md hover:bg-green-700 transition-colors text-sm"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleStatusUpdate(claim.id, "REJECTED")}
+                              className="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition-colors text-sm"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {(claim.status === "APPROVED" || claim.status === "REJECTED") && (
+                          <span className="text-xs text-gray-500">
+                            Action completed
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

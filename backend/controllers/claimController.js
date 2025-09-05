@@ -3,8 +3,8 @@ import { generateSequentialReferenceId } from '../utils/helpers.js';
 
 const prisma = new PrismaClient();
 
-export class ClaimController { // Changed from 'claimController' to 'ClaimController'
-  // Submit a new claim (UNCHANGED - preserves existing functionality)
+export class ClaimController {
+  // Submit a new claim
   async submitClaim(req, res) {
     try {
       const {
@@ -21,20 +21,27 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
       const submittingEmployeeId = req.user?.employeeId ?? null;
       const targetEmployeeId = employeeId || submittingEmployeeId;
 
-      // 🧠 Step 1: Fetch employee
+      if (!targetEmployeeId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Unauthorized. Only employees can submit claims.',
+        });
+      }
+
+      // fetch employee (with organisationId)
       const employee = await prisma.employee.findUnique({
         where: { id: targetEmployeeId },
-        // select: { departmentId: true } // 🟨 Commented out departmentId
+        select: { organisationId: true }
       });
 
-      if (!employee /* || !employee.departmentId */) {
+      if (!employee) {
         return res.status(400).json({
           status: 'error',
           message: 'Employee not found',
         });
       }
 
-      // 🧠 Step 2: Create claim
+      // create claim
       const claim = await prisma.claim.create({
         data: {
           referenceId: generateSequentialReferenceId(),
@@ -45,13 +52,22 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
           fromDate: new Date(fromDate),
           toDate: new Date(toDate),
           employeeId: targetEmployeeId,
-          // departmentId: employee.departmentId, // 🟨 Removed
+          organisationId: employee.organisationId,
           comment,
-          status: 'CLAIM_SUBMITTED', // Set default status
+          status: 'SUBMITTED',
         },
         include: {
-          employee: true,
-        },
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              position: true,
+              organisationId: true,
+              user: { select: { email: true } }
+            }
+          }
+        }
       });
 
       return res.status(201).json({
@@ -59,7 +75,7 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
         data: { claim },
       });
     } catch (error) {
-      console.error(error);
+      console.error('Submit claim error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to submit claim',
@@ -68,7 +84,7 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
     }
   }
 
-  // Get claims for current employee (UNCHANGED - preserves existing functionality)
+  // Get claims for current employee
   async getMyClaims(req, res) {
     try {
       const employeeId = req.user.employeeId;
@@ -81,16 +97,13 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
               id: true,
               firstName: true,
               lastName: true,
-              email: true,
               position: true,
+              organisationId: true,
+              user: { select: { email: true } }
             },
           },
           assignedTo: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
+            select: { id: true, firstName: true, lastName: true },
           },
         },
         orderBy: { submittedDate: 'desc' },
@@ -101,6 +114,7 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
         data: { claims },
       });
     } catch (error) {
+      console.error('Get my claims error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to fetch claims',
@@ -109,24 +123,34 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
     }
   }
 
-  // Get claims by organisation ID (UNCHANGED - preserves existing functionality)
+  // Get claims by organisation ID
   async getClaimsByOrganisation(req, res) {
     try {
       const organisationId = Number(req.params.organisationId);
+      const userRole = req.user?.role;
 
       if (isNaN(organisationId)) {
         return res.status(400).json({
           status: 'error',
-          message: 'Invalid organisation ID',
+          message: 'Invalid organisation ID'
         });
       }
 
+      // verify manager access
+      if (userRole === 'manager') {
+        const managerEmployee = await prisma.employee.findFirst({
+          where: { userId: req.user.id, organisationId }
+        });
+        if (!managerEmployee) {
+          return res.status(403).json({
+            status: 'error',
+            message: 'Not authorized to view claims for this organisation'
+          });
+        }
+      }
+
       const claims = await prisma.claim.findMany({
-        where: {
-          employee: {
-            organisationId: organisationId,
-          },
-        },
+        where: { organisationId },
         include: {
           employee: {
             select: {
@@ -134,97 +158,48 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
               firstName: true,
               lastName: true,
               position: true,
-            },
+              organisationId: true,
+              user: { select: { email: true } }
+            }
           },
-          assignedTo: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
+          assignedTo: { select: { id: true, firstName: true, lastName: true } }
         },
-        orderBy: {
-          submittedDate: 'desc',
-        },
+        orderBy: { submittedDate: 'desc' }
       });
 
       return res.status(200).json({
         status: 'success',
-        data: { claims },
+        data: { claims }
       });
     } catch (error) {
-      console.error(error);
+      console.error('Get claims by organisation error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to fetch organisation claims',
-        error: error.message,
+        error: error.message
       });
     }
   }
 
-  // Admin: Get all claims (ENHANCED - now handles missing organisationId gracefully)
+  // Admin: Get all claims with filters
   async getAllClaims(req, res) {
     try {
-      console.log('getAllClaims called with body:', req.body);
-      console.log('User context:', req.user);
-
       const { status, fromDate, toDate, organisationId, referenceId, eventName } = req.body || {};
-
-      // Build where clause dynamically
       let whereClause = {};
 
-      // Handle organisation filtering
-      let targetOrganisationId = organisationId;
-
-      // If no organisationId provided, try to get from user context
-      if (!targetOrganisationId && req.user?.organisationId) {
-        targetOrganisationId = req.user.organisationId;
+      if (organisationId || req.user?.organisationId) {
+        whereClause.organisationId = Number(organisationId ?? req.user.organisationId);
       }
 
-      // If still no organisationId, try to get from user's employee record
-      if (!targetOrganisationId && req.user?.employeeId) {
-        const userEmployee = await prisma.employee.findUnique({
-          where: { id: req.user.employeeId },
-          select: { organisationId: true }
-        });
-        targetOrganisationId = userEmployee?.organisationId;
-      }
-
-      // Apply organisation filter if we have one
-      if (targetOrganisationId) {
-        whereClause.employee = {
-          organisationId: Number(targetOrganisationId),
-        };
-      }
-
-      // Apply other filters only if they exist
-      if (status) {
-        whereClause.status = status;
-      }
-
-      if (referenceId) {
-        whereClause.referenceId = {
-          contains: referenceId,
-          mode: 'insensitive'
-        };
-      }
-
-      if (eventName) {
-        whereClause.eventName = {
-          contains: eventName,
-          mode: 'insensitive'
-        };
-      }
-
+      if (status) whereClause.status = status;
+      if (referenceId) whereClause.referenceId = { contains: referenceId, mode: 'insensitive' };
+      if (eventName) whereClause.eventName = { contains: eventName, mode: 'insensitive' };
       if (fromDate && toDate) {
         whereClause.submittedDate = {
           gte: new Date(fromDate),
           lte: new Date(toDate),
         };
       }
-
-      console.log('Where clause:', JSON.stringify(whereClause, null, 2));
 
       const claims = await prisma.claim.findMany({
         where: whereClause,
@@ -234,30 +209,22 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
               id: true,
               firstName: true,
               lastName: true,
-              email: true,
               position: true,
               organisationId: true,
-            },
+              user: { select: { email: true } }
+            }
           },
-          assignedTo: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
+          assignedTo: { select: { id: true, firstName: true, lastName: true } }
         },
         orderBy: { submittedDate: 'desc' },
       });
-
-      console.log(`Found ${claims.length} claims`);
 
       return res.status(200).json({
         status: 'success',
         data: { claims },
         meta: {
           total: claims.length,
-          organisationId: targetOrganisationId,
+          organisationId: whereClause.organisationId,
           appliedFilters: whereClause
         }
       });
@@ -271,47 +238,54 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
     }
   }
 
-  // Admin: Assign a claim to a department head (UNCHANGED - preserves existing functionality)
-  async assignClaimToDepartmentHead(req, res) {
-    try {
-      const { claimId, departmentHeadId, comment } = req.body;
-
-      const claim = await prisma.claim.update({
-        where: { id: Number(claimId) },
-        data: {
-          // departmentHeadId: Number(departmentHeadId), // 🟨 Removed
-          status: 'ASSIGNED',
-          comment,
-        },
-        include: {
-          departmentHead: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-      });
-
-      return res.status(200).json({
-        status: 'success',
-        data: { claim },
-      });
-    } catch (error) {
-      return res.status(500).json({
-        status: 'error',
-        message: 'Failed to assign claim to department head',
-        error: error.message,
-      });
-    }
-  }
-
-  // Admin: Assign claim (UNCHANGED - preserves existing functionality)
+  // Assign claim to reviewer
   async assignClaim(req, res) {
     try {
       const { claimId, assignedToId, comment } = req.body;
 
-      const claim = await prisma.claim.update({
+      // fetch claim with orgId
+      const claim = await prisma.claim.findUnique({
+        where: { id: Number(claimId) },
+        select: { id: true, organisationId: true }
+      });
+
+      if (!claim) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Claim not found'
+        });
+      }
+
+      // fetch reviewer
+      const reviewer = await prisma.employee.findUnique({
+        where: { id: Number(assignedToId) },
+        select: { organisationId: true, user: { select: { role: true } } }
+      });
+
+      if (!reviewer) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Reviewer not found'
+        });
+      }
+
+      // org check
+      if (claim.organisationId !== reviewer.organisationId) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Reviewer must belong to the same organisation as the claim'
+        });
+      }
+
+      // role check
+      if (!['admin', 'manager'].includes(reviewer.user.role)) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Reviewer must be an admin or manager'
+        });
+      }
+
+      const updatedClaim = await prisma.claim.update({
         where: { id: Number(claimId) },
         data: {
           assignedToId: Number(assignedToId),
@@ -319,20 +293,16 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
           comment,
         },
         include: {
-          assignedTo: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
+          assignedTo: { select: { firstName: true, lastName: true } }
         },
       });
 
       return res.status(200).json({
         status: 'success',
-        data: { claim },
+        data: { claim: updatedClaim },
       });
     } catch (error) {
+      console.error('Assign claim error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to assign claim',
@@ -341,38 +311,58 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
     }
   }
 
-  // Update claim status (UNCHANGED - preserves existing functionality)
+  // Update claim status
   async updateClaimStatus(req, res) {
     try {
       const { claimId, status, comment } = req.body;
+      const reviewerId = req.user?.employeeId;
 
-      const claim = await prisma.claim.update({
+      const claim = await prisma.claim.findUnique({
         where: { id: Number(claimId) },
-        data: {
-          status,
-          comment,
-        },
+        select: { organisationId: true, assignedToId: true }
+      });
+
+      if (!claim) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Claim not found'
+        });
+      }
+
+      if (claim.assignedToId !== reviewerId) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'You are not assigned to this claim'
+        });
+      }
+
+      const reviewer = await prisma.employee.findUnique({
+        where: { id: reviewerId },
+        select: { organisationId: true }
+      });
+
+      if (claim.organisationId !== reviewer.organisationId) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'You cannot update claims outside your organisation'
+        });
+      }
+
+      const updatedClaim = await prisma.claim.update({
+        where: { id: Number(claimId) },
+        data: { status, comment },
         include: {
-          employee: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          assignedTo: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
+          employee: { select: { firstName: true, lastName: true } },
+          assignedTo: { select: { firstName: true, lastName: true } },
         },
       });
 
       return res.status(200).json({
         status: 'success',
-        data: { claim },
+        data: { claim: updatedClaim },
       });
     } catch (error) {
+      console.error('Update claim status error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to update claim status',
@@ -381,52 +371,7 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
     }
   }
 
-  // Filter claims by employee or department (UNCHANGED - preserves existing functionality)
-  async getClaims(req, res) {
-    try {
-      const { employeeId, /* departmentId, */ status } = req.query;
-
-      const claims = await prisma.claim.findMany({
-        where: {
-          ...(employeeId && { employeeId: Number(employeeId) }),
-          // ...(departmentId && { employee: { departmentId: Number(departmentId) } }), // 🟨 Removed
-          ...(status && { status }),
-        },
-        include: {
-          employee: { 
-            select: { 
-              id: true,
-              firstName: true, 
-              lastName: true,
-              email: true,
-              position: true,
-            } 
-          },
-          assignedTo: { 
-            select: { 
-              id: true,
-              firstName: true, 
-              lastName: true 
-            } 
-          },
-          // departmentHead: { select: { firstName: true, lastName: true } }, // 🟨 Removed
-        },
-      });
-
-      return res.status(200).json({
-        status: 'success',
-        data: { claims },
-      });
-    } catch (error) {
-      return res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch claims',
-        error: error.message,
-      });
-    }
-  }
-
-  // Delete a claim (UNCHANGED - preserves existing functionality)
+  // Delete claim
   async deleteClaim(req, res) {
     try {
       const { id } = req.params;
@@ -441,6 +386,7 @@ export class ClaimController { // Changed from 'claimController' to 'ClaimContro
         data: { claim },
       });
     } catch (error) {
+      console.error('Delete claim error:', error);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to delete claim',
