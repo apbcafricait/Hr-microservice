@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, HelpCircle, X, Calendar } from 'lucide-react';
+import { ChevronDown, HelpCircle, X, Calendar, User, Clock, FileText, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -20,7 +20,7 @@ import {
 const NoiseBG = () => (
   <div
     aria-hidden="true"
-    className="pointer-events-none fixed inset-0 z-0 opacity-10"
+    className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
     style={{
       backgroundImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="5" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)" opacity="0.10"/></svg>')`,
     }}
@@ -221,7 +221,7 @@ const LeaveApplication = () => {
   const renderContent = () => {
     if (isCreateLeaveTypeLoading) {
       return (
-        <div className="text-center text-gray-600 dark:text-gray-300 text-lg animate-pulse">
+        <div className="text-center text-gray-600 dark:text-gray-300 text-lg animate-pulse font-lato">
           Loading your leave information...
         </div>
       );
@@ -239,24 +239,34 @@ const LeaveApplication = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="backdrop-blur-md bg-white/95 dark:bg-gray-900/95 border border-gray-100/30 dark:border-gray-800/30 shadow-lg rounded-2xl p-6 sm:p-8 max-w-4xl mx-auto"
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="glass-card p-6 sm:p-8 max-w-4xl mx-auto"
           >
-            <h2 className="text-2xl sm:text-3xl font-bold text-indigo-900 dark:text-indigo-100 mb-8 tracking-tight">
-              Request Time Off
-            </h2>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                <User className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-gray-900 dark:text-white tracking-tight">
+                  Request Time Off
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-lato">
+                  Submit your leave application with ease
+                </p>
+              </div>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Leave Type <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
-                      className={`w-full rounded-lg border ${
-                        errors.selectedLeaveType ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'
-                      } py-2.5 px-4 text-sm bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm appearance-none`}
+                      className={`glass-input ${
+                        errors.selectedLeaveType ? 'border-red-500 ring-red-500' : ''
+                      } appearance-none pr-10`}
                       value={selectedLeaveType}
                       onChange={(e) => {
                         setSelectedLeaveType(e.target.value);
@@ -272,9 +282,9 @@ const LeaveApplication = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
                     {errors.selectedLeaveType && (
-                      <p id="leaveType-error" className="text-xs text-red-500 mt-1">
+                      <p id="leaveType-error" className="text-xs text-red-500 mt-1 font-lato">
                         {errors.selectedLeaveType}
                       </p>
                     )}
@@ -283,14 +293,15 @@ const LeaveApplication = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    className="mt-3 text-sm text-indigo-600 hover:text-indigo-700 font-poppins font-medium flex items-center gap-2"
                   >
-                    + Add New Leave Type
+                    <Plus className="w-4 h-4" />
+                    Add New Leave Type
                   </motion.button>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Start Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -301,32 +312,36 @@ const LeaveApplication = () => {
                         validateField('fromDate', date);
                       }}
                       dateFormat="MM/dd/yyyy"
-                      className={`w-full p-2.5 rounded-lg border ${
-                        errors.fromDate ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'
-                      } text-sm bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm`}
+                      className={`glass-input ${
+                        errors.fromDate ? 'border-red-500 ring-red-500' : ''
+                      } pr-10`}
                       placeholderText="Select start date"
                       aria-invalid={!!errors.fromDate}
                       aria-describedby={errors.fromDate ? 'fromDate-error' : ''}
                     />
-                    
+                    <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
                   </div>
+                  {errors.fromDate && (
+                    <p id="fromDate-error" className="text-xs text-red-500 mt-1 font-lato">
+                      {errors.fromDate}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Available Balance
                   </label>
-                  <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shadow-sm">
-                    <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-300">
-                      {getLeaveBalance()} Day(s)
-                    </span>
+                  <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 text-indigo-700 dark:text-indigo-300 font-poppins font-semibold shadow-sm flex items-center justify-center border border-indigo-200/50 dark:border-indigo-700/50">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {getLeaveBalance()} Day(s)
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     End Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -337,50 +352,61 @@ const LeaveApplication = () => {
                         validateField('toDate', date);
                       }}
                       dateFormat="MM/dd/yyyy"
-                      className={`w-full p-2.5 rounded-lg border ${
-                        errors.toDate ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'
-                      } text-sm bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm`}
+                      className={`glass-input ${
+                        errors.toDate ? 'border-red-500 ring-red-500' : ''
+                      } pr-10`}
                       placeholderText="End date (auto-filled)"
                       minDate={fromDate}
                       disabled
                       aria-invalid={!!errors.toDate}
                       aria-describedby={errors.toDate ? 'toDate-error' : ''}
                     />
-                   
+                    <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
                   </div>
+                  {errors.toDate && (
+                    <p id="toDate-error" className="text-xs text-red-500 mt-1 font-lato">
+                      {errors.toDate}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
             {fromDate && toDate && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="mt-6 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-medium shadow-sm"
+                className="mt-6 px-6 py-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 font-poppins font-semibold shadow-sm text-center border border-green-200/50 dark:border-green-700/50"
               >
-                Duration: {calculateDuration()} day(s)
+                <div className="flex items-center justify-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  Duration: {calculateDuration()} day(s)
+                </div>
               </motion.div>
             )}
 
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            <div className="mt-8">
+              <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                 Additional Notes
               </label>
-              <textarea
-                className="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm resize-none"
-                rows="4"
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                placeholder="Add any details or comments..."
-              />
+              <div className="relative">
+                <textarea
+                  className="glass-input resize-none"
+                  rows="4"
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Add any details or comments..."
+                />
+                <FileText className="absolute top-4 right-4 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm"
+                className="glass-button-secondary"
                 onClick={resetForm}
                 aria-label="Clear form"
               >
@@ -389,7 +415,7 @@ const LeaveApplication = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="glass-button flex items-center gap-2"
                 onClick={handleSubmit}
                 disabled={isCreateLoading || !selectedLeaveType || !fromDate || !toDate}
                 aria-label="Submit leave request"
@@ -403,13 +429,16 @@ const LeaveApplication = () => {
                     Processing...
                   </span>
                 ) : (
-                  'Submit Request'
+                  <>
+                    <User className="w-4 h-4" />
+                    Submit Request
+                  </>
                 )}
               </motion.button>
             </div>
 
             {createError && (
-              <div className="mt-4 text-red-500 text-sm">
+              <div className="mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm font-lato border border-red-200/50 dark:border-red-700/50">
                 Error: {createError?.data?.message || 'Failed to submit application.'}
               </div>
             )}
@@ -418,12 +447,8 @@ const LeaveApplication = () => {
     }
   };
 
-  // Glassmorphism style
-  const glass =
-    'backdrop-blur-md bg-white/95 dark:bg-gray-900/95 border border-gray-100/30 dark:border-gray-800/30 shadow-lg rounded-2xl';
-
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 transition-colors duration-300 font-inter">
+    <div className="min-h-screen relative bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 transition-colors duration-300 font-lato">
       <NoiseBG />
       <ToastContainer
         position="top-right"
@@ -432,23 +457,29 @@ const LeaveApplication = () => {
         className="mt-16 z-50"
       />
 
-      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-md sticky top-0 z-10">
+      <nav className="glass-card sticky top-0 z-10 mx-4 mt-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-2 sm:gap-3 py-4">
-            {['apply', 'myLeave', 'leaveList', 'assignLeave'].map((tab) => (
+            {[
+              { key: 'apply', label: 'Apply Leave', icon: '📝' },
+              { key: 'myLeave', label: 'My Leave', icon: '📋' },
+              { key: 'leaveList', label: 'Leave List', icon: '📊' },
+              { key: 'assignLeave', label: 'Assign Leave', icon: '👥' }
+            ].map((tab) => (
               <motion.button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-semibold transition-all duration-200 shadow-sm ${
-                  activeTab === tab
-                    ? 'bg-indigo-600 text-white'
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 sm:px-6 py-3 rounded-xl text-sm sm:text-base font-poppins font-semibold transition-all duration-200 shadow-sm flex items-center gap-2 ${
+                  activeTab === tab.key
+                    ? 'bg-indigo-600 text-white shadow-lg'
                     : 'text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                aria-label={`Switch to ${tab.replace(/([A-Z])/g, ' $1').trim()} tab`}
+                aria-label={`Switch to ${tab.label} tab`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/([A-Z])/g, ' $1')}
+                <span className="text-lg">{tab.icon}</span>
+                {tab.label}
               </motion.button>
             ))}
           </div>
@@ -469,29 +500,34 @@ const LeaveApplication = () => {
             className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
           >
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className={`${glass} p-6 w-full max-w-md`}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card p-6 w-full max-w-md"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-indigo-900 dark:text-indigo-100">
-                  Add New Leave Type
-                </h3>
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                    <Plus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-poppins font-semibold text-gray-900 dark:text-white">
+                    Add New Leave Type
+                  </h3>
+                </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </motion.button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Leave Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -501,21 +537,21 @@ const LeaveApplication = () => {
                       setNewLeaveType({ ...newLeaveType, name: e.target.value });
                       validateField('name', e.target.value);
                     }}
-                    className={`w-full px-4 py-2.5 text-sm border ${
-                      errors.name ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'
-                    } rounded-lg bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm`}
+                    className={`glass-input ${
+                      errors.name ? 'border-red-500 ring-red-500' : ''
+                    }`}
                     aria-invalid={!!errors.name}
                     aria-describedby={errors.name ? 'name-error' : ''}
                   />
                   {errors.name && (
-                    <p id="name-error" className="text-xs text-red-500 mt-1">
+                    <p id="name-error" className="text-xs text-red-500 mt-1 font-lato">
                       {errors.name}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Duration (Days) <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -525,22 +561,22 @@ const LeaveApplication = () => {
                       setNewLeaveType({ ...newLeaveType, duration: e.target.value });
                       validateField('duration', e.target.value);
                     }}
-                    className={`w-full px-4 py-2.5 text-sm border ${
-                      errors.duration ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'
-                    } rounded-lg bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm`}
+                    className={`glass-input ${
+                      errors.duration ? 'border-red-500 ring-red-500' : ''
+                    }`}
                     min="1"
                     aria-invalid={!!errors.duration}
                     aria-describedby={errors.duration ? 'duration-error' : ''}
                   />
                   {errors.duration && (
-                    <p id="duration-error" className="text-xs text-red-500 mt-1">
+                    <p id="duration-error" className="text-xs text-red-500 mt-1 font-lato">
                       {errors.duration}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                     Start Date <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -550,25 +586,25 @@ const LeaveApplication = () => {
                       setNewLeaveType({ ...newLeaveType, start_date: e.target.value });
                       validateField('start_date', e.target.value);
                     }}
-                    className={`w-full px-4 py-2.5 text-sm border ${
-                      errors.start_date ? 'border-red-500' : 'border-gray-200 dark:border-gray-600'
-                    } rounded-lg bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm`}
+                    className={`glass-input ${
+                      errors.start_date ? 'border-red-500 ring-red-500' : ''
+                    }`}
                     aria-invalid={errors.start_date ? 'true' : 'false'}
                     aria-describedby={errors.start_date ? 'start-date-error' : ''}
                   />
                   {errors.start_date && (
-                    <p id="start-date-error" className="text-xs text-red-500 mt-1">
+                    <p id="start-date-error" className="text-xs text-red-500 mt-1 font-lato">
                       {errors.start_date}
                     </p>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-3 pt-4">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm"
+                    className="glass-button-secondary"
                     aria-label="Cancel"
                   >
                     Cancel
@@ -577,7 +613,7 @@ const LeaveApplication = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleAddLeaveType}
-                    className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="glass-button"
                     disabled={isCreateLeaveTypeLoading || !organisationId}
                     aria-label="Add leave type"
                   >
@@ -586,7 +622,7 @@ const LeaveApplication = () => {
                 </div>
 
                 {createLeaveTypeError && (
-                  <p className="text-red-500 text-sm mt-2">
+                  <p className="text-red-500 text-sm mt-2 font-lato">
                     Failed to add leave type: {createLeaveTypeError?.data?.message || 'Unknown error.'}
                   </p>
                 )}
@@ -609,23 +645,28 @@ const LeaveApplication = () => {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className={`${glass} p-6 max-w-md w-full`}
+              className="glass-card p-6 max-w-md w-full"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100">
-                  Quick Help Guide
-                </h3>
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                    <HelpCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-poppins font-bold text-gray-900 dark:text-white">
+                    Quick Help Guide
+                  </h3>
+                </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setShowHelpModal(false)}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   aria-label="Close help modal"
                 >
                   <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </motion.button>
               </div>
-              <div className="space-y-4 text-gray-600 dark:text-gray-300">
+              <div className="space-y-4 text-gray-600 dark:text-gray-300 font-lato">
                 <p className="text-sm">Here's how to request your leave:</p>
                 <ul className="list-disc list-inside space-y-2 text-sm">
                   <li>Select your leave type from the dropdown</li>

@@ -4,11 +4,12 @@ import {
   Users2,
   Building,
   Network,
-  Plus,
   Search,
   ChevronRight,
   Settings,
   Shield,
+  Bell,
+  UserCircle,
 } from "lucide-react";
 import User from "./User";
 import CreateOrganization from "./CreateOrganization";
@@ -25,7 +26,6 @@ const AdminImports = () => {
       id: "manage-users",
       component: User,
     },
-   
     {
       icon: Building,
       title: "View My Organization",
@@ -37,12 +37,13 @@ const AdminImports = () => {
       title: "Departments",
       id: "departments",
       component: () => (
-        <div className="text-slate-600">Departments Component (Under Development)</div>
+        <div className="text-slate-600">
+          Departments Component (Under Development)
+        </div>
       ),
     },
   ];
 
-  // Filter navigation items based on search query
   const filteredItems = navigationItems.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -57,49 +58,48 @@ const AdminImports = () => {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 font-sans antialiased"
     >
-      {/* Header and Navigation */}
+      {/* Header */}
       <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           {/* Top Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
-            <motion.div
-              initial={{ y: -20 }}
-              animate={{ y: 0 }}
-              className="flex items-center"
-            >
-              <Shield className="h-8 w-8 text-indigo-600 mr-3" />
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="h-8 w-8 text-indigo-600" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
                 Admin Portal
               </h1>
-            </motion.div>
-            <div className="relative w-full sm:w-80">
-              <input
-                type="text"
-                placeholder="Search modules..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-slate-700 placeholder-slate-400"
-                aria-label="Search modules"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search modules..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-72 pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm text-slate-700 placeholder-slate-400"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              </div>
+              <Bell className="h-6 w-6 text-slate-500 hover:text-indigo-600 cursor-pointer transition" />
+              <UserCircle className="h-8 w-8 text-slate-500 hover:text-indigo-600 cursor-pointer transition" />
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <nav className="flex flex-wrap gap-2 pb-1">
+          {/* Navigation */}
+          <nav className="flex flex-wrap gap-2 mt-6">
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
                 <motion.button
                   key={item.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setActiveSection(item.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeSection === item.id
                       ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
-                  aria-label={`Navigate to ${item.title}`}
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   <span>{item.title}</span>
@@ -117,7 +117,10 @@ const AdminImports = () => {
             <span className="font-medium text-indigo-600">Admin</span>
             <ChevronRight className="h-3.5 w-3.5 mx-1.5 text-slate-400" />
             <span className="font-medium text-slate-700">
-              {navigationItems.find((item) => item.id === activeSection)?.title || "Module"}
+              {
+                navigationItems.find((item) => item.id === activeSection)
+                  ?.title || "Module"
+              }
             </span>
           </div>
         </div>
@@ -137,13 +140,15 @@ const AdminImports = () => {
             {/* Section Header */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
               <h2 className="text-xl font-semibold text-slate-800">
-                {navigationItems.find((item) => item.id === activeSection)?.title || "Module"}
+                {
+                  navigationItems.find((item) => item.id === activeSection)
+                    ?.title || "Module"
+                }
               </h2>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                aria-label="Settings"
+                className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition"
               >
                 <Settings className="h-5 w-5" />
               </motion.button>
@@ -153,16 +158,17 @@ const AdminImports = () => {
             {ActiveComponent ? (
               <ActiveComponent />
             ) : (
-              <div className="text-slate-500 text-center py-10 px-4">
+              <div className="text-center text-slate-500 py-10 px-4">
                 <motion.div
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
                   className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100"
                 >
                   <Search className="h-8 w-8 text-slate-400" />
                 </motion.div>
-                <p className="text-lg">Select a module to view content</p>
+                <p className="text-lg font-medium">
+                  Select a module to view content
+                </p>
               </div>
             )}
           </motion.div>
