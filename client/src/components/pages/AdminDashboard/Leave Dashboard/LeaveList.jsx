@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ChevronDown, Calendar, X, Search, Download } from 'lucide-react';
+import { ChevronDown, Calendar, X, Search, Download, Filter, Users, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -21,7 +21,7 @@ const useUpdateLeaveRequestStatusMutation = () => {
 const NoiseBG = () => (
   <div
     aria-hidden="true"
-    className="pointer-events-none fixed inset-0 z-0 opacity-[0.05]"
+    className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
     style={{
       backgroundImage: `url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="5" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)" opacity="0.10"/></svg>')`,
     }}
@@ -66,7 +66,25 @@ const LeaveList = () => {
     );
   }, [leaveRequests, dateRange, filters]);
 
-  
+  const handleApprove = async (id) => {
+    try {
+      await updateLeaveRequestStatus({ id, status: 'approved' });
+      toast.success('Leave request approved successfully!');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to approve leave request');
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await updateLeaveRequestStatus({ id, status: 'rejected' });
+      toast.success('Leave request rejected successfully!');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to reject leave request');
+    }
+  };
 
   // CSV download
   const handleDownloadCSV = useCallback(() => {
@@ -97,11 +115,8 @@ const LeaveList = () => {
     }
   }, []);
 
-  // Glassmorphism style
-  const glassStyle = `backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-gray-100/20 dark:border-gray-800/20 shadow-2xl rounded-2xl`;
-
   return (
-    <div className="min-h-screen w-full relative bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-500 font-inter">
+    <div className="min-h-screen w-full relative bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-500 font-lato">
       <NoiseBG />
       <ToastContainer
         position="top-right"
@@ -116,23 +131,33 @@ const LeaveList = () => {
         theme="colored"
       />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className={`${glassStyle} p-6 sm:p-8`}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="glass-card p-6 sm:p-8"
         >
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Leave Requests
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-gray-900 dark:text-white tracking-tight">
+                  Leave Requests
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-lato">
+                  Manage and review all leave applications
+                </p>
+              </div>
+            </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleDownloadCSV}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm"
+              className="glass-button flex items-center gap-2"
               aria-label="Download leave requests as CSV"
             >
               <Download className="w-4 h-4" />
@@ -141,52 +166,52 @@ const LeaveList = () => {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                 From Date
               </label>
               <input
                 type="date"
                 value={dateRange.from}
                 onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-                className="w-full px-4 py-2.5 text-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-gray-800/50 transition-all duration-200 shadow-sm pr-10"
+                className="glass-input pr-10"
                 aria-label="Filter by start date"
               />
-              
+              <Calendar className="absolute right-4 top-[2.8rem] -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
             </div>
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                 To Date
               </label>
               <input
                 type="date"
                 value={dateRange.to}
                 onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-                className="w-full px-4 py-2.5 text-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-gray-800/50 transition-all duration-200 shadow-sm pr-10"
+                className="glass-input pr-10"
                 aria-label="Filter by end date"
               />
-              
+              <Calendar className="absolute right-4 top-[2.8rem] -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
             </div>
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                 Status
               </label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-4 py-2.5 text-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-gray-800/50 transition-all duration-200 shadow-sm appearance-none pr-10"
+                className="glass-input appearance-none pr-10"
                 aria-label="Filter by status"
               >
-                <option value="">All</option>
+                <option value="">All Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
               </select>
-              <ChevronDown className="absolute right-3 top-[2.6rem] -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
+              <ChevronDown className="absolute right-4 top-[2.8rem] -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
             </div>
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200 mb-3">
                 Employee Name
               </label>
               <input
@@ -194,25 +219,41 @@ const LeaveList = () => {
                 value={filters.employeeName}
                 onChange={(e) => setFilters({ ...filters, employeeName: e.target.value })}
                 placeholder="Search by name"
-                className="w-full px-4 py-2.5 text-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-gray-800/50 transition-all duration-200 shadow-sm pr-10"
+                className="glass-input pr-10"
                 aria-label="Search by employee name"
               />
-              <Search className="absolute right-3 top-[2.6rem] -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
+              <Search className="absolute right-4 top-[2.8rem] -translate-y-1/2 w-5 h-5 text-indigo-500 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Results Summary */}
+          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-indigo-200/50 dark:border-indigo-700/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-sm font-poppins font-semibold text-gray-700 dark:text-gray-200">
+                  {filteredData().length} Leave Request{filteredData().length !== 1 ? 's' : ''} Found
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-lato">
+                <Clock className="w-4 h-4" />
+                Last updated: {new Date().toLocaleTimeString()}
+              </div>
             </div>
           </div>
 
           {/* Table */}
           <div className="overflow-x-auto rounded-xl border border-gray-100/20 dark:border-gray-800/20 shadow-sm">
             {isLoading ? (
-              <div className="text-center py-12 text-gray-600 dark:text-gray-300 text-sm animate-pulse">
+              <div className="text-center py-12 text-gray-600 dark:text-gray-300 text-sm animate-pulse font-lato">
                 Loading leave requests...
               </div>
             ) : error ? (
-              <div className="text-center py-12 text-red-500 dark:text-red-400 text-sm">
+              <div className="text-center py-12 text-red-500 dark:text-red-400 text-sm font-lato">
                 Error loading data: {error.message}
               </div>
             ) : filteredData().length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-900/50 text-sm rounded-xl">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-900/50 text-sm rounded-xl font-lato">
                 No Records Found
               </div>
             ) : (
@@ -228,10 +269,10 @@ const LeaveList = () => {
                           aria-label="Select all leave requests"
                         />
                       </th>
-                      {['Date', 'Employee', 'Type', 'Days', 'Status'].map((header) => (
+                      {['Date', 'Employee', 'Type', 'Days', 'Status', 'Actions'].map((header) => (
                         <th
                           key={header}
-                          className="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-tight"
+                          className="px-4 py-3 text-left text-xs font-poppins font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-tight"
                         >
                           {header}
                         </th>
@@ -259,21 +300,21 @@ const LeaveList = () => {
                               aria-label={`Select leave request for ${request.employee.firstName} ${request.employee.lastName}`}
                             />
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 font-lato">
                             {new Date(request.startDate).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 font-lato">
                             {`${request.employee.firstName} ${request.employee.lastName}`}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 font-lato">
                             {request.type}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 font-lato">
                             {days}
                           </td>
                           <td className="px-4 py-3">
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              className={`px-3 py-1 rounded-full text-xs font-poppins font-medium ${getStatusColor(
                                 request.status
                               )}`}
                             >
@@ -288,7 +329,7 @@ const LeaveList = () => {
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleApprove(request.id)}
                                   disabled={isUpdating}
-                                  className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="px-3 py-1.5 text-xs font-poppins font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                   aria-label="Approve leave request"
                                 >
                                   Approve
@@ -298,7 +339,7 @@ const LeaveList = () => {
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleReject(request.id)}
                                   disabled={isUpdating}
-                                  className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="px-3 py-1.5 text-xs font-poppins font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                   aria-label="Reject leave request"
                                 >
                                   Reject
@@ -327,7 +368,7 @@ const LeaveList = () => {
                         transition={{ duration: 0.3 }}
                         className="p-4 bg-white/50 dark:bg-gray-900/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors"
                       >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <input
                               type="checkbox"
@@ -335,7 +376,7 @@ const LeaveList = () => {
                               aria-label={`Select leave request for ${request.employee.firstName} ${request.employee.lastName}`}
                             />
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              className={`px-3 py-1 rounded-full text-xs font-poppins font-medium ${getStatusColor(
                                 request.status
                               )}`}
                             >
@@ -349,7 +390,7 @@ const LeaveList = () => {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleApprove(request.id)}
                                 disabled={isUpdating}
-                                className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1.5 text-xs font-poppins font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Approve leave request"
                               >
                                 Approve
@@ -359,7 +400,7 @@ const LeaveList = () => {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleReject(request.id)}
                                 disabled={isUpdating}
-                                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1.5 text-xs font-poppins font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Reject leave request"
                               >
                                 Reject
@@ -367,20 +408,20 @@ const LeaveList = () => {
                             </div>
                           )}
                         </div>
-                        <div className="space-y-1 text-sm text-gray-900 dark:text-gray-200">
+                        <div className="space-y-1 text-sm text-gray-900 dark:text-gray-200 font-lato">
                           <p>
-                            <span className="font-medium">Date:</span>{' '}
+                            <span className="font-poppins font-semibold">Date:</span>{' '}
                             {new Date(request.startDate).toLocaleDateString()}
                           </p>
                           <p>
-                            <span className="font-medium">Employee:</span>{' '}
+                            <span className="font-poppins font-semibold">Employee:</span>{' '}
                             {`${request.employee.firstName} ${request.employee.lastName}`}
                           </p>
                           <p>
-                            <span className="font-medium">Type:</span> {request.type}
+                            <span className="font-poppins font-semibold">Type:</span> {request.type}
                           </p>
                           <p>
-                            <span className="font-medium">Days:</span> {days}
+                            <span className="font-poppins font-semibold">Days:</span> {days}
                           </p>
                         </div>
                       </motion.div>

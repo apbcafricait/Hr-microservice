@@ -56,7 +56,7 @@ export const ProtectedRoute = ({ allowedRoles, children, requireSubscription = f
       // Wait for employee and organisation data to load
       if (!isEmployeeLoading && !isOrgLoading) {
         // Check subscription status if required
-        if (requireSubscription) {
+        if (requireSubscription && userInfo.role !== 'superadmin') {
           if (organisation?.data?.organisation?.subscriptionStatus !== 'active') {
             setShouldRedirect(true);
             setRedirectPath('/subscribe');

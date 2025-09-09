@@ -22,6 +22,7 @@ import leaveTypeRoutes from './Routes/leaveTypeRoutes.js'
 import Reports from './Routes/reportRoutes.js'
 import './subscriptionCheck.js'
 import changePasswordRoutes from './Routes/changePasswordRoutes.js'
+import superAdminRoutes from './Routes/superAdminRoutes.js'
 
 
 const app = express()
@@ -65,6 +66,7 @@ app.use("/api/leaveTypes", leaveTypeRoutes)
 app.use('/api/claims', claimRoutes)
 
 app.use('/api/reports', Reports)
+app.use('/api/super-admin', superAdminRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
