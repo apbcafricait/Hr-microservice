@@ -1,32 +1,25 @@
-# Multi-stage build for React frontend
-FROM node:18-alpine as build
+# Build stage
+FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
+
+# Install pnpm first
+RUN npm install -g pnpm
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy source code
+# Copy source code (excluding node_modules via .dockerignore)
 COPY . .
 
+# Install dependencies
+RUN pnpm install
+
 # Build the application
-RUN npm run build
-
-# Production stage
-FROM node:18-alpine
-
-# Install serve to host the built app
-RUN npm install -g serve
-
-# Copy built assets from build stage
-COPY --from=build /app/build /app
+RUN pnpm run build
 
 # Expose port 9001
 EXPOSE 9001
 
-# Start the application on port 9001
-CMD ["serve", "-s", "/app", "-l", "9001"]
+# Use vite preview to serve the built application
+CMD ["pnpm", "run", "preview", "--host", "0.0.0.0", "--port", "9001"]
