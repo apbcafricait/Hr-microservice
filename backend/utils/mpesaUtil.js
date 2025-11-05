@@ -20,8 +20,15 @@ export const reduceMpesaMetadata = metadata =>
   }, {})
 
 export const paymentVerification = async CheckoutRequestID => {
-  console.log('This is getting exececuted....')
-  while (true) {
+  console.log('Payment verification started...')
+  let attempts = 0;
+  const maxAttempts = 5; // Reduce to 5 attempts to avoid rate limiting
+  
+  while (attempts < maxAttempts) {
+    // Wait longer between attempts to avoid rate limiting
+    if (attempts > 0) {
+      await new Promise(resolve => setTimeout(resolve, 12000)); // Wait 12 seconds between attempts
+    }
     try {
       const timestamp = moment().format('YYYYMMDDHHmmss')
       const password = getMpesaPassword(
@@ -32,7 +39,6 @@ export const paymentVerification = async CheckoutRequestID => {
       let token = await getAcessToken()
       const response = await axios.post(
         process.env.STK_PUSH_QUERY,
-
         {
           BusinessShortCode: process.env.SHORT_CODE,
           Password: password,
@@ -46,17 +52,35 @@ export const paymentVerification = async CheckoutRequestID => {
         }
       )
       console.log('Query Response', response.data)
+      
       if (response.data.ResponseCode === '0') {
-        if (response.data.ResultCode !== '0') {
+        // ResultCode 0 means success
+        if (response.data.ResultCode === '0') {
+          console.log('Payment successful')
+          return { success: true, data: response.data }
+        }
+        // ResultCode 4999 means pending
+        else if (response.data.ResultCode === '4999') {
+          console.log('Payment still pending...')
+          attempts++
+        }
+        // Any other ResultCode is a failure
+        else {
           return { success: false, data: response.data.ResultDesc }
         }
-        console.log('Payment Object finally returned', response.data)
-        return { success: true, data: response.data }
       }
     } catch (error) {
-      console.log('Errr', error.response.data)
+      console.log('Error in payment verification:', error.response?.data || error.message)
+      attempts++
     }
-    await new Promise(resolve => setTimeout(resolve, 3000)) //wait
+    await new Promise(resolve => setTimeout(resolve, 3000)) // Wait 3 seconds between attempts
+  }
+  
+  // If we reach here, the transaction is still pending after all attempts
+  return { 
+    success: false, 
+    pending: true, 
+    data: 'Transaction is still being processed. Please check your phone for the STK push prompt and complete the payment.'
   }
 }
 

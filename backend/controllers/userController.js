@@ -54,14 +54,14 @@ const RegisterUser = asyncHandler(async (req, res) => {
       return res.status(400).json({
         message: 'Required fields missing',
         requiredFields: [
-          'email',
+           'email',
           'password',
           'firstName',
           'lastName',
           'nationalId',
           'dateOfBirth',
           'organisationName',
-          'organisationSubdomain'
+          'organisationSubdomain',
         ]
       })
     }
@@ -180,23 +180,23 @@ const logout = asyncHandler(async (req, res) => {
 //Access: Public
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-  
+ 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
     }
-  
+ 
     const user = await prisma.users.findUnique({
-      where: { email: email.toLowerCase() } 
+      where: { email: email.toLowerCase() }
     });
-  
+ 
     if (!user || !user.password_hash) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     console.log(user.id);
-  
+ 
     try {
       const isMatch = await bcrypt.compare(password, user.password_hash);
-      
+     
       if (isMatch) {
         await generateToken(res, user.id);
         res.json({

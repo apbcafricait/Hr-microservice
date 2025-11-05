@@ -25,10 +25,10 @@ router.get(
   '/summaries/organisation/:organisationId',
   payrollController.getPayrollSummaries
 )
-router.get(
-  '/summaries/department/:organisationId/:departmentId',
-  payrollController.getDepartmentPayrollSummary
-)
+// router.get(
+//   '/summaries/department/:organisationId/:departmentId',
+//   payrollController.getDepartmentPayrollSummary
+// )
 
 // Admin only routes
 // router.use(admin)

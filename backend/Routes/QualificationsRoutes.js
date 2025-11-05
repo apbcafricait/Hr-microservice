@@ -1,24 +1,12 @@
-// import express from "express";
-// import {
-//   getAllQualifications,
-//   createQualification,
-//   updateQualification,
-//   deleteQualification,
-// } from "./controllers/qualificationController.js";
-// import { authenticated } from "../middleware/authMiddleware.js"; // Your middleware for authentication
+import { Router } from 'express';
+import { create, getAll, getOne, update, remove } from '../controllers/qualificationController.js';
 
-// const router = express.Router();
+const router = Router();
 
-// // GET: Fetch all qualifications with optional filters
-// router.get("/", authenticated, getAllQualifications);
+router.post('/', create);
+router.get('/', getAll);
+router.get('/:id', getOne);
+router.put('/:id', update);
+router.delete('/:id', remove);
 
-// // POST: Create a new qualification
-// router.post("/", authenticated, createQualification);
-
-// // PUT: Update an existing qualification by ID
-// router.put("/:id", authenticated, updateQualification);
-
-// // DELETE: Delete a qualification by ID
-// router.delete("/:id", authenticated, deleteQualification);
-
-// export default router;
+export default router;

@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 
 export const reportController = {
   // Get all reports by organisation
-  async getOrganisationReports (req, res) {
+  async getOrganisationReports(req, res) {
     try {
       const { organisationId } = req.params
 
@@ -18,12 +18,7 @@ export const reportController = {
               id: true,
               firstName: true,
               lastName: true,
-              position: true,
-              department: {
-                select: {
-                  name: true
-                }
-              }
+              position: true
             }
           }
         },
@@ -39,7 +34,7 @@ export const reportController = {
   },
 
   // Get reports by employee
-  async getEmployeeReports (req, res) {
+  async getEmployeeReports(req, res) {
     try {
       const { employeeId } = req.params
 
@@ -65,7 +60,7 @@ export const reportController = {
   },
 
   // Get single report
-  async getReport (req, res) {
+  async getReport(req, res) {
     try {
       const { id } = req.params
 
@@ -79,12 +74,7 @@ export const reportController = {
               id: true,
               firstName: true,
               lastName: true,
-              position: true,
-              department: {
-                select: {
-                  name: true
-                }
-              }
+              position: true
             }
           }
         }
@@ -101,7 +91,7 @@ export const reportController = {
   },
 
   // Create report
-  async createReport (req, res) {
+  async createReport(req, res) {
     try {
       const { employeeId, organisationId, comment } = req.body
 
@@ -129,7 +119,7 @@ export const reportController = {
   },
 
   // Update report
-  async updateReport (req, res) {
+  async updateReport(req, res) {
     try {
       const { id } = req.params
       const { comment } = req.body
@@ -157,7 +147,7 @@ export const reportController = {
   },
 
   // Delete report
-  async deleteReport (req, res) {
+  async deleteReport(req, res) {
     try {
       const { id } = req.params
       await prisma.report.delete({
@@ -167,6 +157,53 @@ export const reportController = {
       res.json({ message: 'Report deleted successfully' })
     } catch (error) {
       res.status(500).json({ error: error.message })
+    }
+  },
+
+  // Get reports filtered by employeeId and organisationId (with pagination)
+  async getFilteredReports(req, res) {
+    try {
+      const { employeeId, organisationId, page = 1, limit = 10 } = req.query
+
+      if (!employeeId || !organisationId) {
+        return res
+          .status(400)
+          .json({ message: 'employeeId and organisationId are required' })
+      }
+
+      const pageNumber = parseInt(page)
+      const limitNumber = parseInt(limit)
+      const skip = (pageNumber - 1) * limitNumber
+
+      const reports = await prisma.report.findMany({
+        where: {
+          employeeId: parseInt(employeeId),
+          organisationId: parseInt(organisationId)
+        },
+        include: {
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              position: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take: limitNumber
+      })
+
+      res.status(200).json(reports)
+    } catch (error) {
+      console.error('Error fetching filtered reports:', error)
+      res.status(500).json({
+        message: 'Failed to fetch filtered reports',
+        error: error.message
+      })
     }
   }
 }

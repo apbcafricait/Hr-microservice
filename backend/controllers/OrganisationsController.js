@@ -1,9 +1,28 @@
+// Get organisation subscription status
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const getOrganisationStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const organisation = await prisma.organisation.findUnique({
+      where: { id: parseInt(id) },
+      select: { subscriptionStatus: true, subscriptionEndDate: true }
+    });
+    if (!organisation) {
+      return res.status(404).json({ message: 'Organisation not found' });
+    }
+    res.json(organisation);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching organisation status' });
+  }
+};
 // src/controllers/OrganisationsController.js
 
-import { PrismaClient } from '@prisma/client'
+//import { PrismaClient } from '@prisma/client'
 import { validateOrganisation } from '../validators/organisationValidator.js'
 
-const prisma = new PrismaClient()
+//const prisma = new PrismaClient()
 
 export class OrganisationsController {
   // Get all organisations with pagination and filtering

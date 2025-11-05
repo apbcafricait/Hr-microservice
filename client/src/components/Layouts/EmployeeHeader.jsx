@@ -1,11 +1,10 @@
-import { useState } from "react"; // Corrected from "React" to "react"
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetEmployeeQuery } from "../../slices/employeeSlice";
-import EmployeeSettingsModal from "../pages/EmployeeSettingsModal"; // Adjusted import path
 
-const EmployeeHeader = () => {
+const EmployeeHeader = ({ onMenuSelect }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+
   const { userInfo } = useSelector((state) => state.auth);
   const id = userInfo?.id;
   const { data: orgEmpData } = useGetEmployeeQuery(id);
@@ -18,46 +17,66 @@ const EmployeeHeader = () => {
   };
 
   const handleMenuClick = (option) => {
-    setIsDropdownOpen(false); // Close dropdown after selection
-    if (option === "Settings") {
-      setIsModalOpen(true); // Open the modal for settings
+    setIsDropdownOpen(false);
+    if (onMenuSelect) {
+      // Map dropdown options to section keys
+      switch (option) {
+        case "Profile":
+          onMenuSelect("profile");
+          break;
+        case "About":
+          onMenuSelect("about");
+          break;
+        case "Settings":
+          onMenuSelect("settings");
+          break;
+        case "Change Password":
+          onMenuSelect("changepassword");
+          break;
+        default:
+          break;
+      }
     }
-    // Handle other options as needed
   };
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full flex justify-between items-center p-4 bg-white shadow-md z-50">
-        <div className="text-start flex-1">
-          <h1 className="text-2xl font-semibold text-gray-700">
+      <header className="fixed top-0 left-0 w-full flex items-center justify-between px-6 py-3 bg-white shadow z-50 h-16">
+        <div className="flex items-center">
+          <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow">
+            <span className="text-white text-lg font-bold select-none">
+              {organisationName ? organisationName[0] : "O"}
+            </span>
+          </div>
+          <span className="ml-3 text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight select-none">
             {organisationName || "Unknown Organisation"}
-          </h1>
+          </span>
         </div>
+
         <div className="relative">
           <button
             onClick={toggleDropdown}
-            className="flex items-center text-gray-700 focus:outline-none"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition focus:outline-none"
           >
-            <span className="mr-2">Hello, {employeeName}</span>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center shadow">
+              <span className="text-white font-semibold text-base">
+                {employeeName ? employeeName[0] : "U"}
+              </span>
+            </div>
+            <span className="font-medium text-gray-700">{employeeName || "Employee"}</span>
             <svg
-              className={`w-5 h-5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-gray-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="3"
-                d="M19 9 l-7 7 l-7 -7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+            <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <ul className="py-1">
-                {["Profile", "Settings", "About", "Change Password"].map((option) => (
+                {["Profile", "About", "Settings", "Change Password"].map((option) => (
                   <li key={option}>
                     <button
                       onClick={() => handleMenuClick(option)}
@@ -72,9 +91,6 @@ const EmployeeHeader = () => {
           )}
         </div>
       </header>
-
-      {/* Modal Component for Employee Settings */}
-      <EmployeeSettingsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   );
 };

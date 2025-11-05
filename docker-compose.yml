@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001"
+    container_name: vite_frontend_app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production

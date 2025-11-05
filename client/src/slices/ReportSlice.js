@@ -3,7 +3,7 @@ import { apiSlice } from "./apiSlice";
 
 export const reportsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Fetch all reports with pagination and optional filtering by employeeId or organisationId
+    // Fetch all reports with optional filters and logging
     getAllReports: builder.query({
       query: ({ page = 1, limit = 10, employeeId, organisationId }) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -15,8 +15,11 @@ export const reportsApiSlice = apiSlice.injectEndpoints({
         if (employeeId) queryParams.append("employeeId", employeeId);
         if (organisationId) queryParams.append("organisationId", organisationId);
 
+        const fullUrl = `${REPORT_TO_URL}?${queryParams.toString()}`;
+        console.log("🔍 Fetching reports from:", fullUrl);
+
         return {
-          url: `${REPORT_TO_URL}?${queryParams.toString()}`,
+          url: fullUrl,
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -26,14 +29,14 @@ export const reportsApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Reports"],
     }),
 
-    // Create a new report
+    //  Create a new report
     createReport: builder.mutation({
       query: (reportData) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const token = userInfo?.token;
 
         return {
-          url: `${REPORT_TO_URL}`,
+          url: `http://localhost:8100${REPORT_TO_URL}`,
           method: "POST",
           body: reportData,
           headers: {
@@ -45,7 +48,7 @@ export const reportsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Reports"],
     }),
 
-    // Update an existing report
+    //  Update a report
     updateReport: builder.mutation({
       query: ({ id, updatedData }) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -64,7 +67,7 @@ export const reportsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Reports"],
     }),
 
-    // Delete a report
+    //  Delete a report
     deleteReport: builder.mutation({
       query: (id) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -83,7 +86,7 @@ export const reportsApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-// Export hooks for each endpoint
+// Export the hooks
 export const {
   useGetAllReportsQuery,
   useCreateReportMutation,

@@ -1,22 +1,11 @@
 // utils/helpers.ts
 
 /**
- * Generates a unique reference ID for claims in the format CLM-YYYYMMDD-XXXX
+ * Generates a sequential reference ID for claims in the format CLMYYYYMMDDXXXX
+ * Example: CLM20250728-0001
+ * Counter resets at 9999 or manually per day if needed
  * @returns {string} The generated reference ID
  */
-export const generateReferenceId = () => {
-  const date = new Date()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-
-  // Generate a random 4-digit number
-  const sequence = Math.floor(1000 + Math.random() * 9000)
-
-  return `CLM${year}${month}${day}${sequence}`
-}
-
-// Alternative version with counter (if you want sequential numbers)
 let counter = 1
 export const generateSequentialReferenceId = () => {
   const date = new Date()
@@ -24,39 +13,54 @@ export const generateSequentialReferenceId = () => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
 
-  // Use a counter that resets daily
   const sequence = String(counter++).padStart(4, '0')
   if (counter > 9999) counter = 1
 
   return `CLM${year}${month}${day}${sequence}`
 }
 
-// If you want to ensure uniqueness by checking the database:
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+/**
+ * [Deprecated] Generates a reference ID using random 4-digit suffix
+ * Not used in current system. Kept for legacy fallback or testing.
+ */
+// export const generateReferenceId = () => {
+//   const date = new Date()
+//   const year = date.getFullYear()
+//   const month = String(date.getMonth() + 1).padStart(2, '0')
+//   const day = String(date.getDate()).padStart(2, '0')
 
-export const generateUniqueReferenceId = async () => {
-  let isUnique = false
-  let referenceId = ''
+//   const sequence = Math.floor(1000 + Math.random() * 9000)
+//   return `CLM${year}${month}${day}${sequence}`
+// }
 
-  while (!isUnique) {
-    const date = new Date()
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const sequence = Math.floor(1000 + Math.random() * 9000)
+/**
+ * [Deprecated] Generates a reference ID while checking for uniqueness in the database
+ * Not currently used due to performance trade-offs; preserved for future high-traffic enhancements.
+ */
+// import { PrismaClient } from '@prisma/client'
+// const prisma = new PrismaClient()
 
-    referenceId = `CLM${year}${month}${day}${sequence}`
+// export const generateUniqueReferenceId = async () => {
+//   let isUnique = false
+//   let referenceId = ''
 
-    // Check if this ID already exists in the database
-    const existingClaim = await prisma.claim.findUnique({
-      where: { referenceId }
-    })
+//   while (!isUnique) {
+//     const date = new Date()
+//     const year = date.getFullYear()
+//     const month = String(date.getMonth() + 1).padStart(2, '0')
+//     const day = String(date.getDate()).padStart(2, '0')
+//     const sequence = Math.floor(1000 + Math.random() * 9000)
 
-    if (!existingClaim) {
-      isUnique = true
-    }
-  }
+//     referenceId = `CLM${year}${month}${day}${sequence}`
 
-  return referenceId
-}
+//     const existingClaim = await prisma.claim.findUnique({
+//       where: { referenceId }
+//     })
+
+//     if (!existingClaim) {
+//       isUnique = true
+//     }
+//   }
+
+//   return referenceId
+// }

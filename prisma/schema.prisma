@@ -18,59 +18,60 @@ model users {
   Employee      Employee?
   LeaveRequest  LeaveRequest[]
   Organisation  Organisation[]
+  
 }
 
+
 model Employee {
-  id                                    Int                 @id @default(autoincrement())
-  userId                                Int                 @unique @map("user_id")
-  organisationId                        Int                 @map("organisation_id")
-  firstName                             String              @map("first_name") @db.VarChar(50)
-  lastName                              String              @map("last_name") @db.VarChar(50)
-  nationalId                            String              @unique @map("national_id") @db.VarChar(50)
-  dateOfBirth                           DateTime            @map("date_of_birth") @db.Date
-  position                              String              @db.VarChar(100)
-  employmentDate                        DateTime            @map("employment_date") @db.Date
-  salary                                Decimal             @db.Decimal(10, 2)
-  createdAt                             DateTime            @default(now()) @map("created_at")
-  updatedAt                             DateTime            @updatedAt @map("updated_at")
-  departmentId                          Int?                @map("department_id")
-  Dependent                             Dependent[]
-  claims_claims_assignedToIdToemployees Claim[]             @relation("claims_assignedToIdToemployees")
-  claims_claims_employeeIdToemployees   Claim[]             @relation("claims_employeeIdToemployees")
-  managedDepartment                     Department?         @relation("DepartmentManager")
-  Document                              Document[]
-  EmployeeContact                       EmployeeContact[]
-  department                            Department?         @relation("DepartmentEmployees", fields: [departmentId], references: [id])
-  organisation                          Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  user                                  users               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  LeaveBalance                          LeaveBalance?
-  LeaveRequest                          LeaveRequest[]
-  Payroll                               Payroll[]
-  PerformanceReview                     PerformanceReview[]
-  Qualification                         Qualification[]
-  Report                                Report[]            @relation("EmployeeReports")
-  Suggestion                            Suggestion[]
-  TimeAttendance                        TimeAttendance[]
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique @map("user_id")
+  organisationId Int      @map("organisation_id")
+  firstName      String   @map("first_name") @db.VarChar(50)
+  lastName       String   @map("last_name") @db.VarChar(50)
+  nationalId     String   @unique @map("national_id") @db.VarChar(50)
+  dateOfBirth    DateTime @map("date_of_birth") @db.Date
+  position       String   @db.VarChar(100)
+  employmentDate DateTime @map("employment_date") @db.Date
+  salary         Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // 👇 Existing Relations (still valid)
+  Dependent         Dependent[]
+  Qualification     Qualification[]
+  assignedClaims    Claim[]             @relation("AssignedClaims")
+  submittedClaims   Claim[]             @relation("SubmittedClaims")
+  Document          Document[]
+  EmployeeContact   EmployeeContact[]
+  organisation      Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user              users               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  LeaveBalance      LeaveBalance?
+  LeaveRequest      LeaveRequest[]
+  Payroll           Payroll[]
+  PerformanceReview PerformanceReview[]
+  Report            Report[]            @relation("EmployeeReports")
+  Suggestion        Suggestion[]
+  TimeAttendance    TimeAttendance[]
 
   @@map("employees")
 }
 
+
 model Organisation {
-  id                    Int          @id @default(autoincrement())
-  createdBy             Int          @map("created_by")
-  name                  String       @db.VarChar(255)
-  subdomain             String       @unique @db.VarChar(50)
-  mpesaPhone            String?      @map("mpesa_phone") @db.VarChar(20)
-  subscriptionStatus    String       @default("trial") @map("subscription_status") @db.VarChar(20)
-  createdAt             DateTime     @default(now()) @map("created_at")
-  updatedAt             DateTime     @updatedAt @map("updated_at")
+  id                  Int          @id @default(autoincrement())
+  createdBy           Int          @map("created_by")
+  name                String       @db.VarChar(255)
+  subdomain           String       @unique @db.VarChar(50)
+  mpesaPhone          String?      @map("mpesa_phone") @db.VarChar(20)
+  subscriptionStatus  String       @default("trial") @map("subscription_status") @db.VarChar(20)
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
   subscriptionEndDate DateTime?
-  Department            Department[]
-  employees             Employee[]
-  LeaveType             LeaveType[]
-  creator               users        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  Report                Report[]
-  Suggestion            Suggestion[]
+  employees           Employee[]
+  LeaveType           LeaveType[]
+  creator             users        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  Report              Report[]
+  Suggestion          Suggestion[]
 
   @@map("organisations")
 }
@@ -135,10 +136,11 @@ model LeaveType {
   createdAt      DateTime       @default(now()) @map("created_at")
   organisationId Int
   leaveRequests  LeaveRequest[]
-  Organisation   Organisation   @relation(fields: [organisationId], references: [id])
+  organisation   Organisation   @relation(fields: [organisationId], references: [id])
 
   @@map("leave_types")
 }
+
 
 model EmployeeContact {
   id                    Int      @id @default(autoincrement())
@@ -166,21 +168,26 @@ model Suggestion {
   @@map("suggestions")
 }
 
+/*
 model Department {
-  id             Int          @id @default(autoincrement())
-  organisationId Int          @map("organisation_id")
-  name           String       @db.VarChar(100)
+  id             Int      @id @default(autoincrement())
+  organisationId Int      @map("organisation_id")
+  name           String   @db.VarChar(100)
   description    String?
-  managerId      Int?         @unique @map("manager_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  manager        Employee?    @relation("DepartmentManager", fields: [managerId], references: [id])
-  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  employees      Employee[]   @relation("DepartmentEmployees")
+  managerId      Int?     @unique @map("manager_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  manager      Employee?    @relation("DepartmentManager", fields: [managerId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  employees    Employee[]   @relation("DepartmentEmployees")
+
+  claims Claim[] // ✅ THIS LINE IS CRUCIAL
 
   @@unique([organisationId, name])
   @@map("departments")
 }
+*/
 
 model Payroll {
   id                Int                @id @default(autoincrement())
@@ -212,20 +219,18 @@ model PayrollDeductions {
 
 model Qualification {
   id              Int              @id @default(autoincrement())
-  employeeId      Int              @map("employee_id")
-  institution     String           @db.VarChar(255)
-  qualification   String           @db.VarChar(255)
-  startDate       DateTime         @map("start_date") @db.Date
-  endDate         DateTime         @map("end_date") @db.Date
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
-  educations      Education[]
-  languages       Language[]
-  employee        Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  skills          Skill[]
-  workExperiences WorkExperience[]
-
-  @@map("qualifications")
+  employeeName    String           @db.VarChar(255)
+  employeeId      Int
+  institutionName String           @db.VarChar(255)
+  areaOfStudy     String           @db.VarChar(255)
+  certification   String           @db.VarChar(255)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  Language        Language[]
+  employee        Employee         @relation(fields: [employeeId], references: [id])
+  Skill           Skill[]
+  WorkExperience  WorkExperience[]
+  education       Education[]
 }
 
 model Education {
@@ -241,33 +246,27 @@ model Education {
 
 model WorkExperience {
   id              Int           @id @default(autoincrement())
+  role            String        @db.VarChar(255)
   company         String        @db.VarChar(255)
-  title           String        @db.VarChar(255)
-  fromDate        DateTime      @map("from_date") @db.Date
-  toDate          DateTime      @map("to_date") @db.Date
-  comment         String?
+  duration        String        @db.VarChar(50)
   qualificationId Int
   qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
-
-  @@map("work_experiences")
 }
 
 model Skill {
   id              Int           @id @default(autoincrement())
-  skill           String        @db.VarChar(255)
+  name            String        @db.VarChar(255)
+  proficiency     String        @db.VarChar(50)
   qualificationId Int
   qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
-
-  @@map("skills")
 }
 
 model Language {
   id              Int           @id @default(autoincrement())
-  language        String        @db.VarChar(255)
+  name            String        @db.VarChar(100)
+  fluencyLevel    String        @db.VarChar(50)
   qualificationId Int
   qualification   Qualification @relation(fields: [qualificationId], references: [id], onDelete: Cascade)
-
-  @@map("languages")
 }
 
 model PerformanceReview {
@@ -312,30 +311,28 @@ model Vacancy {
 }
 
 model Claim {
-  id                                       Int       @id @default(autoincrement())
-  referenceId                              String    @unique
-  employeeId                               Int
-  eventName                                String
-  description                              String?
-  currency                                 String
-  amount                                   Decimal   @db.Decimal(10, 2)
-  fromDate                                 DateTime  @db.Date
-  toDate                                   DateTime  @db.Date
-  submittedDate                            DateTime  @default(now())
-  status                                   String    @default("SUBMITTED")
-  comment                                  String?
-  assignedToId                             Int?
-  created_at                               DateTime  @default(now())
-  updated_at                               DateTime
-  employees_claims_assignedToIdToemployees Employee? @relation("claims_assignedToIdToemployees", fields: [assignedToId], references: [id])
-  employees_claims_employeeIdToemployees   Employee  @relation("claims_employeeIdToemployees", fields: [employeeId], references: [id], onDelete: Cascade)
+  id            Int      @id @default(autoincrement())
+  referenceId   String   @unique
+  employeeId    Int
+  eventName     String
+  description   String?
+  currency      String
+  amount        Decimal  @db.Decimal(10, 2)
+  fromDate      DateTime @db.Date
+  toDate        DateTime @db.Date
+  submittedDate DateTime @default(now())
+  status        String   @default("SUBMITTED")
+  comment       String?
+  assignedToId  Int?
+ 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  assignedTo Employee? @relation("AssignedClaims", fields: [assignedToId], references: [id])
+  employee   Employee  @relation("SubmittedClaims", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("claims")
 }
-
-// prisma/schema.prisma additions
-// Add this model to your existing schema.prisma file
-
 
 model Dependent {
   id           String   @id @default(uuid())

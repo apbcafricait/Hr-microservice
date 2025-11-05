@@ -5,13 +5,13 @@ import {  useGetEmployeeQuery } from "../../../slices/employeeSlice";
 
 const ContactDetails = () => {
   const { userInfo } = useSelector((state) => state.auth);
-  const id = userInfo?.id; // Ensure this matches the backend's expectations
+  const id = userInfo?.id;
   console.log(id, "id");
   const { data: orgEmpData } = useGetEmployeeQuery(id);
   const employeeId = orgEmpData?.data.employee.id;
 
   const [contact, setContact] = useState({
-    employeeId: employeeId, // Ensure it matches the "employee_id" field in Prisma
+    employeeId: employeeId,
     phone: "",
     email: "",
     emergencyContactName: "",
@@ -19,7 +19,6 @@ const ContactDetails = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("Contact Details");
 
   const [createEmployeeContact, { isLoading }] = useCreateEmployeeContactMutation();
 
@@ -80,11 +79,9 @@ const ContactDetails = () => {
 
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 bg-gray-100 p-6 flex justify-center items-center">
-        {activeTab === "Contact Details" && (
-          <div className="bg-white p-6 rounded-md shadow-md w-full max-w-3xl">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Contact Details</h2>
+    <div className="w-full">
+      <div className="bg-white p-6 rounded-lg shadow-sm w-full">
+        <h2 className="text-xl font-semibold mb-6 text-gray-800">Contact Information</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <input
@@ -169,10 +166,8 @@ const ContactDetails = () => {
                 )}
               </div>
             </form>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
   );
 };
 
