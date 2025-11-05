@@ -34,6 +34,9 @@ const Login = () => {
       return;
     }
     switch (role.toLowerCase()) {
+      case 'superadmin':
+        navigate('/superadmin');
+        break;
       case 'admin':
         navigate('/admin');
         break;

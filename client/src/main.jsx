@@ -39,8 +39,8 @@ import EmployeeDashboard from './components/pages/EmployeeDashboard/EmployeeDash
 import EmployeeProfile from './components/pages/EmployeeDashboard/EmployeeProfile.jsx';
 import PersonalDetails from './components/pages/EmployeeDashboard/PersonalDetails.jsx';
 import Subscribe from './components/common/Subscribe.jsx';
-import { ProtectedRoute } from './ProtectedRoute.jsx';
-
+import { ProtectedRoute } from './ProtectedRoute.jsx';  
+import SuperAdminDashboard from './components/pages/SuperAdmin/SuperAdminDashboard.jsx';
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -119,6 +119,16 @@ const routes = createBrowserRouter(
           }
         />
       </Route>
+
+      {/* Super Admin */}
+      <Route
+        path="superadmin"
+        element={
+          <ProtectedRoute allowedRoles={['superadmin']} requireSubscription={false}>
+            <SuperAdminDashboard />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Manager Routes */}
       <Route

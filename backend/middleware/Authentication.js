@@ -56,7 +56,9 @@ const admin = () => {
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
-      if (user.role !== 'admin') {
+
+      const isAdmin = user.role === 'admin' || user.role === 'superadmin';
+      if (!isAdmin) {
         return res.status(403).json({ message: 'Not authorized as Admin' });
       }
       next();
@@ -67,8 +69,37 @@ const admin = () => {
   };
 };
 
-// MANAGER  (unchanged)
+// Super Admin middleware
+const superAdmin = () => {
+  return async (req, res, next) => {
+    try {
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
 
+      const id = req.user.id;
+
+      const user = await prisma.users.findUnique({
+        where: { id },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.role !== 'superadmin') {
+        return res.status(403).json({ message: 'Not authorized as Super Admin' });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Error verifying user role:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  };
+};
+
+// Manager middleware
 const manager = () => {
   return async (req, res, next) => {
     try {
@@ -93,4 +124,4 @@ const manager = () => {
   };
 };
 
-export { authenticated, admin, manager };
+export { authenticated, admin, manager, superAdmin };
