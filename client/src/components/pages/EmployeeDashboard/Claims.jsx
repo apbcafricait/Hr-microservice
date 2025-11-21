@@ -25,16 +25,30 @@ const Claim = () => {
   // Fallback: Get organization claims and filter by user email
   // This assumes the employee belongs to an organization
   const getOrganisationId = () => {
-    // Try to get org ID from user info
-    if (userInfo?.organisationId) return userInfo.organisationId;
-    if (userInfo?.user?.organisationId) return userInfo.user.organisationId;
-    if (userInfo?.organisation?.id) return userInfo.organisation.id;
-    if (userInfo?.organization?.id) return userInfo.organization.id;
-    if (userInfo?.orgId) return userInfo.orgId;
-    
-    // Hardcoded fallback for known users (you can remove this)
-    if (userInfo?.email === 'aaronjackson@gmail.com') {
-      return 2; // Assuming they belong to org ID 2
+    // Try multiple possible paths for organisation ID
+    const possiblePaths = [
+      userInfo?.organisationId,
+      userInfo?.user?.organisationId,
+      userInfo?.organisation?.id,
+      userInfo?.organization?.id,
+      userInfo?.orgId,
+      userInfo?.employee?.organisationId,
+      userInfo?.data?.employee?.organisationId
+    ];
+
+    for (const path of possiblePaths) {
+      if (path && !isNaN(Number(path))) {
+        return Number(path);
+      }
+    }
+
+    // Enhanced fallback logic based on user role and email
+    if (userInfo?.role === 'manager' || userInfo?.user?.role === 'manager') {
+      // For managers, try to determine org from email domain or known mappings
+      if (userInfo?.email === 'aaronjackson@gmail.com') {
+        return 2;
+      }
+      // Add more known manager-org mappings here
     }
     
     return null;
@@ -42,13 +56,17 @@ const Claim = () => {
 
   const organisationId = getOrganisationId();
   
+  // Enhanced query logic for managers
+  const shouldSkipOrgQuery = !myClaimsError || !organisationId || 
+    (userInfo?.role !== 'manager' && userInfo?.user?.role !== 'manager');
+  
   const { 
     data: orgClaimsData, 
     isLoading: orgClaimsLoading, 
     error: orgClaimsError, 
     refetch: refetchOrgClaims 
   } = useGetClaimsByOrganisationQuery(organisationId, {
-    skip: !myClaimsError || !organisationId, // Only use if getMyClaims fails
+    skip: shouldSkipOrgQuery,
   });
   
   const [submitClaim, { isLoading: isSubmitting }] = useSubmitClaimMutation();
@@ -143,17 +161,21 @@ const Claim = () => {
   let claims = [];
   
   if (shouldUseFallback) {
-    // Using organization data - filter by current user email
     const allOrgClaims = claimsData?.data?.claims || [];
     
-    // Filter claims for current user by email
-    claims = allOrgClaims.filter(claim => 
-      claim.employee?.email === userInfo?.email ||
-      claim.employee?.userId === userInfo?.id ||
-      claim.employeeId === userInfo?.id
-    );
+    // If user is a manager, show all organisation claims
+    if (userInfo?.role === 'manager' || userInfo?.user?.role === 'manager') {
+      claims = allOrgClaims;
+    } else {
+      // For employees, filter by their submissions
+      claims = allOrgClaims.filter(claim => 
+        claim.employee?.user?.email === userInfo?.email ||
+        claim.employee?.userId === userInfo?.id ||
+        claim.employeeId === userInfo?.id ||
+        claim.employee?.email === userInfo?.email
+      );
+    }
   } else {
-    // Using my claims data
     claims = claimsData?.data?.claims || claimsData?.claims || [];
   }
   
@@ -162,15 +184,14 @@ const Claim = () => {
   // Debug logging (simplified)
   console.log("Employee Claims Debug:", {
     userInfo: userInfo,
-    myClaimsData: myClaimsData,
-    myClaimsError: myClaimsError,
-    orgClaimsData: orgClaimsData,
-    shouldUseFallback: shouldUseFallback,
+    userRole: userInfo?.role || userInfo?.user?.role,
     organisationId: organisationId,
+    shouldUseFallback: shouldUseFallback,
+    shouldSkipOrgQuery: shouldSkipOrgQuery,
+    myClaimsError: myClaimsError,
+    orgClaimsError: orgClaimsError,
     filteredClaims: claims,
-    isLoading: isLoading,
-    error: error,
-    hasValidClaims: hasValidClaims
+    allOrgClaims: claimsData?.data?.claims?.length || 0
   });
 
   return (
@@ -182,7 +203,9 @@ const Claim = () => {
         {/* Header */}
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-green-600 to-teal-600 p-4 rounded-lg shadow-md">
-            My Claims
+            {(userInfo?.role === 'manager' || userInfo?.user?.role === 'manager') && shouldUseFallback 
+              ? 'Organisation Claims' 
+              : 'My Claims'}
           </h1>
         </header>
 
@@ -197,7 +220,11 @@ const Claim = () => {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-yellow-700">
-                  <strong>Note:</strong> Viewing claims from organization data (filtered for your submissions)
+                  <strong>Note:</strong> {
+                    (userInfo?.role === 'manager' || userInfo?.user?.role === 'manager')
+                      ? 'Viewing all organisation claims (Manager View)'
+                      : 'Viewing claims from organization data (filtered for your submissions)'
+                  }
                 </p>
               </div>
             </div>
@@ -338,7 +365,9 @@ const Claim = () => {
         <div className="bg-white shadow-lg rounded-lg p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-800">
-              My Claims {shouldUseFallback && "(Filtered)"}
+              {(userInfo?.role === 'manager' || userInfo?.user?.role === 'manager') && shouldUseFallback 
+                ? `Organisation Claims (${claims.length})` 
+                : `My Claims ${shouldUseFallback ? "(Filtered)" : ""}`}
             </h2>
             <button
               onClick={() => {
@@ -387,6 +416,9 @@ const Claim = () => {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Reference ID</th>
+                    {(userInfo?.role === 'manager' || userInfo?.user?.role === 'manager') && shouldUseFallback && (
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Employee</th>
+                    )}
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Event Name</th>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Description</th>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Amount</th>
@@ -398,6 +430,11 @@ const Claim = () => {
                   {claims.map((claim) => (
                     <tr key={claim.id || claim.referenceId} className="border-b hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-2 text-sm text-gray-600">{claim.referenceId}</td>
+                      {(userInfo?.role === 'manager' || userInfo?.user?.role === 'manager') && shouldUseFallback && (
+                        <td className="px-4 py-2 text-sm text-gray-600">
+                          {claim.employee ? `${claim.employee.firstName} ${claim.employee.lastName}` : 'N/A'}
+                        </td>
+                      )}
                       <td className="px-4 py-2 text-sm text-gray-600">{claim.eventName}</td>
                       <td className="px-4 py-2 text-sm text-gray-600">{claim.description || '-'}</td>
                       <td className="px-4 py-2 text-sm text-gray-600">

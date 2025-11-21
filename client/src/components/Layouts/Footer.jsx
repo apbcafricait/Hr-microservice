@@ -9,9 +9,11 @@ import {
   Mail,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom"; 
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate(); 
 
   const socialLinks = [
     { icon: <Facebook size={20} />, href: "https://facebook.com", label: "Facebook" },
@@ -21,15 +23,15 @@ const Footer = () => {
   ];
 
   const companyLinks = [
-    { href: "#about", label: "About Us" },
-    { href: "#features", label: "Features" },
-    { href: "#careers", label: "Careers" },
+    { path: "/about", label: "About Us" },
+    { path: "/features", label: "Features" }, 
+    { path: "/careers", label: "Careers" },
   ];
 
   const supportLinks = [
-    { href: "#help", label: "Help Center" },
-    { href: "#contact", label: "Contact Us" },
-    { href: "#faq", label: "FAQ" },
+    { path: "/help", label: "Help Center" },
+    { path: "/contact", label: "Contact Us" }, 
+    { path: "/faq", label: "FAQ" },
   ];
 
   const legalLinks = [
@@ -40,8 +42,11 @@ const Footer = () => {
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
-    // Placeholder for newsletter signup logic
     alert("Subscribed to newsletter!");
+  };
+  const handleNavigate = (path) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -56,12 +61,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Logo, Description, and Social Links */}
           <div className="flex flex-col items-start">
-            <motion.h2
+            <motion.button 
               whileHover={{ scale: 1.05 }}
-              className="text-3xl font-extrabold font-poppins tracking-poppins-tight text-white mb-4"
+              onClick={() => handleNavigate("/")}
+              className="text-3xl font-extrabold font-poppins tracking-poppins-tight text-white mb-4 cursor-pointer"
             >
               NEXUS
-            </motion.h2>
+            </motion.button>
             <p className="text-sm text-gray-400 mb-6 leading-relaxed font-lato">
               Empowering HR excellence with innovative, unified solutions.
             </p>
@@ -93,7 +99,7 @@ const Footer = () => {
             </motion.button>
           </div>
 
-          {/* Company Links */}
+          {/* Company Links - Updated with navigation */}
           <div className="flex flex-col">
             <h3 className="text-lg font-semibold font-poppins tracking-poppins-tight text-white mb-4">
               Company
@@ -105,15 +111,19 @@ const Footer = () => {
                   whileHover={{ x: 5, color: "#4f46e5" }}
                   className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200 font-lato"
                 >
-                  <a href={link.href} aria-label={link.label}>
+                  <button 
+                    onClick={() => handleNavigate(link.path)}
+                    className="text-left hover:underline cursor-pointer"
+                    aria-label={link.label}
+                  >
                     {link.label}
-                  </a>
+                  </button>
                 </motion.li>
               ))}
             </ul>
           </div>
 
-          {/* Support Links */}
+          {/* Support Links - Updated with navigation */}
           <div className="flex flex-col">
             <h3 className="text-lg font-semibold font-poppins tracking-poppins-tight text-white mb-4">
               Support
@@ -125,9 +135,13 @@ const Footer = () => {
                   whileHover={{ x: 5, color: "#4f46e5" }}
                   className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200 font-lato"
                 >
-                  <a href={link.href} aria-label={link.label}>
+                  <button 
+                    onClick={() => handleNavigate(link.path)}
+                    className="text-left hover:underline cursor-pointer"
+                    aria-label={link.label}
+                  >
                     {link.label}
-                  </a>
+                  </button>
                 </motion.li>
               ))}
             </ul>

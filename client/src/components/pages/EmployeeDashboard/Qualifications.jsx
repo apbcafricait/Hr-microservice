@@ -6,26 +6,28 @@ import {
   useUpdateQualificationMutation,
   useDeleteQualificationMutation,
 } from "../../../slices/qualificationSlice";
-import { FaGraduationCap, FaPlus, FaEdit, FaTrash, FaUniversity } from "react-icons/fa";
+import { FaGraduationCap, FaPlus, FaEdit, FaTrash, FaUniversity, FaBriefcase, FaLanguage, FaStar, FaCertificate, FaCheckCircle } from "react-icons/fa";
 
 const Qualifications = () => {
   const { userInfo } = useSelector((state) => state.auth);
-  const employeeId = userInfo?.id;
+  const employeeId = userInfo?.employeeId || userInfo?.id;
 
   const [qualificationData, setQualificationData] = useState({
     id: null,
-    institution: "",
-    qualification: "",
-    startDate: "",
-    endDate: "",
+    qualificationType: "",
+    institutionName: "",
+    fieldOfStudy: "",
+    dateObtained: "",
+    certificateNumber: "",
+    isVerified: false,
   });
 
   const [isEditing, setIsEditing] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  // Fetch qualifications with query args
-  const { data, isLoading, isError, refetch } = useGetAllQualificationsQuery({});
-  const qualifications = data?.data?.qualifications || [];
+  // Fetch qualifications
+  const { data, isLoading, isError, refetch } = useGetAllQualificationsQuery({ employeeId });
+  const qualifications = data?.data?.qualifications || data || [];
 
   // Mutations
   const [createQualification] = useCreateQualificationMutation();
@@ -33,8 +35,11 @@ const Qualifications = () => {
   const [deleteQualification] = useDeleteQualificationMutation();
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setQualificationData({ ...qualificationData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setQualificationData({ 
+      ...qualificationData, 
+      [name]: type === 'checkbox' ? checked : value 
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -45,29 +50,42 @@ const Qualifications = () => {
         await updateQualification(qualificationData).unwrap();
         alert("Qualification updated successfully");
       } else {
-        const payload = { ...qualificationData, employeeId };
+        const payload = {
+          ...qualificationData,
+          employeeId: parseInt(employeeId)
+        };
         await createQualification(payload).unwrap();
         alert("Qualification added successfully");
       }
 
       setQualificationData({
         id: null,
-        institution: "",
-        qualification: "",
-        startDate: "",
-        endDate: "",
+        qualificationType: "",
+        institutionName: "",
+        fieldOfStudy: "",
+        dateObtained: "",
+        certificateNumber: "",
+        isVerified: false,
       });
       setIsEditing(false);
       setShowForm(false);
       refetch();
     } catch (error) {
       console.error("Error submitting qualification:", error);
-      alert("Error saving qualification. Please try again.");
+      alert(`Error saving qualification: ${error?.data?.error || error?.message || 'Please try again'}`);
     }
   };
 
   const handleEdit = (qualification) => {
-    setQualificationData(qualification);
+    setQualificationData({
+      id: qualification.id,
+      qualificationType: qualification.qualificationType,
+      institutionName: qualification.institutionName,
+      fieldOfStudy: qualification.fieldOfStudy,
+      dateObtained: qualification.dateObtained ? qualification.dateObtained.split('T')[0] : '',
+      certificateNumber: qualification.certificateNumber || '',
+      isVerified: qualification.isVerified || false,
+    });
     setIsEditing(true);
     setShowForm(true);
   };
@@ -80,7 +98,7 @@ const Qualifications = () => {
         refetch();
       } catch (error) {
         console.error("Error deleting qualification:", error);
-        alert("Error deleting qualification. Please try again.");
+        alert(`Error deleting qualification: ${error?.data?.error || error?.message || 'Please try again'}`);
       }
     }
   };
@@ -88,26 +106,16 @@ const Qualifications = () => {
   const handleCancel = () => {
     setQualificationData({
       id: null,
-      institution: "",
-      qualification: "",
-      startDate: "",
-      endDate: "",
+      qualificationType: "",
+      institutionName: "",
+      fieldOfStudy: "",
+      dateObtained: "",
+      certificateNumber: "",
+      isVerified: false,
     });
     setIsEditing(false);
     setShowForm(false);
   };
-
-  useEffect(() => {
-    if (!isEditing) {
-      setQualificationData({
-        id: null,
-        institution: "",
-        qualification: "",
-        startDate: "",
-        endDate: "",
-      });
-    }
-  }, [isEditing]);
 
   if (isLoading) {
     return (
@@ -169,14 +177,38 @@ const Qualifications = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-2">
-                  Institution *
+                <label htmlFor="qualificationType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Qualification Type *
+                </label>
+                <select
+                  id="qualificationType"
+                  name="qualificationType"
+                  value={qualificationData.qualificationType}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="">Select qualification type</option>
+                  <option value="High School Diploma">High School Diploma</option>
+                  <option value="Certificate">Certificate</option>
+                  <option value="Diploma">Diploma</option>
+                  <option value="Bachelor's Degree">Bachelor's Degree</option>
+                  <option value="Master's Degree">Master's Degree</option>
+                  <option value="PhD">PhD</option>
+                  <option value="Professional Certificate">Professional Certificate</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="institutionName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Institution Name *
                 </label>
                 <input
                   type="text"
-                  id="institution"
-                  name="institution"
-                  value={qualificationData.institution}
+                  id="institutionName"
+                  name="institutionName"
+                  value={qualificationData.institutionName}
                   onChange={handleInputChange}
                   placeholder="Enter institution name"
                   required
@@ -185,30 +217,30 @@ const Qualifications = () => {
               </div>
               
               <div>
-                <label htmlFor="qualification" className="block text-sm font-medium text-gray-700 mb-2">
-                  Qualification *
+                <label htmlFor="fieldOfStudy" className="block text-sm font-medium text-gray-700 mb-2">
+                  Field of Study *
                 </label>
                 <input
                   type="text"
-                  id="qualification"
-                  name="qualification"
-                  value={qualificationData.qualification}
+                  id="fieldOfStudy"
+                  name="fieldOfStudy"
+                  value={qualificationData.fieldOfStudy}
                   onChange={handleInputChange}
-                  placeholder="e.g., Bachelor's Degree, Certificate"
+                  placeholder="e.g., Computer Science, Business Administration"
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 />
               </div>
               
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date *
+                <label htmlFor="dateObtained" className="block text-sm font-medium text-gray-700 mb-2">
+                  Date Obtained *
                 </label>
                 <input
                   type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={qualificationData.startDate}
+                  id="dateObtained"
+                  name="dateObtained"
+                  value={qualificationData.dateObtained}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -216,18 +248,32 @@ const Qualifications = () => {
               </div>
               
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date *
+                <label htmlFor="certificateNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                  Certificate Number
                 </label>
                 <input
-                  type="date"
-                  id="endDate"
-                  name="endDate"
-                  value={qualificationData.endDate}
+                  type="text"
+                  id="certificateNumber"
+                  name="certificateNumber"
+                  value={qualificationData.certificateNumber}
                   onChange={handleInputChange}
-                  required
+                  placeholder="Enter certificate/registration number"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 />
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isVerified"
+                  name="isVerified"
+                  checked={qualificationData.isVerified}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="isVerified" className="ml-2 text-sm font-medium text-gray-700">
+                  This qualification is verified
+                </label>
               </div>
             </div>
 
@@ -278,26 +324,67 @@ const Qualifications = () => {
               <div key={qualification.id} className="px-6 py-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center mb-2">
+                    <div className="flex items-center mb-3">
                       <FaGraduationCap className="w-5 h-5 text-blue-600 mr-3" />
                       <h4 className="text-lg font-semibold text-gray-900">
-                        {qualification.qualification}
+                        {qualification.qualificationType}
                       </h4>
+                      {qualification.isVerified && (
+                        <FaCheckCircle className="w-5 h-5 text-green-500 ml-2" title="Verified" />
+                      )}
                     </div>
-                    <p className="text-gray-600 mb-3 flex items-center">
-                      <FaUniversity className="w-4 h-4 mr-2 text-gray-400" />
-                      {qualification.institution}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
-                        {new Date(qualification.startDate).toLocaleDateString('en-US', { 
+                    
+                    <div className="space-y-2">
+                      <p className="text-gray-600 flex items-center">
+                        <FaUniversity className="w-4 h-4 mr-2 text-gray-400" />
+                        <span className="font-medium">Institution:</span>
+                        <span className="ml-2">{qualification.institutionName}</span>
+                      </p>
+                      
+                      <p className="text-gray-600 flex items-center">
+                        <FaBriefcase className="w-4 h-4 mr-2 text-gray-400" />
+                        <span className="font-medium">Field of Study:</span>
+                        <span className="ml-2">{qualification.fieldOfStudy}</span>
+                      </p>
+                      
+                      <p className="text-gray-600 flex items-center">
+                        <FaStar className="w-4 h-4 mr-2 text-gray-400" />
+                        <span className="font-medium">Date Obtained:</span>
+                        <span className="ml-2">{new Date(qualification.dateObtained).toLocaleDateString()}</span>
+                      </p>
+                      
+                      {qualification.certificateNumber && (
+                        <p className="text-gray-600 flex items-center">
+                          <FaCertificate className="w-4 h-4 mr-2 text-gray-400" />
+                          <span className="font-medium">Certificate Number:</span>
+                          <span className="ml-2">{qualification.certificateNumber}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center mt-4 text-sm text-gray-500">
+                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                        Added on {new Date(qualification.createdAt).toLocaleDateString('en-US', { 
                           year: 'numeric', 
-                          month: 'short' 
-                        })} - {new Date(qualification.endDate).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'short' 
+                          month: 'short',
+                          day: 'numeric'
                         })}
                       </span>
+                      {qualification.updatedAt !== qualification.createdAt && (
+                        <span className="ml-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
+                          Updated {new Date(qualification.updatedAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      )}
+                      {qualification.isVerified && (
+                        <span className="ml-2 bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium flex items-center">
+                          <FaCheckCircle className="w-3 h-3 mr-1" />
+                          Verified
+                        </span>
+                      )}
                     </div>
                   </div>
                   
@@ -318,6 +405,7 @@ const Qualifications = () => {
                     </button>
                   </div>
                 </div>
+
               </div>
             ))
           )}
