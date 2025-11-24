@@ -10,7 +10,14 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Import SettingsProvider
 import { SettingsProvider } from './context/SettingsContext.jsx';
-
+// layout components
+import Features from './components/Layouts/Features.jsx';
+import Benefits from './components/Layouts/Benefits';
+import Pricing from './components/Layouts/Pricing';
+import Contact from './components/Layouts/Contact';
+import Careers from './components/Layouts/Careers.jsx';
+import HelpCenter from './components/Layouts/HelpCenter.jsx';
+import FAQ from './components/Layouts/FAQ.jsx';
 
 // Import leave from admin dashboard
 import AssignLeave from './components/pages/AdminDashboard/Leave Dashboard/AssignLeave.jsx';
@@ -50,6 +57,16 @@ const routes = createBrowserRouter(
       <Route path="register" element={<Register />} />
       <Route path="not-authorized" element={<NotAuthorized />} />
       <Route path="subscribe" element={<Subscribe />} />
+      <Route path="careers" element={<Careers/>} />
+      <Route path="help" element={<HelpCenter />} />
+      <Route path="faq" element={<FAQ />} />
+
+      {/* Layout components routes*/}
+        <Route path="features" element={<Features />} />
+        <Route path="benefits" element={<Benefits />} />
+        <Route path="pricing" element={<Pricing />} />
+        <Route path="contact" element={<Contact />} />
+        
 
       {/* Admin Routes */}
       <Route
@@ -60,6 +77,7 @@ const routes = createBrowserRouter(
           </ProtectedRoute>
         }
       >
+
         {/* Nested Leave Routes */}
         <Route
           path="assign-leave"

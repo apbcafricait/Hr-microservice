@@ -8,72 +8,103 @@ const prisma = new PrismaClient()
 
 export class EmployeesController {
   // Get all employees with pagination, filtering and searching
-  async getAllEmployees(req, res) {
-    try {
-      const page = parseInt(req.query.page) || 1
-      const limit = parseInt(req.query.limit) || 10
-      const organisationId = parseInt(req.query.organisationId)
-      const search = req.query.search
-      const skip = (page - 1) * limit
+async getAllEmployees(req, res) {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const organisationId = parseInt(req.query.organisationId)
+    const search = req.query.search
+    const skip = (page - 1) * limit
+    const { role, organisationId: userOrgId } = req.user;
 
-      const whereClause = {}
+    // ✅ BLOCK EMPLOYEES COMPLETELY
+    if (role === 'employee') {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Access denied. Employees cannot view employee list.'
+      });
+    }
+
+    const whereClause = {
+      // ✅ ONLY show users with employee role
+      user: { 
+        role: 'employee' 
+      }
+    };
+
+    // ✅ Organization filtering for managers and admins
+    if (role === 'manager') {
+      whereClause.organisationId = userOrgId;
+    } else if (role === 'admin') {
       if (organisationId) {
-        whereClause.organisationId = organisationId
+        whereClause.organisationId = organisationId;
       }
-      if (search) {
-        whereClause.OR = [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-          { position: { contains: search, mode: 'insensitive' } },
-          { nationalId: { contains: search, mode: 'insensitive' } }
-        ]
-      }
+      // No org filter for admin = see all employees across orgs
+    }
 
-      const [employees, total] = await Promise.all([
-        prisma.employee.findMany({
-          skip,
-          take: limit,
-          where: whereClause,
-          include: {
-            user: {
-              select: {
-                email: true,
-                role: true
-              }
-            },
-            organisation: {
-              select: {
-                name: true
-              }
+    // ✅ Search functionality (combine with AND logic)
+    if (search) {
+      whereClause.AND = [
+        {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+            { position: { contains: search, mode: 'insensitive' } },
+            { nationalId: { contains: search, mode: 'insensitive' } }
+          ]
+        }
+      ];
+    }
+
+    console.log("🔍 Where clause:", JSON.stringify(whereClause, null, 2)); // Debug
+
+    const [employees, total] = await Promise.all([
+      prisma.employee.findMany({
+        skip,
+        take: limit,
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              email: true,
+              role: true
             }
           },
-          orderBy: {
-            createdAt: 'desc'
+          organisation: {
+            select: {
+              name: true
+            }
           }
-        }),
-        prisma.employee.count({ where: whereClause })
-      ])
-
-      return res.status(200).json({
-        status: 'success',
-        data: {
-          employees,
-          pagination: {
-            total,
-            pages: Math.ceil(total / limit),
-            page,
-            limit
-          }
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
-      })
-    } catch (error) {
-      return res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch employees',
-        error: error.message
-      })
-    }
+      }),
+      prisma.employee.count({ where: whereClause })
+    ])
+
+    console.log(" Results count:", employees.length); 
+    console.log(" All roles:", employees.map(e => e.user.role)); 
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        employees,
+        pagination: {
+          total,
+          pages: Math.ceil(total / limit),
+          page,
+          limit
+        }
+      }
+    })
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch employees',
+      error: error.message
+    })
   }
+}
 
   // Get single employee
   async getEmployee(req, res) {

@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+  import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import prisma from '../../db/prisma.js';
 import authenticatePassword from './authenticatePassword.js';

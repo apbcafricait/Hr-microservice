@@ -1,11 +1,7 @@
 import prisma from "../../db/prisma.js";
-
-
 import { encryptPassword } from "../utils/encryptPassword.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
-
-
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 
